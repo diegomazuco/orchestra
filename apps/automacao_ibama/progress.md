@@ -12,7 +12,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ### Modelagem de Dados
 - Criado o modelo `LicencaAmbiental` em `apps/automacao_ibama/models.py` com campos para número, descrição, arquivo PDF, status, data de criação e atualização.
-- Criadas as migrações para o modelo `LicencaAmbiental` (`python manage.py makemigrations automacao_ibama`).
+- Criadas as migrações para o modelo `LicencaAutomacao` (`python manage.py makemigrations automacao_ibama`).
 - Aplicadas as migrações ao banco de dados (`python manage.py migrate`).
 
 ### Lógica de Automação
@@ -27,3 +27,6 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ### Alinhamento com as Diretrizes Globais do Projeto
 - **Atualização do `GEMINI.md` do App:** O arquivo de diretrizes do app (`apps/automacao_ibama/GEMINI.md`) foi atualizado para refletir as novas regras de fluxo de trabalho com o Git, garantindo consistência com as diretrizes do projeto principal `Orchestra`. As novas regras incluem commits detalhados e um procedimento de push seguro e sincronizado.
+
+### Automação de Login no Portran
+- **Criação do Comando `login_portran`:** Criado o custom command `login_portran.py` em `apps/automacao_ibama/management/commands/`. Este comando utiliza Playwright para automatizar o processo de login no portal Portran, preenchendo os campos de usuário e senha e clicando no botão de autenticar, utilizando credenciais lidas do arquivo `.env`.
