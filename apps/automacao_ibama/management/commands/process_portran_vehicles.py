@@ -40,21 +40,18 @@ class Command(BaseCommand):
                 await page.click(vencidos_card_selector)
                 await page.wait_for_selector('td.text-center.text-nowrap') # Wait for at least one plate to appear
 
-                vencidos_plates = await page.locator('td.text-center.text-nowrap').all_text_contents()
-                self.stdout.write(f'Placas Vencidas encontradas: {vencidos_plates}')
-
-                # --- Processar Veículos À vencer ---
-                self.stdout.write('Processando veículos À vencer...')
-                await page.goto('https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index')
-                await page.wait_for_url('https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index') # Ensure we are back on dashboard
-
-                avencer_card_selector = 'a.box.box-basica.text-center:has-text("À vencer")'
-                await page.click(avencer_card_selector)
-                await page.wait_for_url('https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7')
-                await page.wait_for_selector('td.text-center.text-nowrap') # Wait for at least one plate to appear
-
-                avencer_plates = await page.locator('td.text-center.text-nowrap').all_text_contents()
-                self.stdout.write(f'Placas À vencer encontradas: {avencer_plates}')
+                # Clicar no botão "Editar" do primeiro elemento da lista
+                edit_button_selector = 'a.btn.btn--square.alterar-veiculo-js'
+                first_edit_button = page.locator(edit_button_selector).first
+                
+                if await first_edit_button.is_visible():
+                    self.stdout.write('Clicando no botão "Editar" do primeiro veículo vencido...')
+                    await first_edit_button.click()
+                    # Aguardar a navegação para a página de edição
+                    await page.wait_for_load_state('networkidle') # Espera a rede ficar ociosa
+                    self.stdout.write(self.style.SUCCESS('Navegado para a página de edição do primeiro veículo vencido.'))
+                else:
+                    self.stdout.write(self.style.WARNING('Nenhum botão "Editar" encontrado para veículos vencidos.'))
 
                 self.stdout.write(self.style.SUCCESS('Processamento de veículos concluído.'))
 
