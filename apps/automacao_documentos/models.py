@@ -16,3 +16,38 @@ class LicencaAmbiental(models.Model):
 
     def __str__(self):
         return self.numero
+
+class Portal(models.Model):
+    nome = models.CharField(max_length=255, unique=True)
+    url_base = models.URLField()
+    usuario = models.CharField(max_length=255, blank=True, null=True)
+    senha = models.CharField(max_length=255, blank=True, null=True) # Em produção, usar gerenciador de segredos
+
+    def __str__(self):
+        return self.nome
+
+class Automacao(models.Model):
+    nome = models.CharField(max_length=255, unique=True)
+    portal = models.ForeignKey(Portal, on_delete=models.CASCADE)
+    ultima_execucao = models.DateTimeField(null=True, blank=True)
+    proxima_execucao = models.DateTimeField(null=True, blank=True)
+    ativa = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.nome
+
+class LogExecucaoAutomacao(models.Model):
+    STATUS_CHOICES = [
+        ('sucesso', 'Sucesso'),
+        ('falha', 'Falha'),
+        ('alerta', 'Alerta'),
+    ]
+
+    automacao = models.ForeignKey(Automacao, on_delete=models.CASCADE)
+    data_execucao = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    mensagem = models.TextField(blank=True, null=True)
+    dados_coletados = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Log de {self.automacao.nome} em {self.data_execucao.strftime('%Y-%m-%d %H:%M')}"

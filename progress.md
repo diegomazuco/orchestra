@@ -45,3 +45,5 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Diagnóstico:** O servidor Django não está iniciando corretamente, resultando em "Conexão recusada" no navegador.
 - **Tentativas de Depuração:** Tentativas de iniciar o servidor em primeiro plano para visualizar logs de erro foram realizadas, mas a execução foi cancelada pelo usuário, impedindo o diagnóstico completo.
 
+### Correção de Configuração de App
+- **Correção do `name` do App `dashboard`:** Corrigido o `name` em `apps/dashboard/apps.py` de `'dashboard'` para `'apps.dashboard'` para garantir a importação correta do app pelo Django.

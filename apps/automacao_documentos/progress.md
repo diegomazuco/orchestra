@@ -40,3 +40,9 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Renomeação do Comando:** O comando `process_portran_vehicles.py` foi renomeado para `automacao_documentos_ipiranga.py` para se adequar à nova estrutura de automações por portal.
 - **Atualização de Referências:** Todas as referências internas ao nome antigo do app e do comando foram atualizadas em `apps.py`, `settings.py`, `GEMINI.md` e `progress.md` (deste app e da raiz do projeto).
 - **Verificação de Migrações:** As migrações foram executadas para garantir que o Django reconheça as mudanças no nome do app.
+
+## 28 de Julho de 2025
+
+### Modelagem de Dados
+- Criados os modelos `Portal`, `Automacao` e `LogExecucaoAutomacao` em `apps/automacao_documentos/models.py`.
+- Criadas e aplicadas as migrações para os novos modelos (`python manage.py makemigrations automacao_documentos` e `python manage.py migrate`).
