@@ -40,6 +40,10 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Criação da View `orchestra_view`:** Implementada a view em `apps/dashboard/views.py` para renderizar a página principal.
 - **Configuração de URLs:** Criado `apps/dashboard/urls.py` e incluído em `core/urls.py` para mapear a rota `/orchestra/`.
 - **Criação do Template `orchestra.html`:** Desenvolvido o template HTML em `apps/dashboard/templates/dashboard/orchestra.html` com a estrutura da página, menu lateral ("Automação de Documentos" com submenu "Automação Ipiranga") e um botão "Buscar Documentos" com funcionalidade de seleção de arquivos.
+- **Correção de URL Raiz:** Alterado o `path` em `apps/dashboard/urls.py` de `'orchestra/'` para `''` para que a página seja acessível diretamente na raiz do projeto.
+- **Menu Expansível:** Modificado o menu em `apps/dashboard/templates/dashboard/orchestra.html` para que a opção "Automação de Documentos" funcione como um expansor/retraidor para o submenu "Automação Ipiranga".
+- **Funcionalidade de Upload e Processamento:** Adicionada a funcionalidade de exibir arquivos selecionados e um botão "Iniciar Processamento" em `apps/dashboard/templates/dashboard/orchestra.html`.
+- **Endpoint de Processamento de Documentos:** Criado o endpoint `/process-documents/` em `apps/dashboard/urls.py` e a view `process_documents_view` em `apps/dashboard/views.py` para receber os arquivos enviados pelo frontend.
 
 ### Problema de Inicialização do Servidor
 - **Diagnóstico:** O servidor Django não está iniciando corretamente, resultando em "Conexão recusada" no navegador.
@@ -53,3 +57,8 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Configuração do App `automacao_ipiranga`:** Adicionado `apps.automacao_ipiranga` ao `INSTALLED_APPS` em `core/settings.py`.
 - **Correção do `name` do App `automacao_ipiranga`:** Corrigido o `name` em `apps/automacao_ipiranga/apps.py` de `'automacao_ipiranga'` para `'apps.automacao_ipiranga'`.
 - **Movimentação do Custom Command:** O custom command `automacao_documentos_ipiranga.py` foi movido de `apps/automacao_documentos/management/commands/` para `apps/automacao_ipiranga/management/commands/`.
+- **Aprimoramento do Custom Command `automacao_documentos_ipiranga`:** O comando foi modificado para aceitar argumentos de placa, nome do certificado e caminho do arquivo, e a lógica de busca da placa e do certificado foi aprimorada, incluindo a etapa de upload do arquivo.
+- **Configuração de Mídia:** Adicionadas as configurações `MEDIA_URL` e `MEDIA_ROOT` em `core/settings.py` para permitir o upload de arquivos.
+- **Integração Frontend-Backend da Automação:** A view `process_documents_view` em `apps/dashboard/views.py` foi atualizada para salvar os arquivos enviados temporariamente e chamar o custom command `automacao_documentos_ipiranga` com os dados extraídos.
+- **Correção de Escopo JavaScript:** A variável `filesToProcess` em `apps/dashboard/templates/dashboard/orchestra.html` foi movida para um escopo mais abrangente para resolver o erro `ReferenceError`.
+- **Depuração da Placa na Automação:** Adicionado um log de depuração e comparação case-insensitive para a placa no custom command `automacao_documentos_ipiranga.py` para auxiliar na identificação de problemas de correspondência.

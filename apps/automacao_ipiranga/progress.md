@@ -13,3 +13,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ### Lógica de Automação
 - Criada a estrutura de diretórios para custom commands (`mkdir -p apps/automacao_ipiranga/management/commands`).
 - Movido o custom command `automacao_documentos_ipiranga.py` de `apps/automacao_documentos/management/commands/` para `apps/automacao_ipiranga/management/commands/`.
+- Aprimoramento do Custom Command `automacao_documentos_ipiranga`:
+    - O comando foi modificado para aceitar argumentos de placa, nome do certificado e caminho do arquivo.
+    - A lógica de busca da placa e do certificado foi aprimorada, incluindo a etapa de upload do arquivo.
+    - Adicionado um log de depuração e comparação case-insensitive para a placa para auxiliar na identificação de problemas de correspondência.

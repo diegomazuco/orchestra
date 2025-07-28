@@ -2,5 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('orchestra/', views.orchestra_view, name='orchestra'),
+    path('', views.orchestra_view, name='orchestra'),
+    path('process-documents/', views.process_documents_view, name='process_documents'),
 ]
