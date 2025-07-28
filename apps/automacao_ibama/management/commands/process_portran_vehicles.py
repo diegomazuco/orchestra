@@ -53,7 +53,7 @@ class Command(BaseCommand):
                     # Aguardar a navegação para a página de edição
                     await page.wait_for_load_state('networkidle') # Espera a rede ficar ociosa
                     await asyncio.sleep(5) # Pausa para visualização após clicar em Editar
-                    self.stdout.write('Navegado para a página de edição do primeiro veículo vencido.'))
+                    self.stdout.write(self.style.SUCCESS('Navegado para a página de edição do primeiro veículo vencido.'))
                     await asyncio.sleep(5) # Pausa para visualização após clicar em Editar
 
                     # --- Clicar na aba "Certificados" ---
