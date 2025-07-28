@@ -83,7 +83,7 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
 * **Registro de Progresso:** Ao final de cada tarefa, adicione um resumo ao `progress.md`.
 * **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
-* **Commits e Push Automatizados (com Segurança):** Siga rigorosamente o fluxo: `git pull` -> (se sem conflitos) -> gerar `commit_message.txt` -> `git add .` -> `git commit -F commit_message.txt` -> `git push`. **PARE** e avise o usuário em caso de qualquer falha (`merge conflict` ou `push rejected`).
+* **Commits e Push Automatizados (com Segurança):** Quando solicitado, execute automaticamente o fluxo: `git pull` -> (se sem conflitos) -> gerar `commit_message.txt` -> `git add .` -> `git commit -F commit_message.txt` -> `git push`. **PARE** e avise o usuário em caso de qualquer falha (`merge conflict` ou `push rejected`).
 
 ---
 

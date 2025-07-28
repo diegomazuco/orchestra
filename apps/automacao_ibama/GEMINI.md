@@ -47,3 +47,9 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 > "Na aplicação `automacao_ibama`, crie o modelo `Protocolo` com um relacionamento `ForeignKey` para `ProcessoIBAMA`, um campo `descricao` (TextField) e uma data de criação. Gere a migração e registre o modelo no `admin.py`."
 
 > "Crie um custom command do Django chamado `verificar_prazos_licencas`. O comando deve buscar todas as `LicencasAmbientais` ativas com data de validade para os próximos 60 dias e criar um registro de `LogExecucao` com o status 'ALERTA' para cada uma delas."
+
+---
+
+### 5. Fluxo de Trabalho e Automação (Git)
+
+* **Commits e Push Automatizados (com Segurança):** Quando solicitado, execute automaticamente o fluxo: `git pull` -> (se sem conflitos) -> gerar `commit_message.txt` -> `git add .` -> `git commit -F commit_message.txt` -> `git push`. **PARE** e avise o usuário em caso de qualquer falha (`merge conflict` ou `push rejected`).
