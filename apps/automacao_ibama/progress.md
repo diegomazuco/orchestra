@@ -30,3 +30,4 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ### Automação de Login no Portran
 - **Criação do Comando `login_portran`:** Criado o custom command `login_portran.py` em `apps/automacao_ibama/management/commands/`. Este comando utiliza Playwright para automatizar o processo de login no portal Portran, preenchendo os campos de usuário e senha e clicando no botão de autenticar, utilizando credenciais lidas do arquivo `.env`.
+- **Teste do Comando `login_portran`:** O comando `login_portran` foi executado com sucesso, abrindo o navegador e simulando o login no portal Portran. As dependências de sistema do Playwright foram instaladas para permitir a execução do navegador.
