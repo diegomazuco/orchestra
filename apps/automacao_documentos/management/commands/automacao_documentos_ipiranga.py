@@ -4,7 +4,7 @@ from playwright.async_api import async_playwright
 from decouple import config
 
 class Command(BaseCommand):
-    help = 'Processa veículos vencidos e a vencer no portal Portran.'
+    help = 'Automatiza o processo de atualização de documentos no portal Ipiranga.'
 
     async def handle_async(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Iniciando processamento de veículos no Portran...'))
@@ -66,29 +66,45 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS('Aba "Certificados" clicada.'))
 
                     # --- Encontrar o primeiro elemento "Vencido" e clicar em "Atualizar" ---
-                    self.stdout.write('Procurando pelo primeiro certificado "Vencido"...')
-                    vencido_badge_selector = 'div.badge.badge--vermelho:has-text("Vencido")'
-                    first_vencido_badge = page.locator(vencido_badge_selector).first
+                    # --- Encontrar o primeiro certificado "Vencido" e clicar em "Atualizar" ---
+                    self.stdout.write('Procurando pelo certificado "Vencido" e seu botão "Atualizar"...')
+                    licenca_titulos = page.locator('div.licenca-titulo.d-flex.mb-32.align-items-center')
+                    count = await licenca_titulos.count()
+                    found_and_clicked = False
 
-                    if await first_vencido_badge.is_visible():
-                        self.stdout.write('Certificado "Vencido" encontrado. Procurando botão "Atualizar"...')
-                        # Encontra o botão "Atualizar" associado ao badge "Vencido"
-                        # Tenta encontrar o botão Atualizar dentro do mesmo "bloco" do badge Vencido
-                        # Isso é uma heurística e pode precisar de ajuste se a estrutura HTML for diferente
-                        atualizar_button_selector = 'button.btn--sm.btn--azul-claro.btn--full.btn-atualizar-requisito'
-                        parent_of_vencido_badge = first_vencido_badge.locator('xpath=..') # Go up one level to the parent
-                        atualizar_button = parent_of_vencido_badge.locator(atualizar_button_selector)
+                    for i in range(count):
+                        licenca_titulo_element = licenca_titulos.nth(i)
+                        
+                        # Get the parent of the licenca_titulo_element, which should be the container for the whole certificate entry
+                        certificate_container = licenca_titulo_element.locator('xpath=..')
 
-                        if await atualizar_button.is_visible():
-                            self.stdout.write('Clicando no botão "Atualizar" do primeiro certificado vencido...')
-                            await atualizar_button.click()
-                            await page.wait_for_load_state('networkidle') # Espera a página de atualização carregar
-                            await asyncio.sleep(5) # Pausa para visualização após clicar em Atualizar
-                            self.stdout.write(self.style.SUCCESS('Botão "Atualizar" clicado. Navegado para a página de atualização.'))
-                        else:
-                            self.stdout.write(self.style.WARNING('Botão "Atualizar" não encontrado para o certificado vencido.'))
-                    else:
-                        self.stdout.write(self.style.WARNING('Nenhum certificado "Vencido" encontrado.'))
+                        # Check if this certificate container has the "Vencido" badge
+                        vencido_badge = certificate_container.locator('div.badge.badge--vermelho:has-text("Vencido")')
+
+                        if await vencido_badge.is_visible():
+                            self.stdout.write('Certificado "Vencido" encontrado. Tentando clicar no botão "Atualizar"...')
+                            
+                            # Now, find the "Atualizar" button within the same certificate_container
+                            atualizar_button_selector = 'div.row.btn-atualizar-doc button.btn-atualizar-requisito'
+                            atualizar_button = certificate_container.locator(atualizar_button_selector)
+
+                            try:
+                                await atualizar_button.wait_for(state='visible', timeout=10000) # 10 segundos de timeout
+                                self.stdout.write('Botão "Atualizar" encontrado e visível.')
+                                self.stdout.write('Clicando no botão "Atualizar"...')
+                                await atualizar_button.click()
+                                await page.wait_for_load_state('networkidle') # Espera a página de atualização carregar
+                                await asyncio.sleep(5) # Pausa para visualização após clicar em Atualizar
+                                self.stdout.write(self.style.SUCCESS('Botão "Atualizar" clicado. Navegado para a página de atualização.'))
+                                found_and_clicked = True
+                                break # Sai do loop após encontrar e clicar no primeiro
+                            except Exception as e:
+                                self.stdout.write(self.style.WARNING(f'Botão "Atualizar" não encontrado ou não ficou visível dentro do tempo limite: {e}'))
+
+                    if not found_and_clicked:
+                        self.stdout.write(self.style.WARNING('Nenhum certificado "Vencido" com botão "Atualizar" visível foi encontrado.'))
+
+                    self.stdout.write(self.style.SUCCESS('Processamento de veículos concluído.'))
 
                 self.stdout.write(self.style.SUCCESS('Processamento de veículos concluído.'))
 

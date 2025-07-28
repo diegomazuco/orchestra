@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.automacao_ibama',
+    'apps.automacao_documentos',
+    'apps.dashboard',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +76,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 from decouple import config
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation

@@ -34,8 +34,14 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Formalização das Diretrizes:** Atualizadas as diretrizes de fluxo de trabalho Git nos arquivos `GEMINI.md` (principal e do app `automacao_ibama`) para incluir a obrigatoriedade do `git pull` na inicialização, o padrão de commits detalhados e o procedimento de push seguro.
 - **Commit das Diretrizes:** As alterações nos arquivos `GEMINI.md` foram commitadas e enviadas ao repositório remoto.
 
-### Remoção de Referências a Bancos de Dados Específicos
-- **Remoção do arquivo `db.sqlite3`:** O arquivo `db.sqlite3` foi removido do diretório raiz do projeto.
-- **Atualização de `core/settings.py`:** A configuração do banco de dados SQLite foi removida, deixando a seção `DATABASES` vazia para configuração futura.
-- **Atualização de `GEMINI.md`:** As referências explícitas a "SQLite" e "PostgreSQL" foram removidas, tornando a documentação mais agnóstica em relação ao SGBD.
-- **Atualização de `.gitignore`:** Adicionada a entrada `db.sqlite3` para garantir que o arquivo do banco de dados SQLite seja ignorado pelo controle de versão.
+### Criação da Página "Orchestra" e Menu Lateral
+- **Criação do App `dashboard`:** Criado o novo app Django `dashboard` (`python manage.py startapp dashboard apps/dashboard`) para gerenciar a interface principal.
+- **Configuração do App `dashboard`:** Adicionado `apps.dashboard` ao `INSTALLED_APPS` em `core/settings.py`.
+- **Criação da View `orchestra_view`:** Implementada a view em `apps/dashboard/views.py` para renderizar a página principal.
+- **Configuração de URLs:** Criado `apps/dashboard/urls.py` e incluído em `core/urls.py` para mapear a rota `/orchestra/`.
+- **Criação do Template `orchestra.html`:** Desenvolvido o template HTML em `apps/dashboard/templates/dashboard/orchestra.html` com a estrutura da página, menu lateral ("Automação de Documentos" com submenu "Automação Ipiranga") e um botão "Buscar Documentos" com funcionalidade de seleção de arquivos.
+
+### Problema de Inicialização do Servidor
+- **Diagnóstico:** O servidor Django não está iniciando corretamente, resultando em "Conexão recusada" no navegador.
+- **Tentativas de Depuração:** Tentativas de iniciar o servidor em primeiro plano para visualizar logs de erro foram realizadas, mas a execução foi cancelada pelo usuário, impedindo o diagnóstico completo.
+
