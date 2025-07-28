@@ -27,12 +27,13 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 
 #### 2.2. Ao iniciar (`init`)
 
-1.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto para carregar o histórico de ações e o contexto atual do projeto.
-2.  **Ambiente Virtual (`.venv`):** Verifique se `./.venv` existe e está ativado. Execute `uv pip install -r requirements.txt` para garantir que todas as dependências globais estejam instaladas.
-2.  **Conexão com o Banco de Dados Principal:** Verifique a conectividade com o banco de dados `default` (PostgreSQL) configurado em `core/settings.py`, usando credenciais do `.env`.
-3.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
-4.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas. **Solicite confirmação explícita do usuário antes de aplicar quaisquer mudanças estruturais significativas.**
-5.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `requirements.txt`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
+1.  **Sincronização com o Repositório:** Execute `git pull` para garantir que o ambiente local esteja atualizado com a versão mais recente do repositório.
+2.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto para carregar o histórico de ações e o contexto atual do projeto.
+3.  **Ambiente Virtual (`.venv`):** Verifique se `./.venv` existe e está ativado. Execute `uv pip install -r requirements.txt` para garantir que todas as dependências globais estejam instaladas.
+4.  **Conexão com o Banco de Dados Principal:** Verifique a conectividade com o banco de dados `default` (PostgreSQL) configurado em `core/settings.py`, usando credenciais do `.env`.
+5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
+6.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas. **Solicite confirmação explícita do usuário antes de aplicar quaisquer mudanças estruturais significativas.**
+7.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `requirements.txt`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
 
 #### 2.3. Ao executar (`testes`)
 
@@ -78,12 +79,15 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 
 ### 4. Fluxo de Trabalho e Automação (Git)
 
-*Esta seção permanece inalterada, pois as regras de Git, `progress.md` e `commit_message.txt` são excelentes e aplicáveis a todo o projeto.*
-
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
 * **Registro de Progresso:** Ao final de cada tarefa, adicione um resumo ao `progress.md`.
 * **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
-* **Commits e Push Automatizados (com Segurança):** Quando solicitado, execute automaticamente o fluxo: `git pull` -> (se sem conflitos) -> gerar `commit_message.txt` -> `git add .` -> `git commit -F commit_message.txt` -> `git push`. **PARE** e avise o usuário em caso de qualquer falha (`merge conflict` ou `push rejected`).
+* **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
+* **Push Completo e Seguro:**
+    1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
+    2.  **Verificar Status:** Use `git status` para garantir que todos os arquivos relevantes (novos ou modificados) estão na área de stage.
+    3.  **Executar Push:** Execute `git push`.
+    4.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
 
 ---
 

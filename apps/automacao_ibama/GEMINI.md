@@ -52,4 +52,9 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ### 5. Fluxo de Trabalho e Automação (Git)
 
-* **Commits e Push Automatizados (com Segurança):** Quando solicitado, execute automaticamente o fluxo: `git pull` -> (se sem conflitos) -> gerar `commit_message.txt` -> `git add .` -> `git commit -F commit_message.txt` -> `git push`. **PARE** e avise o usuário em caso de qualquer falha (`merge conflict` ou `push rejected`).
+* **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
+* **Push Completo e Seguro:**
+    1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
+    2.  **Verificar Status:** Use `git status` para garantir que todos os arquivos relevantes (novos ou modificados) estão na área de stage.
+    3.  **Executar Push:** Execute `git push`.
+    4.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
