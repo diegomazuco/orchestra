@@ -74,6 +74,7 @@ class Command(BaseCommand):
                         # Encontra o botão "Atualizar" associado ao badge "Vencido"
                         # Tenta encontrar o botão Atualizar dentro do mesmo "bloco" do badge Vencido
                         # Isso é uma heurística e pode precisar de ajuste se a estrutura HTML for diferente
+                        atualizar_button_selector = 'button.btn--sm.btn--azul-claro.btn--full.btn-atualizar-requisito'
                         parent_of_vencido_badge = first_vencido_badge.locator('xpath=..') # Go up one level to the parent
                         atualizar_button = parent_of_vencido_badge.locator(atualizar_button_selector)
 
