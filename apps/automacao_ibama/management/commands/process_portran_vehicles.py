@@ -53,9 +53,42 @@ class Command(BaseCommand):
                     # Aguardar a navegação para a página de edição
                     await page.wait_for_load_state('networkidle') # Espera a rede ficar ociosa
                     await asyncio.sleep(5) # Pausa para visualização após clicar em Editar
-                    self.stdout.write(self.style.SUCCESS('Navegado para a página de edição do primeiro veículo vencido.'))
-                else:
-                    self.stdout.write(self.style.WARNING('Nenhum botão "Editar" encontrado para veículos vencidos.'))
+                    self.stdout.write('Navegado para a página de edição do primeiro veículo vencido.'))
+                    await asyncio.sleep(5) # Pausa para visualização após clicar em Editar
+
+                    # --- Clicar na aba "Certificados" ---
+                    self.stdout.write('Clicando na aba "Certificados"...')
+                    certificados_tab_selector = 'a#certificados-tab'
+                    await page.click(certificados_tab_selector)
+                    await page.wait_for_load_state('networkidle') # Espera a aba carregar
+                    await asyncio.sleep(5) # Pausa para visualização após clicar na aba Certificados
+                    self.stdout.write(self.style.SUCCESS('Aba "Certificados" clicada.'))
+
+                    # --- Encontrar o primeiro elemento "Vencido" e clicar em "Atualizar" ---
+                    self.stdout.write('Procurando pelo primeiro certificado "Vencido"...')
+                    vencido_badge_selector = 'div.badge.badge--vermelho:has-text("Vencido")'
+                    first_vencido_badge = page.locator(vencido_badge_selector).first
+
+                    if await first_vencido_badge.is_visible():
+                        self.stdout.write('Certificado "Vencido" encontrado. Procurando botão "Atualizar"...')
+                        # Encontra o botão "Atualizar" associado ao badge "Vencido"
+                        # Assumimos que o botão "Atualizar" está dentro do mesmo elemento pai ou é um irmão próximo
+                        atualizar_button_selector = 'button.btn--sm.btn--azul-claro.btn--full.btn-atualizar-requisito'
+                        
+                        # Tenta encontrar o botão Atualizar dentro do mesmo "bloco" do badge Vencido
+                        # Isso é uma heurística e pode precisar de ajuste se a estrutura HTML for diferente
+                        atualizar_button = first_vencido_badge.locator(f'xpath=./ancestor::*[contains(@class, "card")]//{atualizar_button_selector}')
+
+                        if await atualizar_button.is_visible():
+                            self.stdout.write('Clicando no botão "Atualizar" do primeiro certificado vencido...')
+                            await atualizar_button.click()
+                            await page.wait_for_load_state('networkidle') # Espera a página de atualização carregar
+                            await asyncio.sleep(5) # Pausa para visualização após clicar em Atualizar
+                            self.stdout.write(self.style.SUCCESS('Botão "Atualizar" clicado. Navegado para a página de atualização.'))
+                        else:
+                            self.stdout.write(self.style.WARNING('Botão "Atualizar" não encontrado para o certificado vencido.'))
+                    else:
+                        self.stdout.write(self.style.WARNING('Nenhum certificado "Vencido" encontrado.'))
 
                 self.stdout.write(self.style.SUCCESS('Processamento de veículos concluído.'))
 
