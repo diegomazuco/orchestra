@@ -22,7 +22,8 @@ class Command(BaseCommand):
             try:
                 # --- Login Logic (reused from login_portran) ---
                 self.stdout.write('Navegando para a página de login do Portran...')
-                await page.goto('https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir', timeout=60000, wait_until="networkidle")
+                await page.goto('https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir', timeout=60000)
+                await page.wait_for_selector('#codigoUsuario', state='visible', timeout=60000) # Espera o campo de usuário ficar visível
                 await asyncio.sleep(5) # Pausa para visualização
 
                 user_selector = '#codigoUsuario'
