@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('licenca_id', type=int, help='ID da Licença Ambiental a ser processada.')
 
-    def handle(self, *args, **options):
+    async def handle_async(self, *args, **options):
         licenca_id = options['licenca_id']
 
         try:
@@ -22,48 +22,59 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'Iniciando automação para a licença: {licenca.numero}'))
 
         # Credenciais do .env
-        ibama_login = config('IBAMA_LOGIN')
-        ibama_senha = config('IBAMA_SENHA')
+        portran_user = config('PORTRAN_USER')
+        portran_password = config('PORTRAN_PASSWORD')
 
-        if not ibama_login or not ibama_senha:
-            raise CommandError('As variáveis de ambiente IBAMA_LOGIN e IBAMA_SENHA devem ser configuradas no arquivo .env.')
+        if not portran_user or not portran_password:
+            raise CommandError('As variáveis de ambiente PORTRAN_USER e PORTRAN_PASSWORD devem ser configuradas no arquivo .env.')
 
         # Lógica da automação com Playwright
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True) # headless=True para rodar sem interface gráfica
-            page = browser.new_page()
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True) # headless=True para rodar sem interface gráfica
+            page = await browser.new_page()
 
             try:
-                # 1. Navegar até a página de login
-                self.stdout.write('Navegando para a página de login...')
-                page.goto('https://www.ibama.gov.br/login') # Substitua pela URL real do login do IBAMA
+                # Lógica de Login no Portran
+                self.stdout.write('Navegando para a página de login do Portran...')
+                await page.goto('https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir')
 
-                # 2. Preencher campos de login e senha
-                self.stdout.write('Preenchendo credenciais...')
-                page.fill('input[name="username"]', ibama_login) # Substitua pelo seletor CSS real do campo de usuário
-                page.fill('input[name="password"]', ibama_senha) # Substitua pelo seletor CSS real do campo de senha
-                page.click('button[type="submit"]') # Substitua pelo seletor CSS real do botão de login
+                # Preenchendo o campo de usuário
+                user_selector = '#codigoUsuario' # id="codigoUsuario"
+                await page.fill(user_selector, portran_user)
+                self.stdout.write(f'Usuário preenchido: {portran_user}')
 
-                # 3. Aguardar navegação pós-login (pode ser um redirecionamento ou carregamento de SPA)
-                page.wait_for_url('https://www.ibama.gov.br/dashboard') # Substitua pela URL real pós-login
+                # Preenchendo o campo de senha
+                password_selector = '#senha' # id="senha"
+                await page.fill(password_selector, portran_password)
+                self.stdout.write('Senha preenchida.')
 
-                self.stdout.write(self.style.SUCCESS('Login realizado com sucesso!'))
+                # Clicando no botão de autenticar
+                login_button_selector = 'input[type="submit"][value="Autenticar"]
+                await page.click(login_button_selector)
+                self.stdout.write('Botão de autenticar clicado.')
 
-                # 4. Navegar até a página de upload
+                # Aguardar um pouco para ver o resultado do login
+                # Em um cenário real, você esperaria por um elemento específico na página pós-login
+                # ou por uma URL específica. Aqui, apenas um delay para observação.
+                await page.wait_for_timeout(5000) # Espera 5 segundos
+
+                self.stdout.write(self.style.SUCCESS('Login no Portran realizado com sucesso!'))
+
+                # 4. Navegar até a página de upload (URL do IBAMA, ajustar conforme necessário)
                 self.stdout.write('Navegando para a página de upload...')
-                page.goto('https://www.ibama.gov.br/upload-licenca') # Substitua pela URL real da página de upload
+                await page.goto('https://www.ibama.gov.br/upload-licenca') # Substitua pela URL real da página de upload
 
                 # 5. Fazer upload do arquivo
                 self.stdout.write(f'Fazendo upload do arquivo: {licenca.arquivo.path}')
                 # Certifique-se de que o caminho do arquivo é absoluto
                 file_path = os.path.abspath(licenca.arquivo.path)
-                page.set_input_files('input[type="file"]', file_path) # Substitua pelo seletor CSS real do campo de upload
+                await page.set_input_files('input[type="file"]', file_path) # Substitua pelo seletor CSS real do campo de upload
 
                 # 6. Clicar no botão de envio (se houver um separado do input file)
-                # page.click('button[type="submit-upload"]') # Exemplo: descomente e ajuste se necessário
+                # await page.click('button[type="submit-upload"]') # Exemplo: descomente e ajuste se necessário
 
                 # 7. Aguardar confirmação de upload
-                # page.wait_for_selector('.upload-success-message') # Exemplo: aguardar uma mensagem de sucesso
+                # await page.wait_for_selector('.upload-success-message') # Exemplo: aguardar uma mensagem de sucesso
                 self.stdout.write(self.style.SUCCESS('Arquivo enviado (simulado)!')) # Mensagem temporária
 
                 # Atualizar status da licença
@@ -77,6 +88,9 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f'Erro durante a automação para a licença {licenca.numero}: {e}'))
                 raise CommandError(f'Erro na automação: {e}')
             finally:
-                browser.close()
+                await browser.close()
 
         self.stdout.write(self.style.SUCCESS('Automação concluída.'))
+
+    def handle(self, *args, **options):
+        return asyncio.run(self.handle_async(*args, **options))
