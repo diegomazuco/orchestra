@@ -22,3 +22,14 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Instalados os navegadores do Playwright (`playwright install`).
 - **Estrutura de Arquivos:**
     - Criado o diretório `media/licencas` para armazenamento de arquivos de licença (`mkdir -p media/licencas`).
+
+## 28 de Julho de 2025
+
+### Configuração e Sincronização do Repositório Git
+- **Diagnóstico Inicial:** Verificado o status do Git e constatado que não havia um repositório remoto (`origin`) configurado e que existiam alterações não commitadas.
+- **Criação do Repositório Remoto:** O repositório `orchestra` foi criado manualmente no GitHub (https://github.com/diegomazuco/orchestra).
+- **Conexão Local-Remoto:** O repositório remoto foi adicionado ao projeto local com o nome `origin`.
+- **Consistência de Branches:** O branch local `master` foi renomeado para `main` para alinhar com o padrão do GitHub.
+- **Primeiro Push:** Realizado o primeiro push para o repositório remoto, sincronizando o histórico local com o remoto após resolver um conflito inicial com `git pull --rebase`.
+- **Formalização das Diretrizes:** Atualizadas as diretrizes de fluxo de trabalho Git nos arquivos `GEMINI.md` (principal e do app `automacao_ibama`) para incluir a obrigatoriedade do `git pull` na inicialização, o padrão de commits detalhados e o procedimento de push seguro.
+- **Commit das Diretrizes:** As alterações nos arquivos `GEMINI.md` foram commitadas e enviadas ao repositório remoto.

@@ -22,3 +22,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Obter credenciais do `.env` (IBAMA_LOGIN, IBAMA_SENHA).
     - Utilizar Playwright para navegar, logar, e simular o upload de arquivo.
     - Atualizar o status da licença no banco de dados.
+
+## 28 de Julho de 2025
+
+### Alinhamento com as Diretrizes Globais do Projeto
+- **Atualização do `GEMINI.md` do App:** O arquivo de diretrizes do app (`apps/automacao_ibama/GEMINI.md`) foi atualizado para refletir as novas regras de fluxo de trabalho com o Git, garantindo consistência com as diretrizes do projeto principal `Orchestra`. As novas regras incluem commits detalhados e um procedimento de push seguro e sincronizado.
