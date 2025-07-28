@@ -72,12 +72,10 @@ class Command(BaseCommand):
                     if await first_vencido_badge.is_visible():
                         self.stdout.write('Certificado "Vencido" encontrado. Procurando botão "Atualizar"...')
                         # Encontra o botão "Atualizar" associado ao badge "Vencido"
-                        # Assumimos que o botão "Atualizar" está dentro do mesmo elemento pai ou é um irmão próximo
-                        atualizar_button_selector = 'button.btn--sm.btn--azul-claro.btn--full.btn-atualizar-requisito'
-                        
                         # Tenta encontrar o botão Atualizar dentro do mesmo "bloco" do badge Vencido
                         # Isso é uma heurística e pode precisar de ajuste se a estrutura HTML for diferente
-                        atualizar_button = first_vencido_badge.locator(f'xpath=./ancestor::*[contains(@class, "card")]//{atualizar_button_selector}')
+                        parent_of_vencido_badge = first_vencido_badge.locator('xpath=..') # Go up one level to the parent
+                        atualizar_button = parent_of_vencido_badge.locator(atualizar_button_selector)
 
                         if await atualizar_button.is_visible():
                             self.stdout.write('Clicando no botão "Atualizar" do primeiro certificado vencido...')
