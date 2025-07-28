@@ -57,7 +57,7 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 | :----------------------- | :--------- | :-------------------------------------------------------- |
 | **Framework Web** | Django     | Usado para a construção do backend e da lógica de negócio. |
 | **Linguagem** | Python     | Linguagem principal do projeto.                           |
-| **Banco de Dados Principal** | SQLite     | SGBD padrão do Django. Configuração para PostgreSQL ou outro SGBD externo será feita quando necessário.        |
+| **Banco de Dados Principal** | (A definir) | SGBD será configurado conforme a necessidade do projeto.        |
 | **Gerenciador de Pacotes** | `uv`       | Ferramenta para gerenciamento de pacotes e ambientes.     |
 
 #### 3.2. Ambiente e Dependências (`uv` e `.env`)

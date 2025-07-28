@@ -33,3 +33,9 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Primeiro Push:** Realizado o primeiro push para o repositório remoto, sincronizando o histórico local com o remoto após resolver um conflito inicial com `git pull --rebase`.
 - **Formalização das Diretrizes:** Atualizadas as diretrizes de fluxo de trabalho Git nos arquivos `GEMINI.md` (principal e do app `automacao_ibama`) para incluir a obrigatoriedade do `git pull` na inicialização, o padrão de commits detalhados e o procedimento de push seguro.
 - **Commit das Diretrizes:** As alterações nos arquivos `GEMINI.md` foram commitadas e enviadas ao repositório remoto.
+
+### Remoção de Referências a Bancos de Dados Específicos
+- **Remoção do arquivo `db.sqlite3`:** O arquivo `db.sqlite3` foi removido do diretório raiz do projeto.
+- **Atualização de `core/settings.py`:** A configuração do banco de dados SQLite foi removida, deixando a seção `DATABASES` vazia para configuração futura.
+- **Atualização de `GEMINI.md`:** As referências explícitas a "SQLite" e "PostgreSQL" foram removidas, tornando a documentação mais agnóstica em relação ao SGBD.
+- **Atualização de `.gitignore`:** Adicionada a entrada `db.sqlite3` para garantir que o arquivo do banco de dados SQLite seja ignorado pelo controle de versão.
