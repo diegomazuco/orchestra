@@ -28,7 +28,7 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 #### 2.2. Ao iniciar (`init`)
 
 1.  **Sincronização com o Repositório:** Execute `git pull` para garantir que o ambiente local esteja atualizado com a versão mais recente do repositório.
-2.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto para carregar o histórico de ações e o contexto atual do projeto.
+2.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto E TAMBÉM os arquivos `progress.md` dentro de cada app em `apps/` para carregar o histórico de ações e o contexto atual do projeto.
 3.  **Ambiente Virtual (`.venv`):** Verifique se `./.venv` existe e está ativado. Execute `uv pip install -r requirements.txt` para garantir que todas as dependências globais estejam instaladas.
 4.  **Conexão com o Banco de Dados Principal:** Verifique a conectividade com o banco de dados `default` (PostgreSQL) configurado em `core/settings.py`, usando credenciais do `.env`.
 5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
@@ -80,7 +80,7 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 ### 4. Fluxo de Trabalho e Automação (Git)
 
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
-* **Registro de Progresso:** Ao final de cada tarefa, adicione um resumo ao `progress.md`.
+* **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
 * **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
 * **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
 * **Push Completo e Seguro:**

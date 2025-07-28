@@ -52,6 +52,7 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ### 5. Fluxo de Trabalho e Automação (Git)
 
+* **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o arquivo `progress.md` deste app deve ser atualizado com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
 * **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
 * **Push Completo e Seguro:**
     1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
