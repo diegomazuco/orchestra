@@ -28,7 +28,7 @@ class Command(BaseCommand):
                 await page.fill(user_selector, portran_user)
                 password_selector = '#senha'
                 await page.fill(password_selector, portran_password)
-                login_button_selector = 'input[type="submit"][value="Autenticar"]
+                login_button_selector = 'input[type="submit"][value="Autenticar"]'
                 await page.click(login_button_selector)
                 await page.wait_for_url('https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index') # Wait for dashboard
                 self.stdout.write(self.style.SUCCESS('Login no Portran realizado com sucesso!'))
