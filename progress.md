@@ -47,3 +47,9 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 ### Correção de Configuração de App
 - **Correção do `name` do App `dashboard`:** Corrigido o `name` em `apps/dashboard/apps.py` de `'dashboard'` para `'apps.dashboard'` para garantir a importação correta do app pelo Django.
+
+### Refatoração da Arquitetura de Automação
+- **Criação do App `automacao_ipiranga`:** Criado o novo app Django `automacao_ipiranga` (`python manage.py startapp automacao_ipiranga apps/automacao_ipiranga`) para encapsular a lógica específica da automação do portal Ipiranga.
+- **Configuração do App `automacao_ipiranga`:** Adicionado `apps.automacao_ipiranga` ao `INSTALLED_APPS` em `core/settings.py`.
+- **Correção do `name` do App `automacao_ipiranga`:** Corrigido o `name` em `apps/automacao_ipiranga/apps.py` de `'automacao_ipiranga'` para `'apps.automacao_ipiranga'`.
+- **Movimentação do Custom Command:** O custom command `automacao_documentos_ipiranga.py` foi movido de `apps/automacao_documentos/management/commands/` para `apps/automacao_ipiranga/management/commands/`.

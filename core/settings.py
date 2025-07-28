@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'apps.automacao_documentos',
     'apps.dashboard',
+    'apps.automacao_ipiranga',
 ]
 
 MIDDLEWARE = [
