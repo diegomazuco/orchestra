@@ -11,8 +11,24 @@ wheels/
 
 db.sqlite3
 
+# Virtual environments
+.venv
+
+# Environment variables
+.env
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Test and linting caches/reports
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+
 # Temporary automation files
 error_screenshot.png
 timeout_screenshot.png
 temp_automation.log
+*.log
 media/temp_uploads/
