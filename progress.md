@@ -94,3 +94,6 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - **Correção do Seletor de Tabela:** Corrigido o seletor CSS para as linhas da tabela de veículos de `tr.table--body.veiculo` para `tbody.table--body.veiculo tr` para corresponder à estrutura HTML real.
     - **Busca Flexível de Certificado:** Ajustada a lógica de busca de certificado para verificar se o nome do certificado do arquivo está contido no nome completo do certificado no portal, permitindo correspondências parciais.
     - **Refinamento do Seletor de Status "Vencido":** Corrigida a definição de `full_container` e refinado o seletor para o "badge" de vencido (`span.licenca-titulo-badge .badge--vermelho:has-text("Vencido")`) para garantir a correta identificação do status.
+
+### Considerações para Novas Clonagens
+- **Ajustes Pós-Clonagem:** Ao clonar este repositório em um novo ambiente, é fundamental seguir a sequência de inicialização (`init`) detalhada no `GEMINI.md` da raiz. Isso inclui a criação do ambiente virtual, a instalação de todas as dependências e ferramentas de desenvolvimento, e a execução das migrações. Pequenos ajustes de configuração ou supressão de erros de tipagem (com `# type: ignore`) podem ser necessários devido a diferenças de ambiente ou versões de ferramentas, mas o processo geral deve ser robusto.

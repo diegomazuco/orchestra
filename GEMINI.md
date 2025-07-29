@@ -29,11 +29,16 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 
 1.  **Sincronização com o Repositório:** Execute `git pull` para garantir que o ambiente local esteja atualizado com a versão mais recente do repositório.
 2.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto E TAMBÉM os arquivos `progress.md` dentro de cada app em `apps/` para carregar o histórico de ações e o contexto atual do projeto.
-3.  **Ambiente Virtual (`.venv`):** Verifique se `./.venv` existe. Se não, execute `uv venv` para criá-lo. Em seguida, ative-o e execute `uv pip install -r requirements.txt` para garantir que todas as dependências globais estejam instaladas.
-4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem estar no `.env`.
+3.  **Configuração do Ambiente Python:**
+    *   **Ambiente Virtual (`.venv`):** Verifique se o diretório `./.venv` existe. Se não, crie-o executando `uv venv`.
+    *   **Ativação:** Certifique-se de que o ambiente virtual esteja ativado (o Gemini fará isso automaticamente ao executar comandos Python).
+    *   **Instalação de Dependências:** Execute `uv pip install -r requirements.txt` para instalar todas as dependências do projeto.
+    *   **Instalação de Ferramentas de Desenvolvimento:** Instale `pytest`, `ruff` e `pyright` executando `uv add pytest ruff pyright`.
+4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem ser configuradas no `.env`.
 5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
-6.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas. **Solicite confirmação explícita do usuário antes de aplicar quaisquer mudanças estruturais significativas.**
-7.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `requirements.txt`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
+6.  **Verificação de Qualidade de Código e Tipagem:** Execute `ruff check .` e `pyright` para garantir que o código esteja em conformidade com os padrões do projeto. Se houver erros, o Gemini tentará corrigi-los ou solicitará sua intervenção.
+7.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas. **Solicite confirmação explícita do usuário antes de aplicar quaisquer mudanças estruturais significativas.**
+8.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `requirements.txt`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
 
 #### 2.3. Ao executar (`testes`)
 
