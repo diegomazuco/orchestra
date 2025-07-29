@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.management import call_command # Importar call_command
-from django.core.files.storage import default_storage # Para salvar arquivos
-from django.conf import settings # Para acessar MEDIA_ROOT
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.core.files.storage import default_storage
+from django.conf import settings
 import os
 import re
 

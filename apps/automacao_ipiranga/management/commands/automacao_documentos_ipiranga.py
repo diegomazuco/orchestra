@@ -7,7 +7,8 @@ import os
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log_file_path = os.path.join(os.getcwd(), 'temp_automation.log')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename=log_file_path, filemode='w')
 
 class Command(BaseCommand):
     help = 'Automatiza o processo de atualização de documentos no portal Ipiranga.'
@@ -66,24 +67,33 @@ class Command(BaseCommand):
                     logger.info(f"Navegando para a URL: {url}")
                     await page.goto(url, timeout=60000)
                     
-                    logger.info("Aguardando carregamento da tabela de veículos...")
+                    table_container_selector = 'tbody.table--body.veiculo'
+                    logger.info(f"Aguardando o contêiner da tabela: '{table_container_selector}'")
                     try:
-                        await page.wait_for_selector('tr.table--body.veiculo', timeout=30000)
-                        await page.locator('tr.table--body.veiculo').last.wait_for(state='visible', timeout=30000)
-                        logger.info("Tabela de veículos parece carregada.")
+                        await page.wait_for_selector(table_container_selector, state='visible', timeout=30000)
+                        logger.info("Contêiner da tabela de veículos encontrado e visível.")
                     except TimeoutError:
-                        logger.warning(f"Timeout ao esperar pela tabela na página {page_name}. Pode não haver veículos.")
+                        logger.warning(f"Timeout ao esperar pelo contêiner da tabela na página {page_name}. Pode não haver veículos ou a página mudou.")
                         return False
 
-                    table_rows = page.locator('tr.table--body.veiculo')
+                    table_rows = page.locator(f'{table_container_selector} tr')
                     num_rows = await table_rows.count()
                     logger.info(f"Encontradas {num_rows} linhas de veículos.")
+
+                    if num_rows == 0:
+                        logger.warning("Nenhuma linha de veículo encontrada na tabela.")
+                        return False
 
                     found_placa = False
                     for i in range(num_rows):
                         row = table_rows.nth(i)
                         placa_element = row.locator('td.text-center.text-nowrap')
-                        current_placa = await placa_element.inner_text()
+                        
+                        try:
+                            current_placa = await placa_element.inner_text(timeout=5000)
+                        except TimeoutError:
+                            logger.warning(f"Não foi possível ler o texto da placa na linha {i+1}. Pulando.")
+                            continue
                         
                         logger.info(f"Lendo linha {i+1}: Placa encontrada: '{current_placa.strip()}'")
 
@@ -109,11 +119,15 @@ class Command(BaseCommand):
 
                 # --- Busca nas páginas Vencidos e À Vencer ---
                 vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
+                a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
+                todos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index"
+
                 if not await find_and_process_placa(vencidos_url, "Vencidos"):
                     logger.warning(f"Placa '{placa_alvo}' não encontrada em 'Vencidos'. Tentando 'À vencer'...")
-                    a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
                     if not await find_and_process_placa(a_vencer_url, "À vencer"):
-                        raise CommandError(f"FALHA: Placa '{placa_alvo}' não encontrada em 'Vencidos' ou 'À vencer'.")
+                        logger.warning(f"Placa '{placa_alvo}' não encontrada em 'À vencer'. Tentando em 'Todos'...")
+                        if not await find_and_process_placa(todos_url, "Todos"):
+                            raise CommandError(f"FALHA: Placa '{placa_alvo}' não encontrada em 'Vencidos', 'À vencer' ou 'Todos'.")
 
                 # --- Lógica de Certificados ---
                 logger.info("Iniciando etapa de certificados...")
@@ -133,10 +147,10 @@ class Command(BaseCommand):
                     current_name = await name_element.text_content()
                     logger.info(f"Lendo certificado {i+1}: '{current_name.strip()}'")
 
-                    full_container = container.locator('xpath=..')
-                    vencido_badge = full_container.locator('div.badge.badge--vermelho:has-text("Vencido")')
+                    full_container = container
+                    vencido_badge = full_container.locator('span.licenca-titulo-badge .badge--vermelho:has-text("Vencido")')
 
-                    if current_name.strip() == nome_certificado_alvo and await vencido_badge.is_visible():
+                    if nome_certificado_alvo.upper() in current_name.strip().upper() and await vencido_badge.is_visible():
                         logger.info(f"Certificado '{nome_certificado_alvo}' (Vencido) encontrado.")
                         update_button = full_container.locator('div.row.btn-atualizar-doc button.btn-atualizar-requisito')
                         

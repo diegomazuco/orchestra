@@ -10,3 +10,8 @@ wheels/
 .venv
 
 db.sqlite3
+
+# Temporary automation files
+error_screenshot.png
+timeout_screenshot.png
+temp_automation.log
