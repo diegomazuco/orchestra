@@ -139,3 +139,16 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 ### Limpeza de Arquivos Temporários (Re-execução)
 - **Identificação de Arquivos Remanescentes:** Identificados e removidos os arquivos `profile_output.prof` e `.coverage` que haviam sido gerados e não foram limpos em etapas anteriores.
+
+### Correção de Testes e Configuração de Ambiente
+- **Correção de Testes de Modelos:** Corrigido o teste `LicencaAmbientalModelTest.test_create_licenca_ambiental` em `apps/automacao_documentos/tests.py` para verificar corretamente o nome do arquivo e o conteúdo do `FileField`.
+- **Correção de Mocks Assíncronos:** Corrigidas as falhas nos testes do comando `automacao_documentos_ipiranga` em `apps/automacao_ipiranga/tests.py` relacionadas a mocks de funções assíncronas do Playwright (`TypeError: object AsyncMock can't be used in 'await' expression`).
+- **Correção de Importação em Testes de Views:** Corrigida a `NameError` em `apps/dashboard/tests.py` importando `CommandError`.
+- **Ajuste de Asserção em Testes de Views:** Ajustada a asserção em `DashboardViewsTest.test_process_documents_view_malformed_filename` em `apps/dashboard/tests.py` para verificar o status dentro do JSON retornado.
+- **Correção de Warnings de Datetime:** Alterado o uso de `datetime.now()` para `django.utils.timezone.now()` nos testes de modelos para evitar `RuntimeWarning`.
+- **Instalação de `pytest-django`:** Instalado `pytest-django` para melhor integração com o Django.
+- **Remoção de `pytest-django` do `INSTALLED_APPS`:** Removido `pytest-django` do `INSTALLED_APPS` para evitar conflitos na descoberta de testes.
+- **Ajuste de `pyproject.toml`:** Removida a configuração `python_paths` e adicionada `python_files` para melhor descoberta de testes pelo `pytest`.
+- **Correção de `manage.py`:** O `manage.py` foi modificado para carregar o `.env` o mais cedo possível, garantindo que as variáveis de ambiente estejam disponíveis para o Django.
+- **Instalação de `python-dotenv`:** Instalado `python-dotenv` para carregar o `.env` explicitamente.
+- **Atualização do `.env`:** O arquivo `.env` foi atualizado com as variáveis necessárias para o funcionamento do projeto.
