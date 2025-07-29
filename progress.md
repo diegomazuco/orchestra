@@ -136,3 +136,6 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 ### Verificação e Configuração de Pacotes de Análise
 - **Pacotes Verificados:** Verificado que `Ruff`, `Pyright`, `pytest` e `pytest-cov` estão instalados. `cProfile` é um módulo embutido do Python. `line_profiler` foi instalado.
 - **Atualização do `GEMINI.md`:** A seção "Ao executar (`testes`)" no `GEMINI.md` principal foi atualizada para incluir instruções detalhadas para a execução de `cProfile` e `line_profiler`, além de refinar as descrições para `Ruff`, `Pyright`, `pytest` e `pytest-cov`, garantindo que todos os pacotes sejam utilizados com as melhores configurações para análise e correção abrangente do projeto.
+
+### Limpeza de Arquivos Temporários (Re-execução)
+- **Identificação de Arquivos Remanescentes:** Identificados e removidos os arquivos `profile_output.prof` e `.coverage` que haviam sido gerados e não foram limpos em etapas anteriores.
