@@ -35,5 +35,4 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Convertidos valores de `portran_user` e `portran_password` para `str()` em `page.fill` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`.
     - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `strip()` em `inner_text()` e `text_content()`.
 
-### Considerações para Novas Clonagens
-- **Ajustes Pós-Clonagem:** Os ajustes de código e tipagem realizados neste app são parte do processo de inicialização e configuração do ambiente. Eles visam garantir a compatibilidade e o funcionamento correto do projeto em diferentes máquinas e ambientes. Pequenos ajustes adicionais podem ser necessários dependendo do ambiente específico.
+

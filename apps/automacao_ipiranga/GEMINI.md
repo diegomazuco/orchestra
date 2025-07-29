@@ -12,10 +12,7 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 *   **Objetivo do App:** Este app é responsável por automatizar processos e interações especificamente com o portal Ipiranga para gestão de documentos e informações relacionadas a veículos.
 
-### 1.1. Análise de Arquivos
-*   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.
 
----
 
 ### 2. Dependências e Restrições Específicas
 
@@ -49,12 +46,4 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ---
 
-### 5. Fluxo de Trabalho e Automação (Git)
 
-*   **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o arquivo `progress.md` deste app deve ser atualizado com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
-*   **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
-*   **Push Completo e Seguro:**
-    1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
-    2.  **Verificar Status:** Use `git status` para garantir que todos os arquivos relevantes (novos ou modificados) estão na área de stage.
-    3.  **Executar Push:** Execute `git push`.
-    4.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).

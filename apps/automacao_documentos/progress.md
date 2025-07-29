@@ -58,5 +58,4 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Corrigidos os métodos `__str__` nos modelos em `apps/automacao_documentos/models.py` para garantir que retornem strings.
     - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `BaseCommand.style`, `BooleanField(default=True)` em migrações e modelos, e acesso a atributos de `ForeignKey` e `DateTimeField` em `__str__`.
 
-### Considerações para Novas Clonagens
-- **Ajustes Pós-Clonagem:** Os ajustes de código e tipagem realizados neste app são parte do processo de inicialização e configuração do ambiente. Eles visam garantir a compatibilidade e o funcionamento correto do projeto em diferentes máquinas e ambientes. Pequenos ajustes adicionais podem ser necessários dependendo do ambiente específico.
+
