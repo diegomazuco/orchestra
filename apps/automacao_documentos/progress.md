@@ -57,5 +57,4 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Removida a linha `default_auto_field` de `apps/automacao_documentos/apps.py`.
     - Corrigidos os métodos `__str__` nos modelos em `apps/automacao_documentos/models.py` para garantir que retornem strings.
     - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `BaseCommand.style`, `BooleanField(default=True)` em migrações e modelos, e acesso a atributos de `ForeignKey` e `DateTimeField` em `__str__`.
-
-
+    - Adicionadas importações de `Any` e `cast` e uso de `cast(Any, self.style)` para suprimir erros de tipagem relacionados ao objeto `style` de `BaseCommand`.

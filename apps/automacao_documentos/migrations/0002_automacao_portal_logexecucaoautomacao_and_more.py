@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('nome', models.CharField(max_length=255, unique=True)),
                 ('ultima_execucao', models.DateTimeField(blank=True, null=True)),
                 ('proxima_execucao', models.DateTimeField(blank=True, null=True)),
-                ('ativa', models.BooleanField(default=True)),
+                ('ativo', models.BooleanField(default=True)), # type: ignore[reportArgumentType]
             ],
         ),
         migrations.CreateModel(

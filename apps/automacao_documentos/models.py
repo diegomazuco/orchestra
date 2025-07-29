@@ -31,7 +31,7 @@ class Automacao(models.Model):
     portal = models.ForeignKey(Portal, on_delete=models.CASCADE)
     ultima_execucao = models.DateTimeField(null=True, blank=True)
     proxima_execucao = models.DateTimeField(null=True, blank=True)
-    ativa = models.BooleanField(default=True)
+    ativo = models.BooleanField(default=True) # type: ignore[reportArgumentType]
 
     def __str__(self):
         return str(self.nome)

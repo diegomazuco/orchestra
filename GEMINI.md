@@ -36,7 +36,7 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
     *   **Instalação de Ferramentas de Desenvolvimento:** Instale `pytest`, `ruff` e `pyright` executando `uv add pytest ruff pyright`.
 4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem ser configuradas no `.env`.
 5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
-6.  **Verificação de Qualidade de Código e Tipagem:** Execute `ruff check .` e `pyright` para garantir que o código esteja em conformidade com os padrões do projeto. Se houver erros, o Gemini tentará corrigi-los ou solicitará sua intervenção.
+6.  **Verificação de Qualidade de Código e Tipagem (Manual):** A verificação de qualidade de código (`ruff check .`) e de tipagem (`pyright`) não é executada automaticamente durante o `init`. Elas devem ser executadas manualmente como parte do comando `testes` para garantir a conformidade do código com os padrões do projeto.
 7.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas. **Solicite confirmação explícita do usuário antes de aplicar quaisquer mudanças estruturais significativas.**
 8.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `requirements.txt`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
 
@@ -90,6 +90,7 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
 * **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
 * **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
+* **Limpeza Pré-Commit:** Antes de cada commit, remova todos os arquivos e pastas temporárias, de cache ou de logs que não sejam essenciais para o funcionamento do projeto. Isso inclui, mas não se limita a, `__pycache__`, `.pytest_cache`, `.ruff_cache`, `.venv`, `htmlcov/`, `db.sqlite3`, e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`.
 * **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
 * **Push Completo e Seguro:**
     1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.

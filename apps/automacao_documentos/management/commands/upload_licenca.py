@@ -1,5 +1,7 @@
 import os
 from django.core.management.base import BaseCommand, CommandError
+from typing import Any, cast
+
 from decouple import config
 from playwright.async_api import async_playwright
 import asyncio
@@ -20,7 +22,7 @@ class Command(BaseCommand):
         except LicencaAmbiental.DoesNotExist: # type: ignore
             raise CommandError(f'Licença Ambiental com ID "{licenca_id}" não encontrada.')
 
-        self.stdout.write(self.style.SUCCESS(f'Iniciando automação para a licença: {licenca.numero}'))
+        self.stdout.write(cast(Any, self.style).SUCCESS(f'Iniciando automação para a licença: {licenca.numero}'))
 
         # Credenciais do .env
         portran_user = config('PORTRAN_USER')
@@ -59,7 +61,7 @@ class Command(BaseCommand):
                 # ou por uma URL específica. Aqui, apenas um delay para observação.
                 await page.wait_for_timeout(5000) # Espera 5 segundos
 
-                self.stdout.write(self.style.SUCCESS('Login no Portran realizado com sucesso!'))
+                self.stdout.write(cast(Any, self.style).SUCCESS('Login no Portran realizado com sucesso!'))
 
                 # 4. Navegar até a página de upload (URL do IBAMA, ajustar conforme necessário)
                 self.stdout.write('Navegando para a página de upload...')
@@ -75,23 +77,22 @@ class Command(BaseCommand):
                 # await page.click('button[type="submit-upload"]') # Exemplo: descomente e ajuste se necessário
 
                 # 7. Aguardar confirmação de upload
-                # await page.wait_for_selector('.upload-success-message') # Exemplo: aguardar uma mensagem de sucesso
-                self.stdout.write(self.style.SUCCESS('Arquivo enviado (simulado)!')) # Mensagem temporária
+                self.stdout.write(cast(Any, self.style).SUCCESS('Arquivo enviado (simulado)!')) # Mensagem temporária
 
                 # Atualizar status da licença
                 licenca.status = 'enviado'
                 licenca.save()
-                self.stdout.write(self.style.SUCCESS(f'Status da licença {licenca.numero} atualizado para "enviado".'))
+                self.stdout.write(cast(Any, self.style).SUCCESS(f'Status da licença {licenca.numero} atualizado para "enviado".'))
 
             except Exception as e:
                 licenca.status = 'falha'
                 licenca.save()
-                self.stdout.write(self.style.ERROR(f'Erro durante a automação para a licença {licenca.numero}: {e}'))
+                self.stdout.write(cast(Any, self.style).ERROR(f"Erro na automação: {e}"))
                 raise CommandError(f'Erro na automação: {e}')
             finally:
                 await browser.close()
 
-        self.stdout.write(self.style.SUCCESS('Automação concluída.')) # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore
+        self.stdout.write(cast(Any, self.style).SUCCESS('Automação concluída.'))
 
     def handle(self, *args, **options):
         return asyncio.run(self.handle_async(*args, **options))
