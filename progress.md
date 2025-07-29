@@ -71,9 +71,13 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 ### Inicialização do Ambiente
 - **Sincronização do Repositório:** Executado `git pull` para garantir que o ambiente local esteja atualizado.
+- **Criação do Ambiente Virtual:** Criado o ambiente virtual com `uv venv`.
 - **Instalação de Dependências:** Executado `uv pip install -r requirements.txt` para instalar as dependências do projeto.
-- **Migrações do Banco de Dados:** Executados `python manage.py makemigrations` e `python manage.py migrate`.
-- **Execução de Testes:** Executado `pytest`, mas nenhum teste foi encontrado.
+- **Instalação de Ferramentas de Desenvolvimento:** Instalados `pytest`, `ruff` e `pyright` usando `uv add`.
+- **Migrações do Banco de Dados:** Executados `source .venv/bin/activate && python manage.py makemigrations` e `source .venv/bin/activate && python manage.py migrate`.
+- **Execução de Testes:** Executado `source .venv/bin/activate && pytest`, mas nenhum teste foi encontrado.
+- **Verificação de Qualidade de Código (Ruff):** Executado `source .venv/bin/activate && ruff check . --fix` para corrigir erros de linting.
+- **Verificação de Tipos (Pyright):** Executado `source .venv/bin/activate && pyright` para verificar erros de tipagem, e adicionados comentários `# type: ignore` para suprimir falsos positivos e erros relacionados a limitações do `pyright` com o Django ORM e o objeto `style` de `BaseCommand`.
 
 ### Reinício do Servidor Django
 - **Tentativa de Início (Background):** Tentativa inicial de iniciar o servidor Django em segundo plano.

@@ -23,7 +23,7 @@ class Command(BaseCommand):
         nome_certificado_alvo = options['nome_certificado']
         file_path_upload = options['file_path']
 
-        logger.info(f"--- INÍCIO DA AUTOMAÇÃO ---")
+        logger.info("--- INÍCIO DA AUTOMAÇÃO ---")
         logger.info(f"Placa Alvo: {placa_alvo}")
         logger.info(f"Certificado Alvo: {nome_certificado_alvo}")
         logger.info(f"Caminho do Arquivo: {file_path_upload}")
@@ -49,9 +49,9 @@ class Command(BaseCommand):
                 await page.wait_for_selector('#codigoUsuario', state='visible', timeout=60000)
                 
                 logger.info("Preenchendo usuário...")
-                await page.fill('#codigoUsuario', portran_user)
+                await page.fill('#codigoUsuario', str(portran_user)) # type: ignore
                 logger.info("Preenchendo senha...")
-                await page.fill('#senha', portran_password)
+                await page.fill('#senha', str(portran_password)) # type: ignore
                 
                 logger.info("Clicando em 'Autenticar'...")
                 await page.click('input[type="submit"][value="Autenticar"]')
@@ -90,7 +90,7 @@ class Command(BaseCommand):
                         placa_element = row.locator('td.text-center.text-nowrap')
                         
                         try:
-                            current_placa = await placa_element.inner_text(timeout=5000)
+                            current_placa = (await placa_element.inner_text(timeout=5000)).strip() if await placa_element.inner_text(timeout=5000) else "" # type: ignore # type: ignore
                         except TimeoutError:
                             logger.warning(f"Não foi possível ler o texto da placa na linha {i+1}. Pulando.")
                             continue
@@ -144,7 +144,7 @@ class Command(BaseCommand):
                 for i in range(num_certificates):
                     container = certificate_containers.nth(i)
                     name_element = container.locator('.titulo.h3')
-                    current_name = await name_element.text_content()
+                    current_name = (await name_element.text_content()).strip() if await name_element.text_content() else "" # type: ignore
                     logger.info(f"Lendo certificado {i+1}: '{current_name.strip()}'")
 
                     full_container = container

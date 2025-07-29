@@ -19,12 +19,12 @@ class Command(BaseCommand):
 
                 # Preenchendo o campo de usuário
                 user_selector = '#codigoUsuario' # id="codigoUsuario"
-                await page.fill(user_selector, config('PORTRAN_USER'))
+                await page.fill(user_selector, str(config('PORTRAN_USER'))) # type: ignore
                 self.stdout.write(f'Usuário preenchido: {config("PORTRAN_USER")}')
 
                 # Preenchendo o campo de senha
                 password_selector = '#senha' # id="senha"
-                await page.fill(password_selector, config('PORTRAN_PASSWORD'))
+                await page.fill(password_selector, str(config('PORTRAN_PASSWORD')))
                 self.stdout.write('Senha preenchida.')
 
                 # Clicando no botão de autenticar
@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 await browser.close()
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Ocorreu um erro durante a automação: {e}'))
+            self.stdout.write(self.style.ERROR(f'Ocorreu um erro durante a automação: {e}')) # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore
 
     def handle(self, *args, **options):
         return asyncio.run(self.handle_async(*args, **options))

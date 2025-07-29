@@ -29,3 +29,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Correção do Seletor de Tabela:** Corrigido o seletor CSS para as linhas da tabela de veículos de `tr.table--body.veiculo` para `tbody.table--body.veiculo tr` para corresponder à estrutura HTML real.
 - **Busca Flexível de Certificado:** Ajustada a lógica de busca de certificado para verificar se o nome do certificado do arquivo está contido no nome completo do certificado no portal, permitindo correspondências parciais.
 - **Refinamento do Seletor de Status "Vencido":** Corrigida a definição de `full_container` e refinado o seletor para o "badge" de vencido (`span.licenca-titulo-badge .badge--vermelho:has-text("Vencido")`) para garantir a correta identificação do status.
+
+### Correções de Qualidade de Código e Tipagem
+- **Correção de Erros de Tipagem (Pyright):**
+    - Convertidos valores de `portran_user` e `portran_password` para `str()` em `page.fill` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`.
+    - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `strip()` em `inner_text()` e `text_content()`.

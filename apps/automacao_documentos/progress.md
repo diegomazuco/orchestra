@@ -47,3 +47,13 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ### Atualização de Diretrizes
 - **Atualização do `GEMINI.md` do App:** Adicionada uma nova diretriz ao `GEMINI.md` do app para refletir a preferência do usuário sobre a análise interna de arquivos, sem exibir o conteúdo na resposta.
+
+### Correções de Qualidade de Código e Tipagem
+- **Correção de `SyntaxError`:** Corrigido erro de sintaxe em `apps/automacao_documentos/management/commands/upload_licenca.py` relacionado à string do seletor.
+- **Correção de `F401` e `F541` (Ruff):** Executado `ruff check . --fix` para remover imports não utilizados e corrigir f-strings sem placeholders.
+- **Correção de Erros de Tipagem (Pyright):**
+    - Adicionados `import asyncio` e `from playwright.async_api import async_playwright` em `apps/automacao_documentos/management/commands/upload_licenca.py`.
+    - Convertidos valores de `config` para `str()` em `page.fill` em `apps/automacao_documentos/management/commands/login_portran.py` e `apps/automacao_documentos/management/commands/upload_licenca.py`.
+    - Removida a linha `default_auto_field` de `apps/automacao_documentos/apps.py`.
+    - Corrigidos os métodos `__str__` nos modelos em `apps/automacao_documentos/models.py` para garantir que retornem strings.
+    - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `BaseCommand.style`, `BooleanField(default=True)` em migrações e modelos, e acesso a atributos de `ForeignKey` e `DateTimeField` em `__str__`.

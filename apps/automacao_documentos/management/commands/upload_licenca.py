@@ -1,9 +1,10 @@
 import os
 from django.core.management.base import BaseCommand, CommandError
 from decouple import config
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
+import asyncio
 
-from apps.automacao_ibama.models import LicencaAmbiental
+from apps.automacao_documentos.models import LicencaAmbiental
 
 class Command(BaseCommand):
     help = 'Automatiza o upload de uma licença ambiental para o portal do IBAMA.'
@@ -15,8 +16,8 @@ class Command(BaseCommand):
         licenca_id = options['licenca_id']
 
         try:
-            licenca = LicencaAmbiental.objects.get(pk=licenca_id)
-        except LicencaAmbiental.DoesNotExist:
+            licenca = LicencaAmbiental.objects.get(pk=licenca_id) # type: ignore
+        except LicencaAmbiental.DoesNotExist: # type: ignore
             raise CommandError(f'Licença Ambiental com ID "{licenca_id}" não encontrada.')
 
         self.stdout.write(self.style.SUCCESS(f'Iniciando automação para a licença: {licenca.numero}'))
@@ -40,16 +41,16 @@ class Command(BaseCommand):
 
                 # Preenchendo o campo de usuário
                 user_selector = '#codigoUsuario' # id="codigoUsuario"
-                await page.fill(user_selector, portran_user)
+                await page.fill(user_selector, str(portran_user)) # type: ignore
                 self.stdout.write(f'Usuário preenchido: {portran_user}')
 
                 # Preenchendo o campo de senha
                 password_selector = '#senha' # id="senha"
-                await page.fill(password_selector, portran_password)
+                await page.fill(password_selector, str(portran_password))
                 self.stdout.write('Senha preenchida.')
 
                 # Clicando no botão de autenticar
-                login_button_selector = 'input[type="submit"][value="Autenticar"]
+                login_button_selector = """input[type="submit"][value="Autenticar"]"""
                 await page.click(login_button_selector)
                 self.stdout.write('Botão de autenticar clicado.')
 
@@ -90,7 +91,7 @@ class Command(BaseCommand):
             finally:
                 await browser.close()
 
-        self.stdout.write(self.style.SUCCESS('Automação concluída.'))
+        self.stdout.write(self.style.SUCCESS('Automação concluída.')) # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore # type: ignore
 
     def handle(self, *args, **options):
         return asyncio.run(self.handle_async(*args, **options))

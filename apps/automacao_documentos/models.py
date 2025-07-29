@@ -15,7 +15,7 @@ class LicencaAmbiental(models.Model):
     data_atualizacao = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.numero
+        return str(self.numero)
 
 class Portal(models.Model):
     nome = models.CharField(max_length=255, unique=True)
@@ -24,7 +24,7 @@ class Portal(models.Model):
     senha = models.CharField(max_length=255, blank=True, null=True) # Em produção, usar gerenciador de segredos
 
     def __str__(self):
-        return self.nome
+        return str(self.nome) # type: ignore
 
 class Automacao(models.Model):
     nome = models.CharField(max_length=255, unique=True)
@@ -34,7 +34,7 @@ class Automacao(models.Model):
     ativa = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.nome
+        return str(self.nome)
 
 class LogExecucaoAutomacao(models.Model):
     STATUS_CHOICES = [
@@ -50,4 +50,4 @@ class LogExecucaoAutomacao(models.Model):
     dados_coletados = models.JSONField(blank=True, null=True)
 
     def __str__(self):
-        return f"Log de {self.automacao.nome} em {self.data_execucao.strftime('%Y-%m-%d %H:%M')}"
+        return f"Log de {self.automacao.nome if self.automacao else 'N/A'} em {self.data_execucao.strftime('%Y-%m-%d %H:%M') if self.data_execucao else 'N/A'}" # type: ignore
