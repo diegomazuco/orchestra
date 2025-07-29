@@ -45,8 +45,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 29 de Julho de 2025
 
-### Atualização de Diretrizes
-- **Atualização do `GEMINI.md` do App:** Adicionada uma nova diretriz ao `GEMINI.md` do app para refletir a preferência do usuário sobre a análise interna de arquivos, sem exibir o conteúdo na resposta.
+
 
 ### Correções de Qualidade de Código e Tipagem
 - **Correção de `SyntaxError`:** Corrigido erro de sintaxe em `apps/automacao_documentos/management/commands/upload_licenca.py` relacionado à string do seletor.
