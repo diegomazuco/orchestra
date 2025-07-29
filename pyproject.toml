@@ -11,6 +11,24 @@ dependencies = [
     "pyright>=1.1.403",
     "pytest>=8.4.1",
     "pytest-cov>=6.2.1",
+    "pytest-django>=4.11.1",
     "python-decouple>=3.8",
+    "python-dotenv>=1.1.1",
     "ruff>=0.12.5",
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "core.settings"
+python_files = "test_*.py *_test.py tests.py"
+
+[tool.coverage.run]
+branch = true
+source = ["core", "apps"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+ignore_errors = true
+show_missing = true

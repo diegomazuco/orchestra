@@ -9,11 +9,6 @@ wheels/
 # Virtual environments
 .venv
 
-db.sqlite3
-
-# Virtual environments
-.venv
-
 # Environment variables
 .env
 
@@ -25,6 +20,7 @@ db.sqlite3
 .pytest_cache/
 .ruff_cache/
 htmlcov/
+profile_output.prof
 
 # Temporary automation files
 error_screenshot.png
