@@ -107,3 +107,9 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 ### Limpeza de Arquivos Temporários
 - **Diretriz Adicionada:** Adicionada uma diretriz no `GEMINI.md` principal para que arquivos e pastas temporárias, de cache ou de logs sejam sempre removidos antes de cada commit, desde que não sejam essenciais para o funcionamento do projeto.
 - **Execução da Limpeza:** Removidas as pastas `.pytest_cache`, `.ruff_cache`, `.venv` e todas as pastas `__pycache__` do projeto.
+
+### Correção e Recriação do Ambiente Virtual
+- **Erro Identificado:** A pasta `.venv` foi erroneamente incluída na limpeza de arquivos temporários, sendo que é essencial para o projeto.
+- **Recriação do Ambiente:** O ambiente virtual `.venv` foi recriado utilizando `uv venv`.
+- **Reinstalação de Dependências:** Todas as dependências do `requirements.txt` e as ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) foram reinstaladas no ambiente virtual.
+- **Atualização de Diretrizes:** O `GEMINI.md` principal foi corrigido para remover `.venv` da lista de itens a serem limpos antes do commit.
