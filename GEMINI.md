@@ -47,6 +47,9 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 3.  **Verificação de Tipos (Pyright):**
     * **Ação:** `pyright`
 
+#### 2.4. Análise de Arquivos
+*   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.
+
 ---
 
 ### 3. Contexto Técnico Geral

@@ -17,3 +17,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - O comando foi modificado para aceitar argumentos de placa, nome do certificado e caminho do arquivo.
     - A lógica de busca da placa e do certificado foi aprimorada, incluindo a etapa de upload do arquivo.
     - Adicionado um log de depuração e comparação case-insensitive para a placa para auxiliar na identificação de problemas de correspondência.
+
+## 29 de Julho de 2025
+
+### Atualização de Diretrizes
+- **Atualização do `GEMINI.md` do App:** Adicionada uma nova diretriz ao `GEMINI.md` do app para refletir a preferência do usuário sobre a análise interna de arquivos, sem exibir o conteúdo na resposta.

@@ -12,6 +12,9 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 * **Objetivo do App:** Este app é responsável por automatizar processos e interações com diversos sistemas externos para atualização e gestão de documentos. Ele serve como um contêiner para diferentes automações, cada uma focada em um portal ou tipo de documento específico.
 
+### 1.1. Análise de Arquivos
+*   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.
+
 ---
 
 ### 2. Dependências e Restrições Específicas

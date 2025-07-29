@@ -25,7 +25,7 @@ def process_documents_view(request):
         processed_info = []
         for uploaded_file in uploaded_files:
             file_name = uploaded_file.name
-            match = re.match(r'([a-zA-Z0-9]+)_([a-zA-Z0-9\s\\()-]+)\.\w+', file_name)
+            match = re.match(r'([A-Z0-9]+)_([A-Z_]+)', file_name, re.IGNORECASE)
 
             placa = None
             nome_certificado = None

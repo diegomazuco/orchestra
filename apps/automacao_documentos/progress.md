@@ -26,7 +26,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 28 de Julho de 2025
 
 ### Alinhamento com as Diretrizes Globais do Projeto
-- **Atualização do `GEMINI.md` do App:** O arquivo de diretrizes do app (`apps/automacao_documentos/GEMINI.md`) foi atualizado para refletir as novas regras de fluxo de trabalho com o Git, garantindo consistência com as diretrizes do projeto principal `Orchestra`. As novas regras incluem commits detalhados e um procedimento de push seguro e sincronizado.
+- **Atualização do `GEMINI.md` do App:** O arquivo de diretrizes do app (`apps/automacao_documentos/GEMINI.md`) foi atualizado para refletir as novas regras de fluxo de trabalho com o Git, garantindo consistência com as diretrizes do projeto principal `Orchestra`.
 
 ### Automação de Login no Portran
 - **Criação do Comando `login_portran`:** Criado o custom command `login_portran.py` em `apps/automacao_documentos/management/commands/`. Este comando utiliza Playwright para automatizar o processo de login no portal Portran, preenchendo os campos de usuário e senha e clicando no botão de autenticar, utilizando credenciais lidas do arquivo `.env`.
@@ -39,8 +39,11 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Atualização de Referências:** Todas as referências internas ao nome antigo do app e do comando foram atualizadas em `apps.py`, `settings.py`, `GEMINI.md` e `progress.md` (deste app e da raiz do projeto).
 - **Verificação de Migrações:** As migrações foram executadas para garantir que o Django reconheça as mudanças no nome do app.
 
-## 28 de Julho de 2025
-
 ### Modelagem de Dados
 - Criados os modelos `Portal`, `Automacao` e `LogExecucaoAutomacao` em `apps/automacao_documentos/models.py`.
 - Criadas e aplicadas as migrações para os novos modelos (`python manage.py makemigrations automacao_documentos` e `python manage.py migrate`).
+
+## 29 de Julho de 2025
+
+### Atualização de Diretrizes
+- **Atualização do `GEMINI.md` do App:** Adicionada uma nova diretriz ao `GEMINI.md` do app para refletir a preferência do usuário sobre a análise interna de arquivos, sem exibir o conteúdo na resposta.
