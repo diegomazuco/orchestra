@@ -113,3 +113,14 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Recriação do Ambiente:** O ambiente virtual `.venv` foi recriado utilizando `uv venv`.
 - **Reinstalação de Dependências:** Todas as dependências do `requirements.txt` e as ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) foram reinstaladas no ambiente virtual.
 - **Atualização de Diretrizes:** O `GEMINI.md` principal foi corrigido para remover `.venv` da lista de itens a serem limpos antes do commit.
+
+### Configuração de Variáveis de Ambiente
+- **`core/settings.py` Atualizado:** O arquivo `core/settings.py` foi modificado para carregar configurações sensíveis (SECRET_KEY, DEBUG, ALLOWED_HOSTS e configurações de banco de dados) a partir de variáveis de ambiente usando `python-decouple`.
+- **Variáveis Esperadas no `.env`:**
+    - `SECRET_KEY`: Chave secreta do Django (string longa e aleatória).
+    - `DEBUG`: `True` ou `False` (booleano).
+    - `ALLOWED_HOSTS`: Lista de hosts permitidos, separados por vírgula (ex: `localhost,127.0.0.1`).
+    - `DATABASE_ENGINE`: Motor do banco de dados (ex: `django.db.backends.sqlite3`).
+    - `DATABASE_NAME`: Nome do arquivo do banco de dados (para SQLite) ou nome do banco de dados (para outros SGBDs).
+    - `PORTRAN_USER`: Usuário para login no portal Portran.
+    - `PORTRAN_PASSWORD`: Senha para login no portal Portran.
