@@ -42,15 +42,21 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 
 #### 2.3. Ao executar (`testes`)
 
-O comando `testes` deve realizar verificações abrangentes em **todo o projeto**.
+O comando `testes` deve realizar verificações abrangentes em **todo o projeto**, garantindo segurança, proteção, otimização e perfeito funcionamento.
 
 1.  **Execução de Testes Abrangentes (Pytest com Cobertura):**
-    * **Ação:** `pytest --cov=core --cov=apps --cov-report=html`
-    * **Relato:** Forneça um resumo dos resultados e informe que o relatório de cobertura detalhado de todo o projeto está em `htmlcov/index.html`.
+    *   **Ação:** `pytest --cov=core --cov=apps --cov-report=html`
+    *   **Relato:** Forneça um resumo dos resultados e informe que o relatório de cobertura detalhado de todo o projeto está em `htmlcov/index.html`.
 2.  **Verificação de Qualidade de Código (Ruff):**
-    * **Ação:** `ruff check .` e, se necessário, `ruff check . --fix`.
+    *   **Ação:** `ruff check .` e, se necessário, `ruff check . --fix`.
+    *   **Relato:** Reporte os problemas de estilo e qualidade de código encontrados.
 3.  **Verificação de Tipos (Pyright):**
-    * **Ação:** `pyright`
+    *   **Ação:** `pyright`
+    *   **Relato:** Reporte os erros de tipagem encontrados.
+4.  **Análise de Performance (cProfile):**
+    *   **Ação:** `python -m cProfile -o profile_output.prof manage.py test`
+    *   **Relato:** Informe que um arquivo de perfil (`profile_output.prof`) foi gerado para análise detalhada de performance. Para visualizar, use `snakeviz profile_output.prof` (requer `snakeviz` instalado).
+    *   **Nota:** Para profiling mais granular de funções específicas, considere usar `line_profiler` (requer `@profile` nas funções e execução via `kernprof`).
 
 #### 2.4. Análise de Arquivos
 *   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.

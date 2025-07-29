@@ -132,3 +132,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 ### Reflexão sobre Comportamento Automático
 - **Identificação de Lacuna:** Identificada uma lacuna no comportamento automático anterior, onde a análise e ajuste de arquivos de configuração críticos (como `.env` e `.gitignore`) não eram realizados proativamente sem um prompt direto do usuário.
 - **Ajuste de Diretriz:** A diretriz de "Análise Estrutural e de Código" no `GEMINI.md` principal foi refinada para incluir explicitamente a revisão de arquivos de configuração importantes como parte da análise proativa, com a proposição de melhorias ao usuário antes da execução.
+
+### Verificação e Configuração de Pacotes de Análise
+- **Pacotes Verificados:** Verificado que `Ruff`, `Pyright`, `pytest` e `pytest-cov` estão instalados. `cProfile` é um módulo embutido do Python. `line_profiler` foi instalado.
+- **Atualização do `GEMINI.md`:** A seção "Ao executar (`testes`)" no `GEMINI.md` principal foi atualizada para incluir instruções detalhadas para a execução de `cProfile` e `line_profiler`, além de refinar as descrições para `Ruff`, `Pyright`, `pytest` e `pytest-cov`, garantindo que todos os pacotes sejam utilizados com as melhores configurações para análise e correção abrangente do projeto.
