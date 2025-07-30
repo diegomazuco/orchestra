@@ -20,8 +20,6 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 29 de Julho de 2025
 
-
-
 ### Melhorias na Automação de Documentos Ipiranga
 - **Configuração de Log Temporário:** Modificado `automacao_documentos_ipiranga.py` para salvar logs em `temp_automation.log` para depuração.
 - **Estratégia de Espera de Página:** Alterado o método de espera de carregamento de página para `wait_for_load_state('networkidle')` para maior robustez.
@@ -33,3 +31,19 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Correção de Erros de Tipagem (Pyright):**
     - Convertidos valores de `portran_user` e `portran_password` para `str()` em `page.fill` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`.
     - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `strip()` em `inner_text()` e `text_content()`.
+
+## 30 de Julho de 2025
+
+### Refatoração da Automação de Documentos Ipiranga
+- **Integração com Banco de Dados:**
+    - Criado o modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py` para armazenar informações de certificados e arquivos.
+    - O comando `automacao_documentos_ipiranga.py` foi modificado para receber um `certificado_id`, buscar as informações do banco de dados e atualizar o status do certificado (`enviado` ou `falha`).
+    - As operações de banco de dados dentro do contexto assíncrono foram ajustadas usando `sync_to_async` para evitar `SynchronousOnlyOperation`.
+- **Disparo da Automação via Sinal:**
+    - Implementado um Django Signal (`post_save`) em `apps/automacao_ipiranga/signals.py` para disparar o comando `automacao_documentos_ipiranga` automaticamente quando um novo `CertificadoVeiculo` com status `pendente` é salvo.
+    - O app `automacao_ipiranga` foi configurado em `apps/automacao_ipiranga/apps.py` para carregar os sinais.
+- **Ajustes de Seletores e Fluxo:**
+    - Corrigida a ordem das etapas no `automacao_documentos_ipiranga.py` para garantir que a busca de placa e certificado ocorra antes da tentativa de upload.
+    - Ajustada a lógica de busca de placa para considerar apenas as páginas "Vencidos" e "À vencer".
+    - Refinada a lógica de busca de certificado para usar o `fieldset.certificado-box` como contêiner principal e garantir que o certificado "Vencido" seja corretamente identificado.
+    - Corrigido o seletor do campo de upload (`input[type="file"]`) para ser relativo ao `fieldset_container`.

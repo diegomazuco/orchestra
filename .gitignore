@@ -28,3 +28,4 @@ timeout_screenshot.png
 temp_automation.log
 *.log
 media/
+error_screenshot_*.png

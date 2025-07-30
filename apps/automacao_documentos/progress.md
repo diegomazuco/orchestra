@@ -45,8 +45,6 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 29 de Julho de 2025
 
-
-
 ### Correções de Qualidade de Código e Tipagem
 - **Correção de `SyntaxError`:** Corrigido erro de sintaxe em `apps/automacao_documentos/management/commands/upload_licenca.py` relacionado à string do seletor.
 - **Correção de `F401` e `F541` (Ruff):** Executado `ruff check . --fix` para remover imports não utilizados e corrigir f-strings sem placeholders.
@@ -57,3 +55,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Corrigidos os métodos `__str__` nos modelos em `apps/automacao_documentos/models.py` para garantir que retornem strings.
     - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `BaseCommand.style`, `BooleanField(default=True)` em migrações e modelos, e acesso a atributos de `ForeignKey` e `DateTimeField` em `__str__`.
     - Adicionadas importações de `Any` e `cast` e uso de `cast(Any, self.style)` para suprimir erros de tipagem relacionados ao objeto `style` de `BaseCommand`.
+
+## 30 de Julho de 2025
+
+### Refatoração da Automação de Documentos
+- **Centralização do Login:** O comando `login_portran.py` e `upload_licenca.py` foram refatorados para utilizar o serviço de login centralizado (`login_to_portran`) do app `common`.

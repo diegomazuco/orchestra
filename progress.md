@@ -1,7 +1,5 @@
 # Histórico de Progresso do Projeto Orchestra
 
-Este arquivo registra as principais ações e configurações realizadas no projeto principal "Orchestra".
-
 ## 25 de Julho de 2025
 
 ### Inicialização do Projeto
@@ -152,3 +150,25 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Correção de `manage.py`:** O `manage.py` foi modificado para carregar o `.env` o mais cedo possível, garantindo que as variáveis de ambiente estejam disponíveis para o Django.
 - **Instalação de `python-dotenv`:** Instalado `python-dotenv` para carregar o `.env` explicitamente.
 - **Atualização do `.env`:** O arquivo `.env` foi atualizado com as variáveis necessárias para o funcionamento do projeto.
+
+## 30 de Julho de 2025
+
+### Refatoração da Automação de Documentos Ipiranga
+- **Centralização do Login:**
+    - Criado o app `apps/common` para centralizar a lógica de login no portal Portran/Ipiranga.
+    - Implementada a função `login_to_portran` em `apps/common/services.py`.
+    - Os comandos `login_portran.py`, `upload_licenca.py` e `automacao_documentos_ipiranga.py` foram refatorados para utilizar o serviço de login centralizado.
+- **Integração com Banco de Dados:**
+    - Criado o modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py` para armazenar informações de certificados e arquivos.
+    - O comando `automacao_documentos_ipiranga.py` foi modificado para receber um `certificado_id`, buscar as informações do banco de dados e atualizar o status do certificado (`enviado` ou `falha`).
+    - As operações de banco de dados dentro do contexto assíncrono foram ajustadas usando `sync_to_async` para evitar `SynchronousOnlyOperation`.
+- **Disparo da Automação via Sinal:**
+    - Implementado um Django Signal (`post_save`) em `apps/automacao_ipiranga/signals.py` para disparar o comando `automacao_documentos_ipiranga` automaticamente quando um novo `CertificadoVeiculo` com status `pendente` é salvo.
+    - O app `automacao_ipiranga` foi configurado em `apps/automacao_ipiranga/apps.py` para carregar os sinais.
+- **Integração da View do Dashboard:**
+    - A view `process_documents_view` em `apps/dashboard/views.py` foi refatorada para criar `VeiculoIpiranga` e `CertificadoVeiculo` no banco de dados, permitindo que o sinal dispare a automação.
+- **Ajustes de Seletores e Fluxo:**
+    - Corrigida a ordem das etapas no `automacao_documentos_ipiranga.py` para garantir que a busca de placa e certificado ocorra antes da tentativa de upload.
+    - Ajustada a lógica de busca de placa para considerar apenas as páginas "Vencidos" e "À vencer".
+    - Refinada a lógica de busca de certificado para usar o `fieldset.certificado-box` como contêiner principal e garantir que o certificado "Vencido" seja corretamente identificado.
+    - Corrigido o seletor do campo de upload (`input[type="file"]`) para ser mais específico, usando o `fieldset_container` como base.

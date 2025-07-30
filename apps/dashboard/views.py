@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.management import call_command
-from django.core.management.base import CommandError
 from django.core.files.storage import default_storage
 from django.conf import settings
 import os
 import re
+
+from apps.automacao_ipiranga.models import VeiculoIpiranga, CertificadoVeiculo
 
 def orchestra_view(request):
     return render(request, 'dashboard/orchestra.html', {})
@@ -19,10 +19,6 @@ def process_documents_view(request):
         if not uploaded_files:
             return JsonResponse({'error': 'Nenhum arquivo enviado.'}, status=400)
 
-        # Criar diretório temporário para uploads se não existir
-        temp_upload_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
-        os.makedirs(temp_upload_dir, exist_ok=True)
-
         processed_info = []
         for uploaded_file in uploaded_files:
             file_name = uploaded_file.name
@@ -30,32 +26,38 @@ def process_documents_view(request):
 
             placa = None
             nome_certificado = None
-            temp_file_path = None
-
+            
             if match:
-                placa = match.group(1)
-                nome_certificado = match.group(2)
+                placa = match.group(1).upper()
+                nome_certificado = match.group(2).replace('_', ' ').title() # Formata para leitura
                 
-                # Salvar o arquivo temporariamente
-                temp_file_name = default_storage.save(os.path.join('temp_uploads', uploaded_file.name), uploaded_file)
-                temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_file_name)
-
-                print(f"Arquivo: {file_name}, Placa: {placa}, Certificado: {nome_certificado}, Caminho Temp: {temp_file_path}")
-
                 try:
-                    # Chamar o custom command em um processo separado para não bloquear a requisição
-                    # Em produção, considere usar uma fila de tarefas (Celery, etc.)
-                    # Para este teste, vamos chamar diretamente, mas esteja ciente das implicações
-                    call_command('automacao_documentos_ipiranga', placa, nome_certificado, temp_file_path)
-                    status = 'Processado com sucesso'
-                except CommandError as e:
-                    status = f'Erro na automação: {e}'
-                    print(f"Erro ao chamar comando: {e}")
+                    # 1. Obter ou criar o VeiculoIpiranga
+                    veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create(
+                        placa=placa,
+                        defaults={'renavam': 'Aguardando'} # Renavam pode ser atualizado depois
+                    )
+                    if created_veiculo:
+                        print(f"Veículo {placa} criado no banco de dados.")
+                    else:
+                        print(f"Veículo {placa} já existe no banco de dados.")
+
+                    # 2. Criar o CertificadoVeiculo e anexar o arquivo
+                    # O status inicial é 'pendente', o que acionará o sinal
+                    certificado = CertificadoVeiculo.objects.create(
+                        veiculo=veiculo,
+                        nome=nome_certificado,
+                        arquivo=uploaded_file, # O arquivo é salvo automaticamente aqui
+                        status='pendente'
+                    )
+                    print(f"Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}")
+                    status = 'Processamento iniciado com sucesso!'
+
                 except Exception as e:
-                    status = f'Erro inesperado: {e}'
-                    print(f"Erro inesperado: {e}")
+                    status = f'Erro ao salvar certificado no banco de dados: {e}'
+                    print(f"Erro ao salvar certificado: {e}")
             else:
-                status = 'Nome de arquivo fora do padrão esperado.'
+                status = 'Nome de arquivo fora do padrão esperado (PLACA_NOME_CERTIFICADO.pdf).'
                 print(f"Nome de arquivo fora do padrão esperado: {file_name}")
 
             processed_info.append({
