@@ -35,11 +35,13 @@ class Command(BaseCommand):
                 # 1. Realizar login usando o serviço centralizado
                 await login_to_portran(page, logger)
 
-                # 2. Navegar até a página de upload (URL de exemplo, precisa ser ajustada)
-                upload_url = 'https://www.ibama.gov.br/upload-licenca' # <-- ATENÇÃO: URL FICTÍCIA
-                self.stdout.write(self.style.WARNING(f'Navegando para a URL de upload (FICTÍCIA): {upload_url}'))
-                logger.warning(f"A URL de upload '{upload_url}' é um exemplo e precisa ser substituída pela URL real.")
-                await page.goto(upload_url)
+                # 2. Navegar até a página de upload (URL real precisa ser ajustada aqui)
+                # self.stdout.write(self.style.WARNING('Navegando para a URL de upload (FICTÍCIA): {upload_url}'))
+                # logger.warning(f"A URL de upload '{upload_url}' é um exemplo e precisa ser substituída pela URL real.")
+                # await page.goto(upload_url)
+
+                # ATENÇÃO: A URL de upload precisa ser definida aqui para que a automação funcione.
+                # Exemplo: await page.goto('https://seusite.com/upload-licenca')
 
                 # 3. Fazer upload do arquivo
                 self.stdout.write(f'Fazendo upload do arquivo: {licenca.arquivo.path}')
@@ -49,11 +51,22 @@ class Command(BaseCommand):
                 file_input_selector = 'input[type="file"]' 
                 await page.locator(file_input_selector).set_input_files(file_path)
 
-                # 4. Clicar no botão de envio e aguardar confirmação (LÓGICA FALTANTE)
-                # Exemplo: 
-                # await page.locator('#botao-enviar').click()
-                # await expect(page.locator('#mensagem-sucesso')).to_be_visible()
-                self.stdout.write(self.style.SUCCESS('Arquivo enviado (simulado)! Lógica de confirmação precisa ser implementada.'))
+                # --- Lógica de Confirmação de Upload ---
+                logger.info("Aguardando confirmação de upload...")
+                # ATENÇÃO: Implementar a lógica de confirmação de upload aqui.
+                # Exemplos:
+                # 1. Esperar por um elemento de sucesso:
+                #    await expect(page.locator('#mensagem-sucesso-upload')).to_be_visible()
+                # 2. Esperar por um redirecionamento de URL:
+                #    await page.wait_for_url('https://seusite.com/upload-sucesso') # Exemplo de URL de sucesso
+                # 3. Clicar em um botão de salvar/confirmar (se houver):
+                #    await page.locator('#btn-salvar-upload').click()
+                #    await page.wait_for_load_state('networkidle')
+                
+                # Por enquanto, um delay para simular a espera por confirmação.
+                # REMOVER ESTA LINHA APÓS IMPLEMENTAR A LÓGICA REAL DE CONFIRMAÇÃO.
+                await asyncio.sleep(10) 
+                self.stdout.write(self.style.SUCCESS('Arquivo enviado (simulado)! Confirmação pendente.'))
 
                 # 5. Atualizar status da licença
                 licenca.status = 'enviado'

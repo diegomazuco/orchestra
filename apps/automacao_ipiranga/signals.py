@@ -26,23 +26,14 @@ def run_automation_command(instance_id):
         
         print(f"[DEBUG SIGNAL] Tentando executar comando: {' '.join(command)}")
         
-        # Inicia o processo em segundo plano, capturando stdout e stderr
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Inicia o processo em segundo plano, desanexando-o do processo pai
+        process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=os.setsid)
         
         # Não espera o processo terminar, mas imprime o PID para referência
         print(f"[DEBUG SIGNAL] Automação para Certificado ID {instance_id} iniciada em segundo plano. PID: {process.pid}")
+        sys.stdout.flush()
+        sys.stderr.flush()
 
-        # Adicionar um pequeno delay e tentar ler a saída de erro inicial
-        time.sleep(1) # Dá um tempo para o subprocesso iniciar e gerar alguma saída
-        stdout, stderr = process.communicate(timeout=5) # Tenta ler a saída, com timeout
-
-        if stdout:
-            print(f"[DEBUG SIGNAL] STDOUT do subprocesso:\n{stdout.decode()}")
-        if stderr:
-            print(f"[DEBUG SIGNAL] STDERR do subprocesso:\n{stderr.decode()}")
-
-    except subprocess.TimeoutExpired:
-        print(f"[DEBUG SIGNAL] Subprocesso para Certificado ID {instance_id} não respondeu em 5 segundos. Pode estar rodando em background.")
     except Exception as e:
         print(f"[DEBUG SIGNAL] Erro CRÍTICO ao iniciar a automação para o Certificado ID {instance_id}: {e}")
 
@@ -51,8 +42,10 @@ def trigger_automacao_certificado(sender, instance, created, **kwargs):
     """
     Este sinal é acionado sempre que um objeto CertificadoVeiculo é salvo.
     """
+    print(f"[DEBUG SIGNAL] Sinal post_save recebido para CertificadoVeiculo ID: {instance.id}")
+    print(f"[DEBUG SIGNAL] created: {created}, instance.status: {instance.status}")
     if created and instance.status == 'pendente':
-        print(f"[DEBUG SIGNAL] Sinal recebido: Novo CertificadoVeiculo (ID: {instance.id}) com status 'pendente'.")
+        print(f"[DEBUG SIGNAL] Condições atendidas: Disparando automação para Certificado ID: {instance.id}")
         run_automation_command(instance.id)
     else:
-        print(f"[DEBUG SIGNAL] Sinal recebido para CertificadoVeiculo (ID: {instance.id}), mas não atendeu aos critérios (created={created}, status={instance.status}).")
+        print(f"[DEBUG SIGNAL] Condições NÃO atendidas para Certificado ID: {instance.id}. Não disparando automação.")

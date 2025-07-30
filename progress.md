@@ -151,7 +151,7 @@
 - **Instalação de `python-dotenv`:** Instalado `python-dotenv` para carregar o `.env` explicitamente.
 - **Atualização do `.env`:** O arquivo `.env` foi atualizado com as variáveis necessárias para o funcionamento do projeto.
 
-## 30 de Julho de 2025
+### 30 de Julho de 2025
 
 ### Refatoração da Automação de Documentos Ipiranga
 - **Centralização do Login:**
@@ -172,3 +172,27 @@
     - Ajustada a lógica de busca de placa para considerar apenas as páginas "Vencidos" e "À vencer".
     - Refinada a lógica de busca de certificado para usar o `fieldset.certificado-box` como contêiner principal e garantir que o certificado "Vencido" seja corretamente identificado.
     - Corrigido o seletor do campo de upload (`input[type="file"]`) para ser mais específico, usando o `fieldset_container` como base.
+- **Preenchimento de Campo de Documento:**
+    - Adicionada a lógica para preencher o campo "Número do Documento" (`#licenca-numero-1`) com o valor extraído do PDF (`A2.898.625`) após a página de atualização do certificado ser carregada.
+- **Preenchimento de Campo de Vencimento:**
+    - Adicionada a lógica para preencher o campo "Vencimento" (`#licenca-vencimento-1`) com a data extraída do PDF (`30/JUL/26`), convertida para o formato `DD/MM/YYYY` (`30/07/2026`).
+- **Correção de Importação:**
+    - Corrigida a importação da função `convert_date_format` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para resolver o erro `name 'convert_date_format' is not defined`.
+- **Armazenamento de Arquivos:**
+    - Implementada uma classe de armazenamento personalizada (`OriginalFilenameStorage` em `apps/common/storage.py`) para o campo `arquivo` do modelo `CertificadoVeiculo` (`apps/automacao_ipiranga/models.py`). Isso garante que os arquivos sejam salvos com seus nomes originais, sobrescrevendo versões anteriores com o mesmo nome.
+- **Correção de Disparo de Sinal:**
+    - Ajustada a função `run_automation_command` em `apps/automacao_ipiranga/signals.py` para garantir que o comando de automação seja executado de forma não bloqueante, utilizando `subprocess.Popen` com `stdout=subprocess.DEVNULL`, `stderr=subprocess.DEVNULL` e `preexec_fn=os.setsid`.
+- **Depuração de Sinal:**
+    - Corrigido o erro de duplicação de bloco `except` em `apps/automacao_ipiranga/signals.py`.
+    - Adicionadas mensagens de depuração mais detalhadas na função `trigger_automacao_certificado` em `apps/automacao_ipiranga/signals.py` para verificar o recebimento e as condições do sinal.
+
+### 30 de Julho de 2025
+
+### Depuração de Inicialização do Servidor
+- **Problema:** O servidor Django não estava acessível via `http://127.0.0.1:8000/` mesmo após iniciar.
+- **Tentativas de Depuração:**
+    - Verificação de processos na porta 8000 (`lsof -i :8000`).
+    - Tentativa de iniciar o servidor em primeiro plano para visualizar erros (cancelada pelo usuário).
+    - Tentativa de iniciar o servidor em segundo plano com redirecionamento de saída para `django_server.log`.
+    - Tentativa de iniciar o servidor vinculado a `0.0.0.0`.
+- **Status Atual:** O servidor Django está escutando na porta 8000, mas o acesso via navegador ainda não foi estabelecido. A causa provável é um firewall ou configuração de rede local.

@@ -60,3 +60,12 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ### Refatoração da Automação de Documentos
 - **Centralização do Login:** O comando `login_portran.py` e `upload_licenca.py` foram refatorados para utilizar o serviço de login centralizado (`login_to_portran`) do app `common`.
+
+### Correção de Segurança Crítica
+- **Remoção de Campo de Senha:** O campo `senha` foi removido do modelo `Portal` em `apps/automacao_documentos/models.py` para eliminar o armazenamento de credenciais em texto simples. Migrações foram geradas e aplicadas para refletir essa alteração no banco de dados.
+
+### Lógica de Confirmação de Upload
+- **Implementação de Placeholder:** Adicionado um placeholder detalhado para a lógica de confirmação de upload em `upload_licenca.py`, com exemplos de como implementar a verificação de sucesso no portal externo. Um delay temporário foi mantido para simulação, com aviso para remoção futura.
+
+### Limpeza de Referências Antigas
+- **Remoção de URLs Fictícias do IBAMA:** As URLs fictícias e comentários relacionados ao IBAMA foram removidos de `apps/automacao_documentos/management/commands/upload_licenca.py` para evitar confusão e garantir que apenas referências reais sejam mantidas no código ativo.

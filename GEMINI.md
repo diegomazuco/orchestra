@@ -96,13 +96,14 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
 * **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
 * **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
-* **Limpeza Pré-Commit:** Antes de cada commit, **certifique-se de que todos os arquivos e pastas temporárias, de cache ou de logs que não são essenciais para o funcionamento do projeto foram removidos**. Isso inclui, mas não se limita a, `__pycache__`, `.pytest_cache`, `.ruff_cache`, `htmlcov/`, `db.sqlite3`, `profile_output.prof`, e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`. **Sempre verifique o `git status` após a limpeza para garantir que não há arquivos indesejados.**
+* **Limpeza Pré-Commit:** Antes de cada commit, **certifique-se de que todos os arquivos e pastas temporárias, de cache ou de logs que não são essenciais para o funcionamento do projeto foram removidos**. Isso inclui, mas não se limita a, `__pycache__`, `.pytest_cache`, `.ruff_cache`, `htmlcov/`, `db.sqlite3`, `profile_output.prof`, `error_screenshot_*.png` e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`. **Sempre verifique o `git status` após a limpeza para garantir que não há arquivos indesejados.**
 * **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
 * **Push Completo e Seguro:**
     1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
     2.  **Verificar Status:** Use `git status` para garantir que todos os arquivos relevantes (novos ou modificados) estão na área de stage.
     3.  **Executar Push:** Execute `git push`.
-    4.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
+    4.  **Verificação Pós-Push:** Após o push, execute `git fetch && git status` para garantir que a branch local esteja sincronizada com a remota. A mensagem "Your branch is up to date with 'origin/main'." confirma o sucesso.
+    5.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
 
 ---
 

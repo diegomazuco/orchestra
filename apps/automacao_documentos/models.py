@@ -21,7 +21,7 @@ class Portal(models.Model):
     nome = models.CharField(max_length=255, unique=True)
     url_base = models.URLField()
     usuario = models.CharField(max_length=255, blank=True, null=True)
-    senha = models.CharField(max_length=255, blank=True, null=True) # Em produção, usar gerenciador de segredos
+    
 
     def __str__(self):
         return str(self.nome) # type: ignore

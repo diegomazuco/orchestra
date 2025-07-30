@@ -11,7 +11,6 @@ from apps.automacao_ipiranga.models import VeiculoIpiranga, CertificadoVeiculo
 def orchestra_view(request):
     return render(request, 'dashboard/orchestra.html', {})
 
-@csrf_exempt
 def process_documents_view(request):
     if request.method == 'POST':
         uploaded_files = request.FILES.getlist('documents')

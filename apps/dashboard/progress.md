@@ -8,10 +8,6 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - Criado o diretório `apps/dashboard` (`mkdir -p apps/dashboard`).
 - Criado o app Django `dashboard` dentro do diretório `apps/` (`python manage.py startapp dashboard apps/dashboard`).
 - Registrado o app `dashboard` em `INSTALLED_APPS` no `core/settings.py`.
-- Corrigido o `name` em `apps/dashboard/apps.py` para `'apps.dashboard'` para garantir a importação correta.
-
-### Configuração de URLs e Views
-- Criado `apps/dashboard/urls.py` e incluído em `core/urls.py` para mapear a rota `/`.
 - Implementada a view `orchestra_view` em `apps/dashboard/views.py` para renderizar a página principal.
 - Criado o template `orchestra.html` em `apps/dashboard/templates/dashboard/orchestra.html` com a estrutura da página, menu lateral e um botão "Buscar Documentos".
 
@@ -31,3 +27,6 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Criar um novo objeto `CertificadoVeiculo`, associando-o ao `VeiculoIpiranga` e anexando o arquivo enviado. O status inicial é definido como `'pendente'`.
     - A automação agora é disparada indiretamente pelo sinal `post_save` do Django, que é acionado quando o `CertificadoVeiculo` é salvo.
 - **Remoção de Diretório Temporário:** A criação e uso do diretório `temp_uploads` foi removida, pois os arquivos agora são gerenciados diretamente pelo `FileField` do modelo `CertificadoVeiculo`.
+
+### Correção de Segurança
+- **Remoção de `@csrf_exempt`:** O decorador `@csrf_exempt` foi removido da `process_documents_view` em `apps/dashboard/views.py` para reabilitar a proteção CSRF, aumentando a segurança da aplicação.

@@ -1,4 +1,8 @@
 from django.db import models
+from apps.common.storage import OriginalFilenameStorage
+
+# Instancia o storage personalizado
+original_filename_storage = OriginalFilenameStorage()
 
 class VeiculoIpiranga(models.Model):
     placa = models.CharField(max_length=10, unique=True)
@@ -18,7 +22,7 @@ class CertificadoVeiculo(models.Model):
 
     veiculo = models.ForeignKey(VeiculoIpiranga, on_delete=models.CASCADE, related_name='certificados')
     nome = models.CharField(max_length=255)
-    arquivo = models.FileField(upload_to='certificados_veiculos/')
+    arquivo = models.FileField(upload_to='certificados_veiculos/', storage=original_filename_storage)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)

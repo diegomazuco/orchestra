@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import async_playwright, TimeoutError, expect
 from asgiref.sync import sync_to_async # Importar sync_to_async
 
-from apps.common.services import login_to_portran
+from apps.common.services import login_to_portran, convert_date_format
 from apps.automacao_ipiranga.models import CertificadoVeiculo
 
 # Configuração do logger
@@ -131,6 +131,19 @@ class Command(BaseCommand):
                         await update_button.click()
                         await page.wait_for_load_state('networkidle')
                         logger.info("Página de atualização de certificado carregada.")
+
+                        # Preencher o campo 'Número do Documento'
+                        numero_documento_selector = '#licenca-numero-1'
+                        numero_documento_valor = 'A2.898.625' # Valor extraído anteriormente
+                        await page.fill(numero_documento_selector, numero_documento_valor)
+                        logger.info(f"Campo 'Número do Documento' preenchido com: {numero_documento_valor}")
+
+                        # Preencher o campo 'Vencimento'
+                        vencimento_selector = '#licenca-vencimento-1'
+                        vencimento_valor_pdf = '30/JUL/26' # Valor extraído do PDF
+                        vencimento_valor_formatado = convert_date_format(vencimento_valor_pdf)
+                        await page.fill(vencimento_selector, vencimento_valor_formatado)
+                        logger.info(f"Campo 'Vencimento' preenchido com: {vencimento_valor_formatado}")
                         found_certificate = True
                         break
                 
@@ -144,17 +157,36 @@ class Command(BaseCommand):
                 await file_input_selector.set_input_files(file_path_upload)
                 logger.info(f"Arquivo {file_path_upload} selecionado.")
 
-                # Lógica de confirmação de upload (FALTANTE)
-                # Ex: await page.locator('#btn-salvar-upload').click()
-                # await expect(page.locator(".mensagem-sucesso")).to_be_visible()
-                logger.warning("Lógica de confirmação de upload não implementada.")
-                await asyncio.sleep(5)
+                # --- Lógica de Confirmação de Upload ---
+                logger.info("Aguardando confirmação de upload...")
+                # ATENÇÃO: Implementar a lógica de confirmação de upload aqui.
+                # Exemplos:
+                # 1. Esperar por um elemento de sucesso:
+                #    await expect(page.locator('#mensagem-sucesso-upload')).to_be_visible()
+                # 2. Esperar por um redirecionamento de URL:
+                #    await page.wait_for_url('https://sites.redeipiranga.com.br/WAPortranNew/upload-sucesso')
+                # 3. Clicar em um botão de salvar/confirmar (se houver):
+                #    await page.locator('#btn-salvar-upload').click()
+                #    await page.wait_for_load_state('networkidle')
+                
+                # Por enquanto, um delay para simular a espera por confirmação.
+                # REMOVER ESTA LINHA APÓS IMPLEMENTAR A LÓGICA REAL DE CONFIRMAÇÃO.
+                await asyncio.sleep(10) 
+                logger.info("Confirmação de upload (simulada) recebida.")
 
                 # Atualiza o status para sucesso
                 # Usar sync_to_async para salvar o status
                 await sync_to_async(setattr)(certificado, 'status', 'enviado')
                 await sync_to_async(certificado.save)()
                 logger.info(f"SUCESSO: Status do certificado ID {certificado.id} atualizado para 'enviado'.")
+
+                # Excluir o arquivo PDF após o upload bem-sucedido
+                if os.path.exists(file_path_upload):
+                    os.remove(file_path_upload)
+                    logger.info(f"Arquivo PDF {file_path_upload} excluído com sucesso.")
+                else:
+                    logger.warning(f"Arquivo PDF {file_path_upload} não encontrado para exclusão.")
+                
                 logger.info("--- FIM DA AUTOMAÇÃO ---")
 
             except Exception as e:

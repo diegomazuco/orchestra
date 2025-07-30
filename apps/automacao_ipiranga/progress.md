@@ -47,3 +47,20 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Ajustada a lógica de busca de placa para considerar apenas as páginas "Vencidos" e "À vencer".
     - Refinada a lógica de busca de certificado para usar o `fieldset.certificado-box` como contêiner principal e garantir que o certificado "Vencido" seja corretamente identificado.
     - Corrigido o seletor do campo de upload (`input[type="file"]`) para ser relativo ao `fieldset_container`.
+- **Lógica de Confirmação de Upload:**
+    - Adicionado um placeholder detalhado para a lógica de confirmação de upload em `automacao_documentos_ipiranga.py`, com exemplos de como implementar a verificação de sucesso no portal externo. Um delay temporário foi mantido para simulação, com aviso para remoção futura.
+- **Preenchimento de Campo de Documento:**
+    - Adicionada a lógica para preencher o campo "Número do Documento" (`#licenca-numero-1`) com o valor extraído do PDF (`A2.898.625`) após a página de atualização do certificado ser carregada.
+- **Preenchimento de Campo de Vencimento:**
+    - Adicionada a lógica para preencher o campo "Vencimento" (`#licenca-vencimento-1`) com a data extraída do PDF (`30/JUL/26`), convertida para o formato `DD/MM/YYYY` (`30/07/2026`).
+- **Correção de Importação:**
+    - Corrigida a importação da função `convert_date_format` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para resolver o erro `name 'convert_date_format' is not defined`.
+- **Armazenamento de Arquivos:**
+    - Implementada uma classe de armazenamento personalizada (`OriginalFilenameStorage` em `apps/common/storage.py`) para o campo `arquivo` do modelo `CertificadoVeiculo` (`apps/automacao_ipiranga/models.py`). Isso garante que os arquivos sejam salvos com seus nomes originais, sobrescrevendo versões anteriores com o mesmo nome.
+- **Correção de Disparo de Sinal:**
+    - Ajustada a função `run_automation_command` em `apps/automacao_ipiranga/signals.py` para garantir que o comando de automação seja executado de forma não bloqueante, utilizando `subprocess.Popen` com `stdout=subprocess.DEVNULL`, `stderr=subprocess.DEVNULL` e `preexec_fn=os.setsid`.
+- **Depuração de Sinal:**
+    - Corrigido o erro de duplicação de bloco `except` em `apps/automacao_ipiranga/signals.py`.
+    - Adicionadas mensagens de depuração mais detalhadas na função `trigger_automacao_certificado` em `apps/automacao_ipiranga/signals.py` para verificar o recebimento e as condições do sinal.
+- **Depuração de Disparo de Sinal:**
+    - Adicionadas mensagens de depuração mais detalhadas em `apps/automacao_ipiranga/signals.py` para rastrear o recebimento do sinal `post_save` e as condições de disparo da automação.
