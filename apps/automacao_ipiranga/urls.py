@@ -1,6 +1,8 @@
+from django.urls import path
+from . import views
 
 app_name = 'automacao_ipiranga'
 
 urlpatterns = [
-    # Adicione suas URLs aqui
+    path('iniciar_automacao/', views.iniciar_automacao, name='iniciar_automacao'),
 ]

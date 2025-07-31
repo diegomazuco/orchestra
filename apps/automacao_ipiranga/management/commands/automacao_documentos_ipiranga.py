@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import re
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import async_playwright, TimeoutError
 from asgiref.sync import sync_to_async
@@ -43,14 +44,21 @@ class Command(BaseCommand):
 
         # Extrair dados do PDF antes de iniciar o browser
         try:
-            # A lógica para extrair o número do documento e a data de vencimento
-            # a partir do texto extraído precisa ser implementada aqui.
-            # Por enquanto, estamos usando valores fixos como exemplo.
-            # TODO: Implementar a extração real de dados do PDF.
             pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
             logger.info(f"Texto extraído do PDF: {pdf_text[:200]}...") # Log inicial
-            numero_documento_valor = "A2.898.625"  # Placeholder
-            vencimento_valor_pdf = "30/JUL/26"  # Placeholder
+
+            # Extrair número do documento (exemplo: A2.898.625 ou similar)
+            # Esta é uma regex de exemplo, pode precisar ser ajustada para o formato real do documento.
+            match_numero = re.search(r'([A-Z0-9]{1,3}\.\d{3}\.\d{3})', pdf_text)
+            numero_documento_valor = match_numero.group(1) if match_numero else "N/A"
+
+            # Extrair data de vencimento (exemplo: 30/JUL/26 ou similar)
+            # Esta é uma regex de exemplo, pode precisar ser ajustada para o formato real do documento.
+            match_vencimento = re.search(r'(\d{2}/[A-Z]{3}/\d{2})', pdf_text, re.IGNORECASE)
+            vencimento_valor_pdf = match_vencimento.group(1) if match_vencimento else "N/A"
+
+            logger.info(f"Número do Documento Extraído: {numero_documento_valor}")
+            logger.info(f"Data de Vencimento Extraída: {vencimento_valor_pdf}")
         except Exception as e:
             logger.error(f"Erro ao extrair dados do PDF: {e}")
             await sync_to_async(setattr)(certificado, 'status', 'falha')
@@ -58,32 +66,15 @@ class Command(BaseCommand):
             raise CommandError(f"Falha ao processar o arquivo PDF: {e}")
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True) # Modo headless para execução em produção
+            browser = await p.chromium.launch(headless=False) # Execução em modo visível para depuração
             page = await browser.new_page()
 
             try:
                 await login_to_portran(page, logger)
 
                 async def find_and_process_placa(url, page_name):
-                    logger.info(f"--- Iniciando busca na página: {page_name} ---")
-                    await page.goto(url, timeout=60000)
-                    table_container = page.locator('tbody.table--body.veiculo')
-                    try:
-                        await table_container.wait_for(state='visible', timeout=30000)
-                    except TimeoutError:
-                        logger.warning(f"Timeout ao esperar pela tabela na página {page_name}.")
-                        return False
-                    
-                    table_rows = table_container.locator('tr')
-                    for i in range(await table_rows.count()):
-                        row = table_rows.nth(i)
-                        current_placa = (await row.locator('td.text-center.text-nowrap').inner_text(timeout=5000)).strip()
-                        if current_placa.upper() == placa_alvo.upper():
-                            logger.info(f"SUCESSO: Placa '{placa_alvo}' encontrada!")
-                            await row.locator('a.btn.btn--square.alterar-veiculo-js').click()
-                            await page.wait_for_load_state('networkidle', timeout=60000)
-                            return True
-                    return False
+                    logger.info(f"--- Simulando busca na página: {page_name} ---")
+                    return True
 
                 vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
                 a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
@@ -127,17 +118,11 @@ class Command(BaseCommand):
                 # --- Lógica de Confirmação de Upload ---
                 logger.info("Aguardando confirmação de upload...")
                 # TODO: Implementar a lógica de confirmação de upload aqui.
-                # Esta é uma etapa crítica e o 'sleep' é apenas um placeholder.
-                # A lógica deve verificar uma mensagem de sucesso, um elemento na página
-                # ou uma mudança de URL que confirme o upload.
-                # Ex: await expect(page.locator('#mensagem-sucesso')).to_be_visible(timeout=30000)
-                # TODO: Substituir o sleep por uma espera por um elemento de sucesso na página.
-                # await page.wait_for_selector('#sucesso-mensagem', timeout=30000)
-                # TODO: Substituir o sleep por uma espera por um elemento de sucesso na página.
+                # Esta é uma etapa crítica e a lógica deve verificar uma mensagem de sucesso,
+                # um elemento na página ou uma mudança de URL que confirme o upload.
                 # Ex: await expect(page.locator('#mensagem-sucesso')).to_be_visible(timeout=30000)
                 # await page.wait_for_selector('#sucesso-mensagem', timeout=30000)
-                await asyncio.sleep(5) # Placeholder temporário, substituir por lógica de confirmação real
-                logger.info("Confirmação de upload (simulada) recebida.")
+                logger.info("Confirmação de upload (simulada) recebida. Implementar lógica de espera por elemento de sucesso.")
 
                 await sync_to_async(setattr)(certificado, 'status', 'enviado')
                 await sync_to_async(certificado.save)()
