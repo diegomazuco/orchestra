@@ -69,3 +69,11 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ### Limpeza de Referências Antigas
 - **Remoção de URLs Fictícias do IBAMA:** As URLs fictícias e comentários relacionados ao IBAMA foram removidos de `apps/automacao_documentos/management/commands/upload_licenca.py` para evitar confusão e garantir que apenas referências reais sejam mantidas no código ativo.
+
+## 31 de Julho de 2025
+
+### Limpeza de Código Obsoleto
+- **Remoção de Comandos:** Excluídos `login_portran.py` e `upload_licenca.py` de `apps/automacao_documentos/management/commands/`.
+- **Limpeza de Modelos:** O arquivo `apps/automacao_documentos/models.py` foi limpo, removendo os modelos `LicencaAmbiental`, `Portal`, `Automacao` e `LogExecucaoAutomacao` que não são mais utilizados.
+- **Limpeza de Testes:** O arquivo `apps/automacao_documentos/tests.py` foi limpo, removendo os testes dos modelos antigos.
+- **Remoção de Migrações:** Excluídos os arquivos de migração obsoletos (`0001_initial.py`, `0002_automacao_portal_logexecucaoautomacao_and_more.py`, `0003_remove_portal_senha.py`) de `apps/automacao_documentos/migrations/`.

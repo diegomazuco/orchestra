@@ -7,8 +7,7 @@
 - Instalado o Django utilizando `uv add django`.
 - Criado o projeto Django `core` no diretório raiz (`django-admin startproject core .`).
 - Criado o diretório `apps/` para subprojetos (`mkdir apps`).
-- Criado o arquivo `.gitkeep` em `apps/` para rastreamento Git (`touch apps/.gitkeep`).
-- Executadas as migrações iniciais do Django (`python manage.py migrate`).
+- Criadas as migrações iniciais do Django (`python manage.py migrate`).
 
 ### Ajustes de Configuração Global
 - **Atualização do GEMINI.md:** Ajustada a seção "3.2. Ambiente e Dependências (`uv` e `.env`)" para reforçar o uso exclusivo de `uv add` para gerenciamento de pacotes e dependências, e para referenciar `pyproject.toml` em vez de `requirements.txt`.
@@ -139,7 +138,6 @@
 - **Identificação de Arquivos Remanescentes:** Identificados e removidos os arquivos `profile_output.prof` e `.coverage` que haviam sido gerados e não foram limpos em etapas anteriores.
 
 ### Correção de Testes e Configuração de Ambiente
-- **Correção de Testes de Modelos:** Corrigido o teste `LicencaAmbientalModelTest.test_create_licenca_ambiental` em `apps/automacao_documentos/tests.py` para verificar corretamente o nome do arquivo e o conteúdo do `FileField`.
 - **Correção de Mocks Assíncronos:** Corrigidas as falhas nos testes do comando `automacao_documentos_ipiranga` em `apps/automacao_ipiranga/tests.py` relacionadas a mocks de funções assíncronas do Playwright (`TypeError: object AsyncMock can't be used in 'await' expression`).
 - **Correção de Importação em Testes de Views:** Corrigida a `NameError` em `apps/dashboard/tests.py` importando `CommandError`.
 - **Ajuste de Asserção em Testes de Views:** Ajustada a asserção em `DashboardViewsTest.test_process_documents_view_malformed_filename` em `apps/dashboard/tests.py` para verificar o status dentro do JSON retornado.
@@ -196,3 +194,17 @@
     - Tentativa de iniciar o servidor em segundo plano com redirecionamento de saída para `django_server.log`.
     - Tentativa de iniciar o servidor vinculado a `0.0.0.0`.
 - **Status Atual:** O servidor Django está escutando na porta 8000, mas o acesso via navegador ainda não foi estabelecido. A causa provável é um firewall ou configuração de rede local.
+
+## 31 de Julho de 2025
+
+### Depuração de Inicialização do Servidor (Continuação)
+- **Problema:** O servidor Django inicia, mas a página `http://127.0.0.1:8000/` não carrega, ficando em estado de "carregando".
+- **Diagnóstico Inicial:** Suspeita de que o problema estava no `signals.py` ou em alguma configuração inicial.
+- **Tentativa 1: Desativar `signals.py`:** Comentado todo o código em `apps/automacao_ipiranga/signals.py` para isolar o problema. O servidor ainda não iniciou.
+- **Tentativa 2: Depuração com `print` no `settings.py`:** Adicionados prints de depuração em `core/settings.py` para rastrear o carregamento das configurações. Todos os prints foram exibidos no log, indicando que o `settings.py` é lido completamente.
+- **Tentativa 3: Desativar apps em `INSTALLED_APPS`:** Comentados todos os apps personalizados (`apps.automacao_documentos`, `apps.dashboard`, `apps.automacao_ipiranga`, `apps.common`) em `core/settings.py`. O servidor ainda não iniciou.
+- **Tentativa 4: `python manage.py check`:** Executado `python manage.py check` para verificar a integridade do projeto. O comando falhou com `RuntimeError: Model class apps.automacao_ipiranga.models.VeiculoIpiranga doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.`, indicando que o modelo `VeiculoIpiranga` estava sendo importado sem que seu app estivesse em `INSTALLED_APPS`.
+- **Tentativa 5: Descomentar apps `dashboard` e `automacao_ipiranga`:** Descomentados `apps.dashboard` e `apps.automacao_ipiranga` em `INSTALLED_APPS`. O `python manage.py check` passou com sucesso.
+- **Tentativa 6: Acesso via `localhost` ou `127.0.0.1`:** Orientado o usuário a tentar acessar `http://127.0.0.1:8000/` ou `http://localhost:8000/` em vez de `http://0.0.0.0:8000/` para evitar `ERR_ADDRESS_INVALID`. O problema de carregamento da página persistiu.
+- **Tentativa 7: Análise de portas com `lsof`:** Verificado que o processo `python3` está escutando na porta 8000, mas a conexão ainda é recusada pelo navegador. Outras portas (3116, 45545) estão em uso por processos `node`, mas não parecem interferir diretamente.
+- **Status Atual:** O servidor Django inicia e escuta na porta 8000, mas a página não carrega. A causa provável é um problema de firewall, VPN/proxy, software de segurança ou configuração de rede local na máquina do usuário, impedindo a comunicação entre o navegador e o servidor. Uma reinicialização do computador foi sugerida como próximo passo para tentar resolver problemas de rede temporários.

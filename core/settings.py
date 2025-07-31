@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.automacao_documentos',
+    # 'apps.automacao_documentos',
     'apps.dashboard',
     'apps.automacao_ipiranga',
     'apps.common',

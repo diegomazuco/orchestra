@@ -38,7 +38,13 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
 6.  **Verificação de Qualidade de Código e Tipagem (Manual):** A verificação de qualidade de código (`ruff check .`) e de tipagem (`pyright`) não é executada automaticamente durante o `init`. Elas devem ser executadas manualmente como parte do comando `testes` para garantir a conformidade do código com os padrões do projeto.
 7.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas (ex: uso de variáveis de ambiente para configurações sensíveis, configuração adequada do `.gitignore`). **Proponha explicitamente ao usuário quaisquer mudanças estruturais significativas ou melhorias identificadas, explicando o porquê e solicitando confirmação antes de aplicar.**
-8.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `requirements.txt`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
+8.  **Análise de Sanidade do Código (Pós-Setup):** Após a configuração do ambiente, execute uma análise completa do código-fonte para:
+    *   Identificar e remover códigos, comandos, modelos ou testes redundantes e não utilizados.
+    *   Verificar a consistência entre os modelos e as migrações, propondo a remoção de migrações órfãs.
+    *   Sugerir otimizações, como a substituição de lógica de placeholder (ex: `asyncio.sleep`) por implementações robustas e a centralização de funcionalidades repetidas.
+    *   Apontar potenciais bugs, como o uso de `headless=False` em automações que deveriam rodar em background ou testes que acessam atributos inexistentes.
+    *   Proponha um plano de ação detalhado para as correções e refatorações, solicitando confirmação antes de aplicar.
+9.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `pyproject.toml`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
 
 #### 2.3. Ao executar (`testes`)
 

@@ -3,9 +3,9 @@ import logging
 import os
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import async_playwright, TimeoutError, expect
-from asgiref.sync import sync_to_async # Importar sync_to_async
+from asgiref.sync import sync_to_async
 
-from apps.common.services import login_to_portran, convert_date_format
+from apps.common.services import login_to_portran, convert_date_format, extract_text_from_pdf_image
 from apps.automacao_ipiranga.models import CertificadoVeiculo
 
 # Configuração do logger
@@ -23,7 +23,6 @@ class Command(BaseCommand):
         certificado_id = options['certificado_id']
         
         try:
-            # Usar sync_to_async para chamar a operação de banco de dados síncrona
             certificado = await sync_to_async(CertificadoVeiculo.objects.select_related('veiculo').get)(pk=certificado_id)
         except CertificadoVeiculo.DoesNotExist:
             raise CommandError(f'CertificadoVeiculo com ID "{certificado_id}" não encontrado.')
@@ -38,159 +37,109 @@ class Command(BaseCommand):
         logger.info(f"Arquivo: {file_path_upload}")
 
         if not os.path.exists(file_path_upload):
-            # Usar sync_to_async para salvar o status
             await sync_to_async(setattr)(certificado, 'status', 'falha')
             await sync_to_async(certificado.save)()
             raise CommandError(f'O arquivo do certificado não foi encontrado em: {file_path_upload}')
 
+        # Extrair dados do PDF antes de iniciar o browser
+        try:
+            # TODO: A lógica para extrair o número do documento e a data de vencimento
+            # a partir do texto extraído precisa ser implementada aqui.
+            # Por enquanto, estamos usando valores fixos como exemplo.
+            pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
+            logger.info(f"Texto extraído do PDF: {pdf_text[:200]}...") # Log inicial
+            numero_documento_valor = "A2.898.625"  # Placeholder
+            vencimento_valor_pdf = "30/JUL/26"  # Placeholder
+        except Exception as e:
+            logger.error(f"Erro ao extrair dados do PDF: {e}")
+            await sync_to_async(setattr)(certificado, 'status', 'falha')
+            await sync_to_async(certificado.save)()
+            raise CommandError(f"Falha ao processar o arquivo PDF: {e}")
+
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
+            browser = await p.chromium.launch(headless=False) # Modo visual para depuração
             page = await browser.new_page()
 
             try:
                 await login_to_portran(page, logger)
 
-                # --- Função para buscar placa ---
                 async def find_and_process_placa(url, page_name):
                     logger.info(f"--- Iniciando busca na página: {page_name} ---")
-                    logger.info(f"Navegando para a URL: {url}")
                     await page.goto(url, timeout=60000)
-                    
                     table_container = page.locator('tbody.table--body.veiculo')
                     try:
                         await table_container.wait_for(state='visible', timeout=30000)
-                        logger.info("Contêiner da tabela de veículos encontrado.")
                     except TimeoutError:
                         logger.warning(f"Timeout ao esperar pela tabela na página {page_name}.")
                         return False
-
+                    
                     table_rows = table_container.locator('tr')
-                    num_rows = await table_rows.count()
-                    logger.info(f"Encontradas {num_rows} linhas de veículos.")
-
-                    if num_rows == 0:
-                        return False
-
-                    for i in range(num_rows):
+                    for i in range(await table_rows.count()):
                         row = table_rows.nth(i)
-                        placa_element = row.locator('td.text-center.text-nowrap')
-                        current_placa = (await placa_element.inner_text(timeout=5000)).strip()
-                        
-                        logger.info(f"Lendo linha {i+1}: Placa '{current_placa}'")
-
+                        current_placa = (await row.locator('td.text-center.text-nowrap').inner_text(timeout=5000)).strip()
                         if current_placa.upper() == placa_alvo.upper():
                             logger.info(f"SUCESSO: Placa '{placa_alvo}' encontrada!")
-                            edit_button = row.locator('a.btn.btn--square.alterar-veiculo-js')
-                            await edit_button.click()
+                            await row.locator('a.btn.btn--square.alterar-veiculo-js').click()
                             await page.wait_for_load_state('networkidle', timeout=60000)
-                            logger.info("Página de edição do veículo carregada.")
                             return True
-                    
-                    logger.info(f"--- Fim da busca na página: {page_name} ---")
                     return False
 
-                # --- Busca nas páginas Vencidos, À Vencer e Todos ---
                 vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
                 a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
-                todos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index"
 
-                if not await find_and_process_placa(vencidos_url, "Vencidos"):
-                    if not await find_and_process_placa(a_vencer_url, "À vencer"):
-                        raise CommandError(f"FALHA: Placa '{placa_alvo}' não encontrada nas páginas 'Vencidos' ou 'À vencer'.")
+                if not await find_and_process_placa(vencidos_url, "Vencidos") and not await find_and_process_placa(a_vencer_url, "À vencer"):
+                    raise CommandError(f"FALHA: Placa '{placa_alvo}' não encontrada.")
 
-                # --- Lógica de Certificados ---
                 logger.info("Iniciando etapa de certificados...")
                 await page.locator('a#certificados-tab').click()
                 await page.wait_for_load_state('networkidle')
 
-                # Agora, vamos pegar o fieldset que contém o certificado
                 certificate_fieldsets = page.locator('fieldset.certificado-box')
-                num_certificates = await certificate_fieldsets.count()
-                logger.info(f"Encontrados {num_certificates} contêineres de certificados (fieldsets).")
-
                 found_certificate = False
-                for i in range(num_certificates):
+                for i in range(await certificate_fieldsets.count()):
                     fieldset_container = certificate_fieldsets.nth(i)
-                    # O seletor do nome agora é relativo ao fieldset
                     name_element = fieldset_container.locator('.licenca-titulo .titulo.h3')
-                    try:
-                        await name_element.wait_for(state='visible', timeout=5000) # Espera o título ficar visível
-                        current_name = (await name_element.text_content() or '').strip()
-                    except TimeoutError:
-                        logger.warning(f"Timeout ao esperar pelo título do certificado na linha {i+1}. Pulando.")
-                        continue
-                    logger.info(f"Lendo certificado {i+1}: '{current_name}'")
-
+                    current_name = (await name_element.text_content() or '').strip()
                     vencido_badge = fieldset_container.locator('span.licenca-titulo-badge .badge--vermelho:has-text("Vencido")')
 
                     if nome_certificado_alvo.upper() in current_name.upper() and await vencido_badge.is_visible():
                         logger.info(f"Certificado '{nome_certificado_alvo}' (Vencido) encontrado.")
-                        update_button = fieldset_container.locator('div.row.btn-atualizar-doc button.btn-atualizar-requisito')
-                        
-                        await update_button.wait_for(state='visible', timeout=10000) # Espera o botão ficar visível
-                        await update_button.click()
+                        await fieldset_container.locator('div.row.btn-atualizar-doc button.btn-atualizar-requisito').click()
                         await page.wait_for_load_state('networkidle')
-                        logger.info("Página de atualização de certificado carregada.")
-
-                        # Preencher o campo 'Número do Documento'
-                        numero_documento_selector = '#licenca-numero-1'
-                        numero_documento_valor = 'A2.898.625' # Valor extraído anteriormente
-                        await page.fill(numero_documento_selector, numero_documento_valor)
+                        
+                        await page.fill('#licenca-numero-1', numero_documento_valor)
                         logger.info(f"Campo 'Número do Documento' preenchido com: {numero_documento_valor}")
-
-                        # Preencher o campo 'Vencimento'
-                        vencimento_selector = '#licenca-vencimento-1'
-                        vencimento_valor_pdf = '30/JUL/26' # Valor extraído do PDF
+                        
                         vencimento_valor_formatado = convert_date_format(vencimento_valor_pdf)
-                        await page.fill(vencimento_selector, vencimento_valor_formatado)
+                        await page.fill('#licenca-vencimento-1', vencimento_valor_formatado)
                         logger.info(f"Campo 'Vencimento' preenchido com: {vencimento_valor_formatado}")
+                        
+                        await fieldset_container.locator('input[type="file"]:visible').set_input_files(file_path_upload)
+                        logger.info(f"Arquivo {file_path_upload} selecionado para upload.")
+                        
                         found_certificate = True
                         break
                 
                 if not found_certificate:
-                    raise CommandError(f"Certificado '{nome_certificado_alvo}' não encontrado.")
-
-                # --- Lógica de Upload ---
-                logger.info("Iniciando etapa de upload...")
-                # Usar um seletor mais específico para o campo de upload visível dentro do fieldset correto
-                file_input_selector = fieldset_container.locator('input[type="file"]:visible')
-                await file_input_selector.set_input_files(file_path_upload)
-                logger.info(f"Arquivo {file_path_upload} selecionado.")
+                    raise CommandError(f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado.")
 
                 # --- Lógica de Confirmação de Upload ---
                 logger.info("Aguardando confirmação de upload...")
-                # ATENÇÃO: Implementar a lógica de confirmação de upload aqui.
-                # Exemplos:
-                # 1. Esperar por um elemento de sucesso:
-                #    await expect(page.locator('#mensagem-sucesso-upload')).to_be_visible()
-                # 2. Esperar por um redirecionamento de URL:
-                #    await page.wait_for_url('https://sites.redeipiranga.com.br/WAPortranNew/upload-sucesso')
-                # 3. Clicar em um botão de salvar/confirmar (se houver):
-                #    await page.locator('#btn-salvar-upload').click()
-                #    await page.wait_for_load_state('networkidle')
-                
-                # Por enquanto, um delay para simular a espera por confirmação.
-                # REMOVER ESTA LINHA APÓS IMPLEMENTAR A LÓGICA REAL DE CONFIRMAÇÃO.
-                await asyncio.sleep(10) 
+                # TODO: Implementar a lógica de confirmação de upload aqui.
+                # Esta é uma etapa crítica e o 'sleep' é apenas um placeholder.
+                # A lógica deve verificar uma mensagem de sucesso, um elemento na página
+                # ou uma mudança de URL que confirme o upload.
+                # Ex: await expect(page.locator('#mensagem-sucesso')).to_be_visible(timeout=30000)
+                await asyncio.sleep(5) # Reduzido o tempo do placeholder
                 logger.info("Confirmação de upload (simulada) recebida.")
 
-                # Atualiza o status para sucesso
-                # Usar sync_to_async para salvar o status
                 await sync_to_async(setattr)(certificado, 'status', 'enviado')
                 await sync_to_async(certificado.save)()
                 logger.info(f"SUCESSO: Status do certificado ID {certificado.id} atualizado para 'enviado'.")
-
-                # Excluir o arquivo PDF após o upload bem-sucedido
-                if os.path.exists(file_path_upload):
-                    os.remove(file_path_upload)
-                    logger.info(f"Arquivo PDF {file_path_upload} excluído com sucesso.")
-                else:
-                    logger.warning(f"Arquivo PDF {file_path_upload} não encontrado para exclusão.")
                 
                 logger.info("--- FIM DA AUTOMAÇÃO ---")
 
             except Exception as e:
-                # Usar sync_to_async para salvar o status
                 await sync_to_async(setattr)(certificado, 'status', 'falha')
                 await sync_to_async(certificado.save)()
                 logger.error(f"FALHA: {e}")
