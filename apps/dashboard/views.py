@@ -1,17 +1,16 @@
+import logging
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.storage import default_storage
-from django.conf import settings
-import os
+
 import re
 
-from apps.automacao_ipiranga.models import VeiculoIpiranga, CertificadoVeiculo
+logger = logging.getLogger(__name__)
 
 def orchestra_view(request):
     return render(request, 'dashboard/orchestra.html', {})
 
 def process_documents_view(request):
+    from apps.automacao_ipiranga.models import VeiculoIpiranga, CertificadoVeiculo
     if request.method == 'POST':
         uploaded_files = request.FILES.getlist('documents')
 
@@ -32,32 +31,32 @@ def process_documents_view(request):
                 
                 try:
                     # 1. Obter ou criar o VeiculoIpiranga
-                    veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create(
+                    veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create( # type: ignore
                         placa=placa,
-                        defaults={'renavam': 'Aguardando'} # Renavam pode ser atualizado depois
+                        defaults={}
                     )
                     if created_veiculo:
-                        print(f"Veículo {placa} criado no banco de dados.")
+                        logger.info(f"Veículo {placa} criado no banco de dados.")
                     else:
-                        print(f"Veículo {placa} já existe no banco de dados.")
+                        logger.info(f"Veículo {placa} já existe no banco de dados.")
 
                     # 2. Criar o CertificadoVeiculo e anexar o arquivo
                     # O status inicial é 'pendente', o que acionará o sinal
-                    certificado = CertificadoVeiculo.objects.create(
+                    certificado = CertificadoVeiculo.objects.create( # type: ignore
                         veiculo=veiculo,
                         nome=nome_certificado,
                         arquivo=uploaded_file, # O arquivo é salvo automaticamente aqui
                         status='pendente'
                     )
-                    print(f"Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}")
-                    status = 'Processamento iniciado com sucesso!'
+                    logger.info(f"Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}")
+                    status = f'Certificado {nome_certificado} para {placa} salvo com ID: {certificado.id} e status: {certificado.status}'
+                    logger.info(status)
 
                 except Exception as e:
                     status = f'Erro ao salvar certificado no banco de dados: {e}'
-                    print(f"Erro ao salvar certificado: {e}")
+                    logger.error(f"Erro ao salvar certificado: {e}")
             else:
-                status = 'Nome de arquivo fora do padrão esperado (PLACA_NOME_CERTIFICADO.pdf).'
-                print(f"Nome de arquivo fora do padrão esperado: {file_name}")
+                return JsonResponse({'error': 'Nome de arquivo fora do padrão esperado (PLACA_NOME_CERTIFICADO.pdf).'}, status=400)
 
             processed_info.append({
                 'file_name': file_name,

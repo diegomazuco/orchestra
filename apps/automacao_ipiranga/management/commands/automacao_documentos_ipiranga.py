@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from django.core.management.base import BaseCommand, CommandError
-from playwright.async_api import async_playwright, TimeoutError, expect
+from playwright.async_api import async_playwright, TimeoutError
 from asgiref.sync import sync_to_async
 
 from apps.common.services import login_to_portran, convert_date_format, extract_text_from_pdf_image
@@ -23,8 +23,8 @@ class Command(BaseCommand):
         certificado_id = options['certificado_id']
         
         try:
-            certificado = await sync_to_async(CertificadoVeiculo.objects.select_related('veiculo').get)(pk=certificado_id)
-        except CertificadoVeiculo.DoesNotExist:
+            certificado = await sync_to_async(CertificadoVeiculo.objects.select_related('veiculo').get)(pk=certificado_id) # type: ignore
+        except CertificadoVeiculo.DoesNotExist: # type: ignore
             raise CommandError(f'CertificadoVeiculo com ID "{certificado_id}" não encontrado.')
 
         placa_alvo = certificado.veiculo.placa
@@ -43,9 +43,10 @@ class Command(BaseCommand):
 
         # Extrair dados do PDF antes de iniciar o browser
         try:
-            # TODO: A lógica para extrair o número do documento e a data de vencimento
+            # A lógica para extrair o número do documento e a data de vencimento
             # a partir do texto extraído precisa ser implementada aqui.
             # Por enquanto, estamos usando valores fixos como exemplo.
+            # TODO: Implementar a extração real de dados do PDF.
             pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
             logger.info(f"Texto extraído do PDF: {pdf_text[:200]}...") # Log inicial
             numero_documento_valor = "A2.898.625"  # Placeholder
@@ -57,7 +58,7 @@ class Command(BaseCommand):
             raise CommandError(f"Falha ao processar o arquivo PDF: {e}")
 
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False) # Modo visual para depuração
+            browser = await p.chromium.launch(headless=True) # Modo headless para execução em produção
             page = await browser.new_page()
 
             try:
@@ -130,7 +131,12 @@ class Command(BaseCommand):
                 # A lógica deve verificar uma mensagem de sucesso, um elemento na página
                 # ou uma mudança de URL que confirme o upload.
                 # Ex: await expect(page.locator('#mensagem-sucesso')).to_be_visible(timeout=30000)
-                await asyncio.sleep(5) # Reduzido o tempo do placeholder
+                # TODO: Substituir o sleep por uma espera por um elemento de sucesso na página.
+                # await page.wait_for_selector('#sucesso-mensagem', timeout=30000)
+                # TODO: Substituir o sleep por uma espera por um elemento de sucesso na página.
+                # Ex: await expect(page.locator('#mensagem-sucesso')).to_be_visible(timeout=30000)
+                # await page.wait_for_selector('#sucesso-mensagem', timeout=30000)
+                await asyncio.sleep(5) # Placeholder temporário, substituir por lógica de confirmação real
                 logger.info("Confirmação de upload (simulada) recebida.")
 
                 await sync_to_async(setattr)(certificado, 'status', 'enviado')

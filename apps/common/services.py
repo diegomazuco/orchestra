@@ -70,6 +70,7 @@ def extract_text_from_pdf_image(pdf_path: str, logger: logging.Logger, tesseract
     if not tesseract_config:
         tesseract_config = '--psm 6' # Modo padrão para documentos estruturados
 
+    doc = None # Inicializa doc como None
     try:
         doc = fitz.open(pdf_path)
         for page_num in range(len(doc)):
@@ -77,12 +78,12 @@ def extract_text_from_pdf_image(pdf_path: str, logger: logging.Logger, tesseract
             
             # Renderiza a página como uma imagem (pixmap) com alta resolução
             # Aumentar a resolução para 300 DPI (padrão é 72 DPI)
-            pix = page.get_pixmap(matrix=fitz.Matrix(300/72, 300/72))
+            pix = page.get_pixmap(matrix=fitz.Matrix(300/72, 300/72)) # type: ignore
             img = Image.open(io.BytesIO(pix.tobytes()))
             
             # Pré-processamento básico da imagem (binarização)
             img = img.convert('L') # Converte para escala de cinza
-            img = img.point(lambda x: 0 if x < 128 else 255, '1') # Binarização simples
+            img = img.point(lambda x: 0 if x < 128 else 255, '1') # type: ignore # Binarização simples
             
             # Realiza OCR na imagem
             page_text = pytesseract.image_to_string(img, lang='por', config=tesseract_config) # lang='por' para português

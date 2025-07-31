@@ -5,20 +5,42 @@ from unittest.mock import patch, AsyncMock, MagicMock
 import os
 from io import StringIO
 
+from apps.automacao_ipiranga.models import CertificadoVeiculo, VeiculoIpiranga
+
 class AutomacaoDocumentosIpirangaCommandTest(TestCase):
 
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.config')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.async_playwright')
-    def test_command_success_flow(self, mock_async_playwright, mock_exists, mock_config):
-        # Mock config variables
-        mock_config.side_effect = lambda key: {
-            'PORTRAN_USER': 'test_user',
-            'PORTRAN_PASSWORD': 'test_password',
-        }[key]
+    def setUp(self):
+        self.veiculo = VeiculoIpiranga.objects.create(placa='ABC1234', renavam='12345678901') # type: ignore
+        self.certificado = CertificadoVeiculo.objects.create( # type: ignore
+            veiculo=self.veiculo,
+            nome='CERTIFICADO',
+            arquivo='certificados_veiculos/dummy_file.pdf',
+            status='pendente'
+        )
+        # Ensure the dummy file exists for the test
+        os.makedirs(os.path.dirname(self.certificado.arquivo.path), exist_ok=True)
+        with open(self.certificado.arquivo.path, 'w') as f:
+            f.write("dummy content")
 
-        # Mock os.path.exists
-        mock_exists.return_value = True
+    def tearDown(self):
+        if os.path.exists(self.certificado.arquivo.path):
+            os.remove(self.certificado.arquivo.path)
+        self.certificado.delete()
+        self.veiculo.delete()
+
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.CertificadoVeiculo.objects.get')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.login_to_portran')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.async_playwright')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.extract_text_from_pdf_image')
+    def test_command_success_flow(self, mock_extract_text_from_pdf_image, mock_async_playwright, mock_login_to_portran, mock_get_certificado):
+        # Mock extract_text_from_pdf_image
+        mock_extract_text_from_pdf_image.return_value = "dummy pdf text"
+
+        # Mock CertificadoVeiculo.objects.get
+        mock_get_certificado.return_value = self.certificado
+        
+        # Mock the save method of the certificado instance
+        self.certificado.save = AsyncMock()
 
         # Mock Playwright objects
         mock_page = AsyncMock()
@@ -44,19 +66,14 @@ class AutomacaoDocumentosIpirangaCommandTest(TestCase):
         # Capture stdout for logging messages
         out = StringIO()
         
-        call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/dummy_file.pdf', stdout=out)
+        call_command('automacao_documentos_ipiranga', str(self.certificado.id), stdout=out)
 
         # Assertions for Playwright calls
         mock_async_playwright.assert_called_once()
-        mock_playwright_context.chromium.launch.assert_called_once_with(headless=False)
+        mock_playwright_context.chromium.launch.assert_called_once_with(headless=True)
         mock_browser.new_page.assert_called_once()
-        mock_page.goto.assert_any_call('https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir', timeout=60000)
-        mock_page.wait_for_selector.assert_any_call('#codigoUsuario', state='visible', timeout=60000)
-        mock_page.fill.assert_any_call('#codigoUsuario', 'test_user')
-        mock_page.fill.assert_any_call('#senha', 'test_password')
-        mock_page.click.assert_any_call('input[type="submit"][value="Autenticar"]')
-        mock_page.wait_for_url.assert_any_call('https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index', timeout=60000)
-        
+        mock_login_to_portran.assert_called_once_with(mock_page, MagicMock()) # Check if login_to_portran was called
+
         # Assertions for find_and_process_placa
         mock_page.goto.assert_any_call('https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7', timeout=60000)
         mock_page.click.assert_any_call('a.btn.btn--square.alterar-veiculo-js')
@@ -65,38 +82,31 @@ class AutomacaoDocumentosIpirangaCommandTest(TestCase):
         # Assertions for certificate logic
         mock_page.click.assert_any_call('a#certificados-tab')
         mock_page.wait_for_load_state.assert_any_call('networkidle')
-        mock_page.set_input_files.assert_called_once_with('input[type="file"]', '/tmp/dummy_file.pdf')
+        mock_page.set_input_files.assert_called_once_with('input[type="file"]:visible', self.certificado.arquivo.path)
         mock_browser.close.assert_called_once()
 
         # Assertions for log messages (basic check)
-        self.assertIn("Login realizado com sucesso!", out.getvalue())
-        self.assertIn("Placa 'ABC1234' encontrada!", out.getvalue())
-        self.assertIn("Certificado 'CERTIFICADO' (Vencido) encontrado.", out.getvalue())
-        self.assertIn("Upload do arquivo concluído com sucesso.", out.getvalue())
+        self.assertIn(f"--- INÍCIO DA AUTOMAÇÃO PARA O CERTIFICADO ID: {self.certificado.id} ---", out.getvalue())
+        self.assertIn(f"SUCESSO: Placa '{self.veiculo.placa}' encontrada!", out.getvalue())
+        self.assertIn(f"Certificado '{self.certificado.nome}' (Vencido) encontrado.", out.getvalue())
+        self.assertIn(f"SUCESSO: Status do certificado ID {self.certificado.id} atualizado para 'enviado'.", out.getvalue())
 
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
-    def test_command_file_not_found(self, mock_exists):
-        mock_exists.return_value = False
-        with self.assertRaisesMessage(CommandError, 'O arquivo especificado não existe: /tmp/non_existent_file.pdf'):
-            call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/non_existent_file.pdf')
+        # Verify database status update
+        self.certificado.save.assert_called()
+        self.assertEqual(self.certificado.status, 'enviado')
 
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.config')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
-    def test_command_env_vars_not_set(self, mock_exists, mock_config):
-        mock_exists.return_value = True
-        mock_config.side_effect = lambda key: None # Simulate missing env vars
-        with self.assertRaisesMessage(CommandError, 'As variáveis de ambiente PORTRAN_USER e PORTRAN_PASSWORD devem ser configuradas.'):
-            call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/dummy_file.pdf')
-
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.config')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.CertificadoVeiculo.objects.get')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.login_to_portran')
     @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.async_playwright')
-    def test_command_placa_not_found(self, mock_async_playwright, mock_exists, mock_config):
-        mock_config.side_effect = lambda key: {
-            'PORTRAN_USER': 'test_user',
-            'PORTRAN_PASSWORD': 'test_password',
-        }[key]
-        mock_exists.return_value = True
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.extract_text_from_pdf_image')
+    def test_command_placa_not_found(self, mock_extract_text_from_pdf_image, mock_async_playwright, mock_login_to_portran, mock_get_certificado):
+        mock_extract_text_from_pdf_image.return_value = "dummy pdf text"
+
+        # Mock CertificadoVeiculo.objects.get
+        mock_get_certificado.return_value = self.certificado
+        
+        # Mock the save method of the certificado instance
+        self.certificado.save = AsyncMock()
 
         mock_page = AsyncMock()
         mock_browser = AsyncMock()
@@ -108,18 +118,24 @@ class AutomacaoDocumentosIpirangaCommandTest(TestCase):
         # Simulate no placa found
         mock_page.locator.return_value.count.return_value = 0 # No rows found
 
-        with self.assertRaisesMessage(CommandError, "FALHA: Placa 'ABC1234' não encontrada em 'Vencidos', 'À vencer' ou 'Todos'."):
-            call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/dummy_file.pdf')
+        with self.assertRaisesMessage(CommandError, f"FALHA: Placa '{self.veiculo.placa}' não encontrada."): # type: ignore
+            call_command('automacao_documentos_ipiranga', str(self.certificado.id))
 
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.config')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
+        self.certificado.save.assert_called()
+        self.assertEqual(self.certificado.status, 'falha')
+
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.CertificadoVeiculo.objects.get')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.login_to_portran')
     @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.async_playwright')
-    def test_command_certificate_not_found(self, mock_async_playwright, mock_exists, mock_config):
-        mock_config.side_effect = lambda key: {
-            'PORTRAN_USER': 'test_user',
-            'PORTRAN_PASSWORD': 'test_password',
-        }[key]
-        mock_exists.return_value = True
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.extract_text_from_pdf_image')
+    def test_command_certificate_not_found(self, mock_extract_text_from_pdf_image, mock_async_playwright, mock_login_to_portran, mock_get_certificado):
+        mock_extract_text_from_pdf_image.return_value = "dummy pdf text"
+
+        # Mock CertificadoVeiculo.objects.get
+        mock_get_certificado.return_value = self.certificado
+        
+        # Mock the save method of the certificado instance
+        self.certificado.save = AsyncMock()
 
         mock_page = AsyncMock()
         mock_browser = AsyncMock()
@@ -130,21 +146,27 @@ class AutomacaoDocumentosIpirangaCommandTest(TestCase):
 
         # Simulate placa found, but no certificate
         mock_page.locator.return_value.count.side_effect = [1, 0] # One row for placa, zero for certificate
-        mock_page.locator.return_value.nth.return_value.locator.return_value.inner_text.return_value = "ABC1234"
+        mock_page.locator.return_value.nth.return_value.locator.return_value.inner_text.return_value = self.veiculo.placa
         mock_page.locator.return_value.nth.return_value.locator.return_value.is_visible.return_value = True
 
-        with self.assertRaisesMessage(CommandError, "Certificado 'CERTIFICADO' (Vencido) não encontrado."):
-            call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/dummy_file.pdf')
+        with self.assertRaisesMessage(CommandError, f"Certificado '{self.certificado.nome}' (Vencido) não encontrado."): # type: ignore
+            call_command('automacao_documentos_ipiranga', str(self.certificado.id))
 
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.config')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
+        self.certificado.save.assert_called()
+        self.assertEqual(self.certificado.status, 'falha')
+
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.CertificadoVeiculo.objects.get')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.login_to_portran')
     @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.async_playwright')
-    def test_command_timeout_error(self, mock_async_playwright, mock_exists, mock_config):
-        mock_config.side_effect = lambda key: {
-            'PORTRAN_USER': 'test_user',
-            'PORTRAN_PASSWORD': 'test_password',
-        }[key]
-        mock_exists.return_value = True
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.extract_text_from_pdf_image')
+    def test_command_timeout_error(self, mock_extract_text_from_pdf_image, mock_async_playwright, mock_login_to_portran, mock_get_certificado):
+        mock_extract_text_from_pdf_image.return_value = "dummy pdf text"
+
+        # Mock CertificadoVeiculo.objects.get
+        mock_get_certificado.return_value = self.certificado
+        
+        # Mock the save method of the certificado instance
+        self.certificado.save = AsyncMock()
 
         mock_page = AsyncMock()
         mock_browser = AsyncMock()
@@ -156,20 +178,25 @@ class AutomacaoDocumentosIpirangaCommandTest(TestCase):
         # Simulate TimeoutError during page.goto
         mock_page.goto.side_effect = TimeoutError("Navigation timeout")
 
-        with self.assertRaisesMessage(CommandError, "Erro de Timeout na automação: Navigation timeout"):
-            call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/dummy_file.pdf')
+        with self.assertRaisesMessage(CommandError, f"Erro na automação para o certificado ID {self.certificado.id}: Navigation timeout"): # type: ignore
+            call_command('automacao_documentos_ipiranga', str(self.certificado.id))
 
-        mock_page.screenshot.assert_called_once_with(path='timeout_screenshot.png')
+        self.certificado.save.assert_called()
+        self.assertEqual(self.certificado.status, 'falha')
+        mock_page.screenshot.assert_called_once_with(path=f'error_screenshot_cert_{self.certificado.id}.png')
 
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.config')
-    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.os.path.exists')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.CertificadoVeiculo.objects.get')
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.login_to_portran')
     @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.async_playwright')
-    def test_command_unexpected_exception(self, mock_async_playwright, mock_exists, mock_config):
-        mock_config.side_effect = lambda key: {
-            'PORTRAN_USER': 'test_user',
-            'PORTRAN_PASSWORD': 'test_password',
-        }[key]
-        mock_exists.return_value = True
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.extract_text_from_pdf_image')
+    def test_command_unexpected_exception(self, mock_extract_text_from_pdf_image, mock_async_playwright, mock_login_to_portran, mock_get_certificado):
+        mock_extract_text_from_pdf_image.return_value = "dummy pdf text"
+
+        # Mock CertificadoVeiculo.objects.get
+        mock_get_certificado.return_value = self.certificado
+        
+        # Mock the save method of the certificado instance
+        self.certificado.save = AsyncMock()
 
         mock_page = AsyncMock()
         mock_browser = AsyncMock()
@@ -181,7 +208,15 @@ class AutomacaoDocumentosIpirangaCommandTest(TestCase):
         # Simulate a generic exception
         mock_page.goto.side_effect = Exception("Something went wrong")
 
-        with self.assertRaisesMessage(CommandError, "Erro inesperado na automação: Something went wrong"):
-            call_command('automacao_documentos_ipiranga', 'ABC1234', 'CERTIFICADO', '/tmp/dummy_file.pdf')
+        with self.assertRaisesMessage(CommandError, f"Erro na automação para o certificado ID {self.certificado.id}: Something went wrong"): # type: ignore
+            call_command('automacao_documentos_ipiranga', str(self.certificado.id))
 
-        mock_page.screenshot.assert_called_once_with(path='error_screenshot.png')
+        self.certificado.save.assert_called()
+        self.assertEqual(self.certificado.status, 'falha')
+        mock_page.screenshot.assert_called_once_with(path=f'error_screenshot_cert_{self.certificado.id}.png')
+
+    @patch('apps.automacao_ipiranga.management.commands.automacao_documentos_ipiranga.CertificadoVeiculo.objects.get')
+    def test_command_certificado_not_found_in_db(self, mock_get_certificado):
+        mock_get_certificado.side_effect = CertificadoVeiculo.DoesNotExist # type: ignore
+        with self.assertRaisesMessage(CommandError, 'CertificadoVeiculo com ID "999" não encontrado.'): # type: ignore
+            call_command('automacao_documentos_ipiranga', '999')

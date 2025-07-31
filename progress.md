@@ -208,3 +208,49 @@
 - **Tentativa 6: Acesso via `localhost` ou `127.0.0.1`:** Orientado o usuário a tentar acessar `http://127.0.0.1:8000/` ou `http://localhost:8000/` em vez de `http://0.0.0.0:8000/` para evitar `ERR_ADDRESS_INVALID`. O problema de carregamento da página persistiu.
 - **Tentativa 7: Análise de portas com `lsof`:** Verificado que o processo `python3` está escutando na porta 8000, mas a conexão ainda é recusada pelo navegador. Outras portas (3116, 45545) estão em uso por processos `node`, mas não parecem interferir diretamente.
 - **Status Atual:** O servidor Django inicia e escuta na porta 8000, mas a página não carrega. A causa provável é um problema de firewall, VPN/proxy, software de segurança ou configuração de rede local na máquina do usuário, impedindo a comunicação entre o navegador e o servidor. Uma reinicialização do computador foi sugerida como próximo passo para tentar resolver problemas de rede temporários.
+
+### 31 de Julho de 2025 (Continuação)
+
+### Análise e Ajustes Pós-Inicialização
+- **Remoção de Arquivos Obsoletos:**
+    - Removidos os arquivos `models.py`, `tests.py`, `admin.py`, `urls.py` e `views.py` do diretório `apps/automacao_documentos/`, que estavam obsoletos após a refatoração do app.
+- **Ajustes no Comando de Automação Ipiranga (`automacao_documentos_ipiranga.py`):**
+    - Substituído o `asyncio.sleep(5)` por um placeholder de espera mais robusta por um elemento de sucesso na página, com um comentário para o usuário sobre a necessidade de identificar o seletor correto.
+    - Alterado `headless=False` para `headless=True` para que o navegador não seja exibido durante a execução normal em produção.
+    - Adicionado um comentário indicando que a lógica de extração de dados do PDF precisa ser implementada.
+- **Reativação do Sinal de Automação (`signals.py`):**
+    - Descomentado todo o conteúdo de `apps/automacao_ipiranga/signals.py` para reativar o disparo automático da automação via sinal `post_save` do Django.
+- **Atualização dos Testes da Automação Ipiranga (`tests.py`):**
+    - Refatorado `apps/automacao_ipiranga/tests.py` para utilizar `setUp` e `tearDown` para a criação e limpeza de dados de teste, e ajustados os mocks para refletir a nova estrutura e o uso de modelos.
+- **Remoção de `@csrf_exempt`:**
+    - Removido o decorador `@csrf_exempt` da `process_documents_view` em `apps/dashboard/views.py` para reabilitar a proteção CSRF e aumentar a segurança da aplicação.
+
+### 31 de Julho de 2025 (Revisão Completa de Código)
+- **Atualização de `manage.py`:** O arquivo `manage.py` foi atualizado para carregar as variáveis de ambiente usando `load_dotenv()` no início da execução.
+- **Revisão de `core/settings.py`:** Confirmado que as configurações sensíveis são carregadas de variáveis de ambiente, seguindo as boas práticas de segurança.
+- **Revisão de `apps/dashboard/urls.py`:** Confirmado que as rotas estão corretamente configuradas.
+- **Revisão e Ajustes em `apps/dashboard/views.py`:**
+    - Substituídas todas as instruções `print` por `logger.info` ou `logger.error` para um tratamento de logs mais adequado.
+    - Removidos comentários `# type: ignore` desnecessários.
+- **Revisão e Ajustes em `apps/automacao_ipiranga/models.py`:**
+    - Removidos comentários `# type: ignore` desnecessários.
+- **Revisão de `apps/automacao_ipiranga/signals.py`:** Confirmado que o sinal está configurado corretamente para disparar a automação em um subprocesso.
+- **Revisão e Ajustes em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`:**
+    - Removidos comentários `# type: ignore` desnecessários.
+    - Substituído o `asyncio.sleep(5)` por um placeholder de espera mais robusta por um elemento de sucesso na página, com um comentário para o usuário sobre a necessidade de identificar o seletor correto.
+- **Revisão e Ajustes em `apps/common/services.py`:**
+    - Removidos comentários `# type: ignore` desnecessários.
+- **Correção de Erros de Tipagem (Pyright):** Re-adicionados comentários `# type: ignore` em pontos específicos onde o `pyright` reportava falsos positivos devido à inferência de tipos do Django ORM e bibliotecas externas, garantindo que o `pyright` passe sem erros.
+- **Verificação de Qualidade de Código (Ruff):** Confirmado que o `ruff` passa sem erros após todas as correções.
+- **Verificação de Tipagem (Pyright):** Confirmado que o `pyright` passa sem erros após todas as correções.
+
+### 31 de Julho de 2025 (Depuração de Inicialização do Servidor - Continuação)
+- **Problema:** O servidor Django não estava acessível via `http://127.0.0.1:8000/` mesmo após iniciar.
+- **Diagnóstico:** O log do servidor (`full_server_log.txt`) continuou mostrando o erro `RuntimeError: Model class apps.automacao_ipiranga.models.VeiculoIpiranga doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.`
+- **Tentativas de Correção:**
+    - Limpeza de caches (`__pycache__`, `.pytest_cache`).
+    - Recriação e reinstalação do ambiente virtual (`.venv`).
+    - Reaplicação de migrações.
+    - Adição explícita de `app_label` no modelo `VeiculoIpiranga` em `apps/automacao_ipiranga/models.py`.
+    - Movimentação da importação dos modelos `VeiculoIpiranga` e `CertificadoVeiculo` para dentro da função `process_documents_view` em `apps/dashboard/views.py` para garantir que sejam importados após o registro de aplicativos do Django.
+- **Status Atual:** O erro `RuntimeError` persiste, impedindo a inicialização completa do servidor Django. Isso significa que a automação não pode ser disparada, pois o servidor não está de pé para processar as requisições ou disparar os sinais.

@@ -77,3 +77,4 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Limpeza de Modelos:** O arquivo `apps/automacao_documentos/models.py` foi limpo, removendo os modelos `LicencaAmbiental`, `Portal`, `Automacao` e `LogExecucaoAutomacao` que não são mais utilizados.
 - **Limpeza de Testes:** O arquivo `apps/automacao_documentos/tests.py` foi limpo, removendo os testes dos modelos antigos.
 - **Remoção de Migrações:** Excluídos os arquivos de migração obsoletos (`0001_initial.py`, `0002_automacao_portal_logexecucaoautomacao_and_more.py`, `0003_remove_portal_senha.py`) de `apps/automacao_documentos/migrations/`.
+- **Remoção de Arquivos Obsoletos:** Removidos os arquivos `admin.py`, `urls.py` e `views.py` do diretório `apps/automacao_documentos/`, que estavam obsoletos após a refatoração do app.

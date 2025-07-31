@@ -5,13 +5,15 @@ from apps.common.storage import OriginalFilenameStorage
 original_filename_storage = OriginalFilenameStorage()
 
 class VeiculoIpiranga(models.Model):
+    class Meta:
+        app_label = 'automacao_ipiranga'
     placa = models.CharField(max_length=10, unique=True)
-    renavam = models.CharField(max_length=11, unique=True)
+    renavam = models.CharField(max_length=11, unique=True, null=True, blank=True)
     status_documentos = models.CharField(max_length=255, blank=True, null=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.placa
+        return str(self.placa)
 
 class CertificadoVeiculo(models.Model):
     STATUS_CHOICES = [
@@ -28,4 +30,4 @@ class CertificadoVeiculo(models.Model):
     data_atualizacao = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.nome} - {self.veiculo.placa}'
+        return f'{self.nome} - {self.veiculo.placa}' # type: ignore
