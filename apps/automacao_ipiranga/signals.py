@@ -1,16 +1,17 @@
+import logging
+import os
 import subprocess
 import sys
-import os
-import logging
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from .models import CertificadoVeiculo
 
 logger = logging.getLogger(__name__)
 
 def run_automation_command(instance_id):
-    """
-    Executa o comando de automação em um processo separado e robusto,
+    """Executa o comando de automação em um processo separado e robusto,
     redirecionando a saída para arquivos de log específicos.
     """
     try:
@@ -28,7 +29,7 @@ def run_automation_command(instance_id):
             'automacao_documentos_ipiranga',
             str(instance_id)
         ]
-       
+
         logger.info(f"[SIGNAL] Executando comando em subprocesso: {' '.join(command)}")
         logger.info(f"[SIGNAL] Log de STDOUT será salvo em: {stdout_log_path}")
         logger.info(f"[SIGNAL] Log de STDERR será salvo em: {stderr_log_path}")
@@ -40,9 +41,9 @@ def run_automation_command(instance_id):
         # Inicia o processo em segundo plano, desanexando-o completamente
         logger.info(f"[SIGNAL] Preparando para iniciar subprocesso para Certificado ID: {instance_id}. Comando: {' '.join(command)}")
         process = subprocess.Popen(
-            command, 
-            stdout=stdout_log, 
-            stderr=stderr_log, 
+            command,
+            stdout=stdout_log,
+            stderr=stderr_log,
             preexec_fn=os.setsid, # Essencial para desanexar em Unix-like systems
             cwd=project_root
         )
@@ -53,8 +54,7 @@ def run_automation_command(instance_id):
 
 @receiver(post_save, sender=CertificadoVeiculo)
 def trigger_automacao_certificado(sender, instance, created, **kwargs):
-    """
-    Dispara a automação quando um novo CertificadoVeiculo pendente é criado.
+    """Dispara a automação quando um novo CertificadoVeiculo pendente é criado.
     """
     logger.info(f"[SIGNAL] Sinal post_save recebido para CertificadoVeiculo ID: {instance.id} (Created: {created}, Status: {instance.status})")
     if created and instance.status == 'pendente':

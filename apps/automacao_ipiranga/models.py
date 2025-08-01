@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.common.storage import OriginalFilenameStorage
 
 # Instancia o storage personalizado

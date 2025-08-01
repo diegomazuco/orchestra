@@ -1,8 +1,8 @@
 import logging
-from django.shortcuts import render
-from django.http import JsonResponse
-
 import re
+
+from django.http import JsonResponse
+from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ def orchestra_view(request):
     return render(request, 'dashboard/orchestra.html', {})
 
 def process_documents_view(request):
-    from apps.automacao_ipiranga.models import VeiculoIpiranga, CertificadoVeiculo
+    from apps.automacao_ipiranga.models import CertificadoVeiculo, VeiculoIpiranga
     if request.method == 'POST':
         uploaded_files = request.FILES.getlist('documents')
 
@@ -24,11 +24,11 @@ def process_documents_view(request):
 
             placa = None
             nome_certificado = None
-            
+
             if match:
                 placa = match.group(1).upper()
                 nome_certificado = match.group(2).replace('_', ' ').title() # Formata para leitura
-                
+
                 try:
                     # 1. Obter ou criar o VeiculoIpiranga
                     veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create( # type: ignore

@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import VeiculoIpiranga, CertificadoVeiculo
+
+from .models import CertificadoVeiculo, VeiculoIpiranga
+
 
 @admin.register(VeiculoIpiranga)
 class VeiculoIpirangaAdmin(admin.ModelAdmin):

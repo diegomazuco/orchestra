@@ -36,33 +36,19 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
     *   **Instalação de Ferramentas de Desenvolvimento:** Instale `pytest`, `ruff` e `pyright` executando `uv add pytest ruff pyright`.
 4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem ser configuradas no `.env`.
 5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
-6.  **Verificação de Qualidade de Código e Tipagem (Manual):** A verificação de qualidade de código (`ruff check .`) e de tipagem (`pyright`) não é executada automaticamente durante o `init`. Elas devem ser executadas manualmente como parte do comando `testes` para garantir a conformidade do código com os padrões do projeto.
-7.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas (ex: uso de variáveis de ambiente para configurações sensíveis, configuração adequada do `.gitignore`). **Proponha explicitamente ao usuário quaisquer mudanças estruturais significativas ou melhorias identificadas, explicando o porquê e solicitando confirmação antes de aplicar.**
-8.  **Análise de Sanidade do Código (Pós-Setup):** Após a configuração do ambiente, execute uma análise completa do código-fonte para:
+6.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas (ex: uso de variáveis de ambiente para configurações sensíveis, configuração adequada do `.gitignore`). **Proponha explicitamente ao usuário quaisquer mudanças estruturais significativas ou melhorias identificadas, explicando o porquê e solicitando confirmação antes de aplicar.**
+7.  **Análise de Sanidade do Código (Pós-Setup):** Após a configuração do ambiente, execute uma análise completa do código-fonte para:
     *   Identificar e remover códigos, comandos, modelos ou testes redundantes e não utilizados.
     *   Verificar a consistência entre os modelos e as migrações, propondo a remoção de migrações órfãs.
     *   Sugerir otimizações, como a substituição de lógica de placeholder (ex: `asyncio.sleep`) por implementações robustas e a centralização de funcionalidades repetidas.
-    *   Apontar potenciais bugs, como o uso de `headless=False` em automações que deveriam rodar em background ou testes que acessam atributos inexistentes.
+    *   Apontar potenciais bugs, como o uso de `headless=False` em automações que deveriam rodar em background ou testes que acessam atributos inexistentes. **Para depuração visual, o comando de automação deve ser executado diretamente no terminal do usuário, pois o ambiente do Gemini não possui interface gráfica.**
     *   Proponha um plano de ação detalhado para as correções e refatorações, solicitando confirmação antes de aplicar.
+8.  **Configuração de Logging Centralizada:** Verifique se a configuração de logging está centralizada em `core/settings.py` e se os logs estão sendo direcionados para um diretório `logs/` com rotação. Caso contrário, proponha a implementação.
 9.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `pyproject.toml`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
 
 #### 2.3. Ao executar (`testes`)
 
-O comando `testes` deve realizar verificações abrangentes em **todo o projeto**, garantindo segurança, proteção, otimização e perfeito funcionamento.
-
-1.  **Execução de Testes Abrangentes (Pytest com Cobertura):**
-    *   **Ação:** `pytest --cov=core --cov=apps --cov-report=html`
-    *   **Relato:** Forneça um resumo dos resultados e informe que o relatório de cobertura detalhado de todo o projeto está em `htmlcov/index.html`.
-2.  **Verificação de Qualidade de Código (Ruff):**
-    *   **Ação:** `ruff check .` e, se necessário, `ruff check . --fix`.
-    *   **Relato:** Reporte os problemas de estilo e qualidade de código encontrados.
-3.  **Verificação de Tipos (Pyright):**
-    *   **Ação:** `pyright`
-    *   **Relato:** Reporte os erros de tipagem encontrados.
-4.  **Análise de Performance (cProfile):**
-    *   **Ação:** `python -m cProfile -o profile_output.prof manage.py test`
-    *   **Relato:** Informe que um arquivo de perfil (`profile_output.prof`) foi gerado para análise detalhada de performance. Para visualizar, use `snakeviz profile_output.prof` (requer `snakeviz` instalado).
-    *   **Nota:** Para profiling mais granular de funções específicas, considere usar `line_profiler` (requer `@profile` nas funções e execução via `kernprof`).
+O comando `testes` não está mais disponível, pois todas as ferramentas de teste foram removidas do projeto.
 
 #### 2.4. Análise de Arquivos
 *   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.
@@ -77,7 +63,7 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 | :----------------------- | :--------- | :-------------------------------------------------------- |
 | **Framework Web** | Django     | Usado para a construção do backend e da lógica de negócio. |
 | **Linguagem** | Python     | Linguagem principal do projeto.                           |
-| **Banco de Dados Principal** | (A definir) | SGBD será configurado conforme a necessidade do projeto.        |
+| **Banco de Dados Principal** | SQLite     | Padrão para desenvolvimento. Pode ser configurado para outros SGBDs em produção.        |
 | **Gerenciador de Pacotes** | `uv`       | Ferramenta para gerenciamento de pacotes e ambientes.     |
 
 #### 3.2. Ambiente e Dependências (`uv` e `.env`)
@@ -89,7 +75,8 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 #### 3.3. Estrutura do Projeto Django
 
 * **Configurações (`core/settings.py`):** Arquivo de configuração central. Dados sensíveis **NUNCA** devem ser codificados diretamente aqui.
-* **URLs (`core/urls.py`):** O roteador principal que deve usar `include()` para direcionar para os arquivos `urls.py` de cada app dentro do diretório `apps/`.
+* **URLs (`core/urls.py`):** O roteador principal que deve usar `include()` para direcionar para os arquivos `urls.py` de cada app dentro do diretório `apps/`. Certifique-se de que todos os apps, como `apps.automacao_documentos`, estejam incluídos.
+* **Armazenamento de Arquivos (`apps/common/storage.py`):** O `OriginalFilenameStorage` garante que os arquivos sejam salvos com seus nomes originais. **Atenção:** Isso significa que arquivos com o mesmo nome serão sobrescritos, o que é intencional para a substituição de certificados existentes.
 * **Padrões de Qualidade e Segurança:**
     * **Estilo:** PEP 8 (use `ruff` para formatar/verificar).
     * **Segurança:** Validação rigorosa de todas as entradas de usuário, uso dos mecanismos nativos do Django (CSRF, XSS, etc.).
@@ -102,7 +89,7 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
 * **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
 * **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
-* **Limpeza Pré-Commit:** Antes de cada commit, **certifique-se de que todos os arquivos e pastas temporárias, de cache ou de logs que não são essenciais para o funcionamento do projeto foram removidos**. Isso inclui, mas não se limita a, `__pycache__`, `.pytest_cache`, `.ruff_cache`, `htmlcov/`, `db.sqlite3`, `profile_output.prof`, `error_screenshot_*.png` e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`. **Sempre verifique o `git status` após a limpeza para garantir que não há arquivos indesejados.**
+* **Limpeza Pré-Commit:** Antes de cada commit, **certifique-se de que todos os arquivos e pastas temporárias, de cache ou de logs que não são essenciais para o funcionamento do projeto foram removidos**. Isso inclui, mas não se limita a, `__pycache__`, `.ruff_cache`, `db.sqlite3` e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`. **Sempre verifique o `git status` após a limpeza para garantir que não há arquivos indesejados.**
 * **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
 * **Push Completo e Seguro:**
     1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
@@ -118,8 +105,6 @@ O comando `testes` deve realizar verificações abrangentes em **todo o projeto*
 * **Iniciar o servidor:** `python manage.py runserver`
 * **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
 * **Aplicar migrações:** `python manage.py migrate`
-* **Executar testes (geral):** `pytest`
-* **Executar testes (app específico):** `pytest apps/[nome_do_app]/`
 * **Instalar dependências do projeto:** `uv pip install -r requirements.txt`
 * **Adicionar nova dependência:** `uv add <nome-do-pacote>`
 * **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`

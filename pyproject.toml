@@ -19,6 +19,40 @@ dependencies = [
     "ruff>=0.12.5",
 ]
 
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+select = ["E", "W", "F", "I", "N", "D", "UP", "B", "A", "C4", "SIM", "ISC", "ICN", "TID", "ERA", "RUF"]
+ignore = [
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D107", # Missing docstring in __init__
+    "D203", # 1 blank line required before class docstring
+    "D213", # Multi-line docstring summary should start on the second line
+    "D401", # First line should be in imperative mood
+    "D417", # Missing argument descriptions in the docstring
+    "E501", # Line too long (handled by formatter)
+    "F401", # Unused import (handled by ruff --fix)
+]
+exclude = [
+    ".venv",
+    "migrations",
+    "__pycache__",
+    "htmlcov",
+    "media",
+    "logs",
+]
+
+[tool.ruff.isort]
+known-first-party = ["apps", "core"]
+known-local-folder = ["apps", "core"]
+force-single-line = false
+combine-as-imports = true
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "core.settings"
 python_files = "test_*.py *_test.py tests.py"

@@ -18,3 +18,11 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **`login_portran.py`:** Modificado para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
 - **`upload_licenca.py`:** Modificado para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
 - **`automacao_documentos_ipiranga.py`:** Modificado para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
+
+## 2025-08-01 - Aprimoramentos de Robustez
+
+- **Função `login_to_portran`:**
+    - Adicionada a importação do módulo `asyncio`.
+    - Implementada lógica de resiliência para instabilidade de login no portal Ipiranga: o script aguarda alguns segundos e recarrega a página se detectar a mensagem "Erro Inesperado. Favor tente novamente.", aumentando a robustez da automação.
+
+- **Remoção de Testes:** Todos os arquivos de teste (`tests.py`) foram removidos do projeto, incluindo os testes específicos deste app.

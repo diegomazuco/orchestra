@@ -1,7 +1,9 @@
+import json
+
+from django.core.management import call_command
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core.management import call_command
-import json
+
 
 @csrf_exempt
 def iniciar_automacao(request):
