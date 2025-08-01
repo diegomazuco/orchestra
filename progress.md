@@ -52,3 +52,36 @@
 - **Análise de Estrutura e Boas Práticas:**
     - A estrutura geral do projeto "Orchestra" foi confirmada como modular e bem organizada, seguindo as convenções do Django.
     - Reforçada a importância de executar comandos de automação diretamente no terminal do usuário para depuração visual, devido às limitações do ambiente do Gemini sem interface gráfica.
+
+## 2025-08-01 - Configuração e Execução de Ferramentas de Qualidade e Performance
+
+- **Configuração e Execução do Ruff (Linter e Formatador):**
+    - **Instalação:** `ruff` e `ruff-django` instalados como dependências de desenvolvimento.
+    - **Configuração:** `pyproject.toml` atualizado com regras abrangentes (incluindo `DJ` para Django), exclusões de diretórios e configurações de formatação (`ruff format`).
+    - **Execução:** `ruff check .` e `ruff format .` executados para garantir a conformidade com o estilo e a identificação de problemas. Todos os erros de linting foram resolvidos.
+
+- **Configuração e Execução do Pyright (Verificador de Tipos Estático):**
+    - **Instalação:** `pyright` e `django-stubs` instalados como dependências de desenvolvimento.
+    - **Configuração:** `pyrightconfig.json` criado com configurações recomendadas para projetos Django, incluindo `include`, `exclude`, `extraPaths`, `pythonVersion`, `pythonPlatform`, `typeCheckingMode`, e `reportMissingTypeStubs`.
+    - **Correções:** Erros de `reportAttributeAccessIssue` e `reportMissingTypeStubs` foram resolvidos através da adição de `type: ignore` em linhas específicas e instalação de `decouple-types`.
+    - **Execução:** `pyright` executado, resultando em "0 errors, 0 warnings, 0 informations".
+
+- **Configuração e Execução de Profiling (`cProfile` e `line_profiler`):**
+    - **Instalação:** `line-profiler` instalado como dependência de desenvolvimento.
+    - **Preparação do Script:** `create_test_data.py` modificado para permitir profiling com `cProfile` (via `--profile-cprofile`) e `line_profiler` (via `@profile` e `kernprof`).
+    - **Execução `cProfile`:** `python create_test_data.py --profile-cprofile` executado com sucesso.
+    - **Execução `line_profiler`:** `kernprof -l create_test_data.py` executado com sucesso, gerando o arquivo `.lprof`.
+    - **Análise:** Resultados de profiling obtidos, identificando as operações de criação do ORM do Django como as mais custosas em `create_test_data.py`.
+    - **Reversão:** Decorador `@profile` removido de `create_test_data.py` após o profiling.
+
+- **Configuração do `pre-commit`:**
+    - **Instalação:** `pre-commit` instalado como dependência de desenvolvimento.
+    - **Configuração:** `.pre-commit-config.yaml` criado com hooks para `pre-commit-hooks`, `ruff-pre-commit` e `pyright-python`.
+    - **Execução:** `pre-commit install` e `pre-commit run --all-files` executados com sucesso após a resolução de problemas de versão e configuração.
+
+- **Instalação do `safety`:**
+    - **Instalação:** `safety` instalado como dependência de desenvolvimento.
+
+- **Configuração do `django-debug-toolbar`:**
+    - **Instalação:** `django-debug-toolbar` instalado como dependência de desenvolvimento.
+    - **Configuração:** `core/settings.py` e `core/urls.py` atualizados para integrar o `django-debug-toolbar` em ambiente de desenvolvimento.

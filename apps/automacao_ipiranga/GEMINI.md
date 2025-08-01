@@ -45,5 +45,3 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 > "Crie um custom command do Django chamado `sincronizar_veiculos_ipiranga`. O comando deve buscar veículos no portal Ipiranga e atualizar o status no modelo `VeiculoIpiranga`."
 
 ---
-
-

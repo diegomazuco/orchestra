@@ -1,0 +1,28 @@
+{
+    "include": [
+        "core",
+        "apps"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        "**/.venv",
+        "**/migrations",
+        "**/node_modules",
+        "**/*.pyi"
+    ],
+    "extraPaths": [
+        "./core",
+        "./apps"
+    ],
+    "pythonVersion": "3.12",
+    "pythonPlatform": "Linux",
+    "typeCheckingMode": "basic",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": true,
+    "reportUndefinedVariable": true,
+    "reportUnusedImport": true,
+    "reportAttributeAccessIssue": "none",
+    "reportPrivateImportUsage": "none",
+    "venvPath": ".",
+    "venv": ".venv"
+}

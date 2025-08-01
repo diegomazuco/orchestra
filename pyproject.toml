@@ -22,7 +22,25 @@ dependencies = [
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-select = ["E", "W", "F", "I", "N", "D", "UP", "B", "A", "C4", "SIM", "ISC", "ICN", "TID", "ERA", "RUF"]
+exclude = [
+    ".venv",
+    "migrations",
+    "__pycache__",
+    "htmlcov",
+    "media",
+    "logs",
+    ".direnv",
+    ".git",
+    ".git-rewrite",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "venv",
+    "env",
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "D", "UP", "B", "A", "C4", "SIM", "ISC", "ICN", "TID", "ERA", "RUF", "DJ"]
 ignore = [
     "D100", # Missing docstring in public module
     "D104", # Missing docstring in public package
@@ -35,22 +53,20 @@ ignore = [
     "E501", # Line too long (handled by formatter)
     "F401", # Unused import (handled by ruff --fix)
 ]
-exclude = [
-    ".venv",
-    "migrations",
-    "__pycache__",
-    "htmlcov",
-    "media",
-    "logs",
-]
 
-[tool.ruff.isort]
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
 known-first-party = ["apps", "core"]
-known-local-folder = ["apps", "core"]
+known-local-folder = []
 force-single-line = false
 combine-as-imports = true
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
 [tool.pytest.ini_options]
@@ -68,3 +84,15 @@ exclude_lines = [
 ]
 ignore_errors = true
 show_missing = true
+
+[dependency-groups]
+dev = [
+    "decouple-types>=1.0.2",
+    "django-debug-toolbar>=6.0.0",
+    "django-stubs>=5.2.2",
+    "line-profiler>=5.0.0",
+    "pre-commit>=4.2.0",
+    "pyright>=1.1.403",
+    "ruff>=0.12.5",
+    "safety>=3.6.0",
+]

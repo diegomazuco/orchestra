@@ -49,4 +49,3 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 > "Crie um custom command do Django chamado `automacao_documentos_ibama`. O comando deve buscar documentos vencidos no portal do IBAMA e criar um registro de `LogExecucaoAutomacao` com o status 'ALERTA' para cada um deles."
 
 ---
-

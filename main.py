@@ -1,4 +1,5 @@
 def main():
+    """Função principal do projeto Orchestra."""
     print("Hello from orchestra!")
 
 

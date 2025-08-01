@@ -78,13 +78,101 @@ O comando `testes` não está mais disponível, pois todas as ferramentas de tes
 * **URLs (`core/urls.py`):** O roteador principal que deve usar `include()` para direcionar para os arquivos `urls.py` de cada app dentro do diretório `apps/`. Certifique-se de que todos os apps, como `apps.automacao_documentos`, estejam incluídos.
 * **Armazenamento de Arquivos (`apps/common/storage.py`):** O `OriginalFilenameStorage` garante que os arquivos sejam salvos com seus nomes originais. **Atenção:** Isso significa que arquivos com o mesmo nome serão sobrescritos, o que é intencional para a substituição de certificados existentes.
 * **Padrões de Qualidade e Segurança:**
-    * **Estilo:** PEP 8 (use `ruff` para formatar/verificar).
+    * **Sequência de Execução Recomendada:**
+        É crucial seguir a seguinte ordem para garantir a máxima eficácia e evitar conflitos entre as ferramentas:
+        1.  **Automação de Qualidade de Código (`pre-commit`):** Garante que o código seja verificado antes de cada commit.
+            *   **Instalação:** `uv add pre-commit --group dev`
+            *   **Configuração:** Crie o arquivo `.pre-commit-config.yaml` na raiz do projeto com os hooks para `ruff` e `pyright` (conforme exemplo abaixo).
+            *   **Instalação dos Hooks Git:** `pre-commit install`
+            *   **Execução Manual (para verificar todos os arquivos):** `pre-commit run --all-files`
+            *   **Exemplo de `.pre-commit-config.yaml`:**
+                ```yaml
+                repos:
+                  - repo: https://github.com/pre-commit/pre-commit-hooks
+                    rev: v4.5.0
+                    hooks:
+                      - id: trailing-whitespace
+                      - id: end-of-file-fixer
+                      - id: check-yaml
+                      - id: check-added-large-files
+                      - id: debug-statements
+                      - id: requirements-txt-fixer
+
+                  - repo: https://github.com/astral-sh/ruff-pre-commit
+                    rev: v0.12.7 # Use a versão mais recente do ruff-pre-commit
+                    hooks:
+                      - id: ruff-format
+                      - id: ruff-check
+                        args: [--fix, --exit-non-zero-on-fix]
+
+                  - repo: https://github.com/RobertCraigie/pyright-python
+                    rev: v1.1.403 # Use uma versão estável recente
+                    hooks:
+                      - id: pyright
+                ```
+        2.  **Análise e Formatação de Código (`Ruff`):** Executado automaticamente pelo `pre-commit`.
+            *   Para formatar o código automaticamente: `ruff format .`
+            *   Para corrigir automaticamente os problemas que podem ser corrigidos: `ruff check . --fix`
+            *   Para verificar o código e identificar problemas restantes: `ruff check .`
+        3.  **Verificação de Tipos (`Pyright`):** Executado automaticamente pelo `pre-commit`.
+            *   Para verificar o código e identificar problemas de tipo: `pyright`
+        4.  **Verificação de Vulnerabilidades de Dependências (`safety`):**
+            *   **Instalação:** `uv add safety --group dev`
+            *   **Uso:** `safety check -r requirements.txt`
+        5.  **Otimização de Performance (`cProfile` e `line_profiler`):** Aplicada a um código já funcionalmente correto e sem erros de estilo ou tipo.
+            *   **`cProfile` (Profiling de Funções):**
+                *   **Uso:** Para obter um resumo do tempo gasto em cada função.
+                *   **Execução:** `python create_test_data.py --profile-cprofile`
+                *   **Análise:** A saída será impressa no console. Para análise mais detalhada, você pode salvar o resultado em um arquivo `.prof` e usar `snakeviz` (instale com `uv add snakeviz`) para visualização:
+                    `snakeviz create_test_data_cprofile.prof`
+            *   **`line_profiler` (Profiling Linha a Linha):**
+                *   **Uso:** Para identificar qual linha dentro de uma função específica está consumindo mais tempo.
+                *   **Preparação:** Adicione o decorador `@profile` à função `run()` no arquivo `create_test_data.py`.
+                *   **Execução:** `kernprof -l create_test_data.py`
+                *   **Análise:** Após a execução, um arquivo `.lprof` será gerado (ex: `create_test_data.py.lprof`). Para visualizar os resultados, execute:
+                    `python -m line_profiler create_test_data.py.lprof`
+                *   **Importante:** Lembre-se de remover o decorador `@profile` do código antes de fazer o commit, pois ele adiciona overhead e não deve ser usado em produção.
+    * **Ferramenta de Depuração em Desenvolvimento (`django-debug-toolbar`):**
+        *   **Instalação:** `uv add django-debug-toolbar --group dev`
+        *   **Configuração em `core/settings.py`:**
+            ```python
+            INSTALLED_APPS = [
+                "debug_toolbar",
+                # ... outros apps
+            ]
+
+            MIDDLEWARE = [
+                "debug_toolbar.middleware.DebugToolbarMiddleware",
+                # ... outros middlewares
+            ]
+
+            INTERNAL_IPS = [
+                "127.0.0.1",
+                # Adicione outros IPs se necessário (ex: IP da sua máquina na rede local)
+            ]
+            ```
+        *   **Configuração em `core/urls.py` (apenas para DEBUG=True):**
+            ```python
+            from django.conf import settings
+            from django.urls import include, path
+
+            urlpatterns = [
+                # ... suas URLs existentes
+            ]
+
+            if settings.DEBUG:
+                import debug_toolbar
+
+                urlpatterns = [
+                    path("__debug__/", include(debug_toolbar.urls)),
+                ] + urlpatterns
+            ```
     * **Segurança:** Validação rigorosa de todas as entradas de usuário, uso dos mecanismos nativos do Django (CSRF, XSS, etc.).
     * **Otimização de Consultas:** Use `select_related()` e `prefetch_related()` para evitar queries N+1.
 
 ---
 
-### 4. Fluxo de Trabalho e Automação (Git)
+### 5. Fluxo de Trabalho e Automação (Git)
 
 * **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
 * **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
@@ -100,7 +188,7 @@ O comando `testes` não está mais disponível, pois todas as ferramentas de tes
 
 ---
 
-### 5. Comandos Rápidos do Projeto
+### 6. Comandos Rápidos do Projeto
 
 * **Iniciar o servidor:** `python manage.py runserver`
 * **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
