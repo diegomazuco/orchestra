@@ -7,7 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "django>=5.2.4",
     "line-profiler>=5.0.0",
+    "mysqlclient>=2.2.7",
     "playwright>=1.54.0",
+    "psycopg2-binary>=2.9.10",
     "pymupdf>=1.26.3",
     "pyright>=1.1.403",
     "pytesseract>=0.3.13",

@@ -85,3 +85,37 @@
 - **Configuração do `django-debug-toolbar`:**
     - **Instalação:** `django-debug-toolbar` instalado como dependência de desenvolvimento.
     - **Configuração:** `core/settings.py` e `core/urls.py` atualizados para integrar o `django-debug-toolbar` em ambiente de desenvolvimento.
+
+## 2025-08-04 - Limpeza do Projeto e Refatoração de Logs
+
+- **Análise e Limpeza de Arquivos Temporários:**
+    - Realizada uma verificação completa na estrutura do projeto para identificar arquivos de log, cache, e outros artefatos temporários.
+    - Removidos os diretórios `.pytest_cache`, `.ruff_cache`, `htmlcov` e todos os `__pycache__`.
+    - Excluídos arquivos de log (`*.log`) e screenshots de erro (`*.png`) antigos da raiz do projeto e do diretório `logs/`.
+
+- **Refatoração do Comando de Automação:**
+    - O comando `automacao_documentos_ipiranga` foi modificado para eliminar a criação de arquivos de depuração (`.png`, `.html`) e logs temporários.
+    - A geração de screenshots de erro foi mantida, mas agora os arquivos são salvos diretamente no diretório `logs/`, que é ignorado pelo Git, mantendo a raiz do projeto limpa.
+
+- **Verificação Final:**
+    - Confirmado que não há mais geração de arquivos desnecessários. A configuração de logging está centralizada e os mecanismos de depuração estão organizados.
+
+## 2025-08-04 - Criação do App "Análise de Infrações"
+
+- **Criação da Estrutura do App:**
+    - Criado o novo app `analise_infracoes` dentro do diretório `apps/` utilizando `manage.py startapp`.
+    - Corrigido o arquivo `apps.py` gerado para corresponder ao caminho completo do app (`apps.analise_infracoes`).
+
+- **Configuração de Banco de Dados Multi-DB:**
+    - Adicionados os drivers `mysqlclient` e `psycopg2-binary` para conectividade com MySQL e PostgreSQL.
+    - O arquivo `.env` foi atualizado com variáveis de ambiente para as duas novas conexões de banco de dados (origem MySQL e destino PostgreSQL).
+    - O `settings.py` foi configurado para ler as novas variáveis e estabelecer as conexões `mysql_source` e `postgres_db`.
+
+- **Desenvolvimento do App:**
+    - O novo app foi registrado em `INSTALLED_APPS`.
+    - Criado o modelo `Infracao` para representar os dados a serem sincronizados.
+    - Geradas e aplicadas as migrações para o banco de dados PostgreSQL (destino).
+    - Desenvolvido um *custom command* (`sincronizar_infracoes`) com a lógica para ler do MySQL e escrever no PostgreSQL.
+    - Criadas as rotas, a view (`listar_infracoes`) e o template (`listar_infracoes.html`) para exibir os dados na interface web.
+    - Adicionado um link no menu principal do Orchestra para a nova página de "Análise de Infrações".
+    - O modelo `Infracao` foi registrado no `admin.py` para gerenciamento.

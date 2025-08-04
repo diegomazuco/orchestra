@@ -29,3 +29,4 @@ temp_automation.log
 *.log
 media/
 error_screenshot_*.png
+*.lprof

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "apps.dashboard",
     "apps.automacao_ipiranga",
     "apps.automacao_documentos",
+    "apps.analise_infracoes",
     "apps.common",
 ]
 
@@ -88,7 +89,23 @@ DATABASES = {
     "default": {
         "ENGINE": config("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
         "NAME": config("DATABASE_NAME", default=BASE_DIR / "db.sqlite3"),
-    }
+    },
+    "mysql_source": {
+        "ENGINE": config("MYSQL_DB_ENGINE"),
+        "NAME": config("MYSQL_DB_NAME"),
+        "USER": config("MYSQL_DB_USER"),
+        "PASSWORD": config("MYSQL_DB_PASSWORD"),
+        "HOST": config("MYSQL_DB_HOST"),
+        "PORT": config("MYSQL_DB_PORT", cast=int),
+    },
+    "postgres_db": {
+        "ENGINE": config("POSTGRES_DB_ENGINE"),
+        "NAME": config("POSTGRES_DB_NAME"),
+        "USER": config("POSTGRES_DB_USER"),
+        "PASSWORD": config("POSTGRES_DB_PASSWORD"),
+        "HOST": config("POSTGRES_DB_HOST"),
+        "PORT": config("POSTGRES_DB_PORT", cast=int),
+    },
 }
 
 
@@ -190,11 +207,6 @@ LOGGING = {
         },
         "apps.automacao_ipiranga": {  # Logger específico para a automação
             "handlers": ["console", "automation_file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "apps.common": {  # Logger específico para o app common
-            "handlers": ["console", "file"],
             "level": "INFO",
             "propagate": False,
         },

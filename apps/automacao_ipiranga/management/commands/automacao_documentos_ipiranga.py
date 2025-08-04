@@ -332,12 +332,6 @@ class Command(BaseCommand):
                             logger.info(
                                 f"Arquivo PDF associado removido: {file_path_upload}"
                             )
-                        if os.path.exists("login_error_screenshot.png"):
-                            os.remove("login_error_screenshot.png")
-                            logger.info(
-                                "Screenshot de erro de login removido (automação bem-sucedida)."
-                            )
-
                         await sync_to_async(setattr)(certificado, "status", "enviado")
                         await sync_to_async(certificado.save)()
                         logger.info(
@@ -348,21 +342,21 @@ class Command(BaseCommand):
 
                     except Exception as e:
                         logger.error(f"FALHA: {e}")
-                        # Apenas tenta atualizar o status se o certificado foi recuperado com sucesso
                         if certificado:
                             await sync_to_async(setattr)(certificado, "status", "falha")
                             await sync_to_async(certificado.save)()
-                            await page.screenshot(
-                                path=f"error_screenshot_cert_{certificado.id}.png"  # type: ignore
+                            screenshot_path = os.path.join(
+                                "logs", f"error_screenshot_cert_{certificado.id}.png"
                             )
+                            await page.screenshot(path=screenshot_path)
                             logger.error(
-                                f"Erro na automação para o certificado ID {certificado.id}: {e}"  # type: ignore
+                                f"Erro na automação para o certificado ID {certificado.id}. Screenshot salvo em: {screenshot_path}"  # type: ignore
                             )
                         else:
                             logger.error(
                                 f"Erro inesperado antes de processar certificado ID {certificado_id}: {e}"
                             )
-                        continue  # Pula para o próximo certificado
+                        continue
 
         except Exception as e:
             logger.error(
@@ -372,18 +366,6 @@ class Command(BaseCommand):
         finally:
             if browser:
                 await browser.close()
-            # Limpeza de arquivos temporários e de depuração (incondicional)
-            temp_files_to_remove = [
-                "temp_automation.log",
-                "debug_placa_nao_encontrada.png",
-                "debug_pagina_veiculos.html",
-                "debug_certificados.png",
-                "debug_certificados.html",
-            ]
-            for f in temp_files_to_remove:
-                if os.path.exists(f):
-                    os.remove(f)
-                    logger.info(f"Arquivo temporário removido: {f}")
 
     def handle(self, *args, **options):
         """Executa o comando de automação de forma síncrona."""

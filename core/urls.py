@@ -24,12 +24,10 @@ urlpatterns = [
     path("", include("apps.dashboard.urls")),
     path("automacao_ipiranga/", include("apps.automacao_ipiranga.urls")),
     path("automacao_documentos/", include("apps.automacao_documentos.urls")),
+    path("analise_infracoes/", include("apps.analise_infracoes.urls")),
 ]
 
 if settings.DEBUG:
     import debug_toolbar
 
-    urlpatterns = [
-        path("__debug__/", include(debug_toolbar.urls)),
-        *urlpatterns,
-    ]
+    urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
