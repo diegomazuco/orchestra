@@ -7,8 +7,8 @@ from .models import CertificadoVeiculo, VeiculoIpiranga
 class VeiculoIpirangaAdmin(admin.ModelAdmin):
     """Administração de Veículos Ipiranga."""
 
-    list_display = ("placa", "renavam", "status_documentos", "data_atualizacao")
-    search_fields = ("placa", "renavam")
+    list_display = ("placa", "status_documentos", "data_atualizacao")
+    search_fields = ("placa",)
 
 
 @admin.register(CertificadoVeiculo)

@@ -12,7 +12,6 @@ class VeiculoIpiranga(models.Model):
     """Modelo para armazenar informações de veículos Ipiranga."""
 
     placa = models.CharField(max_length=10, unique=True)
-    renavam = models.CharField(max_length=11, unique=True, blank=True, default="")
     status_documentos = models.CharField(max_length=255, blank=True, default="")
     data_atualizacao = models.DateTimeField(auto_now=True)
 

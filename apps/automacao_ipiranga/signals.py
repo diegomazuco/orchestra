@@ -21,10 +21,6 @@ def run_automation_command(instance_id):
         manage_py_path = os.path.abspath("./manage.py")
         project_root = os.path.dirname(manage_py_path)
 
-        # Arquivos de log para o subprocesso
-        stdout_log_path = os.path.join(project_root, "automation_stdout.log")
-        stderr_log_path = os.path.join(project_root, "automation_stderr.log")
-
         command = [
             python_executable,
             manage_py_path,
@@ -33,28 +29,20 @@ def run_automation_command(instance_id):
         ]
 
         logger.info(f"[SIGNAL] Executando comando em subprocesso: {' '.join(command)}")
-        logger.info(f"[SIGNAL] Log de STDOUT será salvo em: {stdout_log_path}")
-        logger.info(f"[SIGNAL] Log de STDERR será salvo em: {stderr_log_path}")
 
-        # Abrir arquivos de log para o subprocesso
-        with (
-            open(stdout_log_path, "w") as stdout_log,
-            open(stderr_log_path, "w") as stderr_log,
-        ):
-            # Inicia o processo em segundo plano, desanexando-o completamente
-            logger.info(
-                f"[SIGNAL] Preparando para iniciar subprocesso para Certificado ID: {instance_id}. Comando: {' '.join(command)}"
-            )
-            process = subprocess.Popen(
-                command,
-                stdout=stdout_log,
-                stderr=stderr_log,
-                preexec_fn=os.setsid,  # Essencial para desanexar em Unix-like systems
-                cwd=project_root,
-            )
-            logger.info(
-                f"[SIGNAL] Subprocesso iniciado para Certificado ID: {instance_id}. PID: {process.pid}"
-            )
+        # Inicia o processo em segundo plano, desanexando-o completamente
+        # Redireciona stdout e stderr para /dev/null para evitar que o processo pai espere
+        # e para que o logging seja tratado pelo sistema de logging do Django no subprocesso.
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            preexec_fn=os.setsid,  # Essencial para desanexar em Unix-like systems
+            cwd=project_root,
+        )
+        logger.info(
+            f"[SIGNAL] Subprocesso iniciado para Certificado ID: {instance_id}. PID: {process.pid}"
+        )
 
     except Exception as e:
         logger.error(

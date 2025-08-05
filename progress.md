@@ -1,133 +1,40 @@
-## 2025-07-31 - Inicialização, Refatoração e Configuração da Automação
+## 05/08/2025 15:30:00 - Refatoração de Modelos e Limpeza de Arquivos
 
-- **Inicialização do Projeto:**
-    - Sincronização do repositório.
-    - Leitura dos arquivos `progress.md` para contexto.
-    - Configuração do ambiente Python: `.venv` verificado, dependências instaladas (`requirements.txt`), e ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) instaladas.
-    - Migrações do Django executadas.
-    - Análise da estrutura do projeto (`core/settings.py`, `core/urls.py`, `pyproject.toml`) para entender a arquitetura modular e configurações.
-    - Verificação de sanidade do código: Limpeza de arquivos temporários e de cache.
+- **Criação de Modelos em `automacao_documentos`:**
+    - Criados os modelos `Portal`, `Documento`, `Automacao` e `LogExecucaoAutomacao` em `apps/automacao_documentos/models.py`.
+    - Geradas e aplicadas as migrações para o app `automacao_documentos`.
+    - Criado o arquivo `apps/automacao_documentos/admin.py` e registrados os novos modelos para gerenciamento no Django Admin.
 
-- **Refatoração do Comando `automacao_documentos_ipiranga`:**
-    - Implementada a extração de `numero_documento_valor` e `vencimento_valor_pdf` do texto do PDF usando expressões regulares.
-    - Substituído o `asyncio.sleep(5)` por um `TODO` para o usuário implementar a lógica de espera por um elemento de sucesso na página.
-    - Removidos comentários `TODO` e corrigido o comentário sobre `headless`.
+- **Limpeza de Arquivos de Modelo Vazios:**
+    - Removidos os arquivos `apps/common/models.py` e `apps/dashboard/models.py`, que estavam vazios e não eram mais necessários.
 
-- **Configuração da Automação Web:**
-    - Alterado o modo `headless` do Playwright para `False` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para permitir a visualização da automação.
-    - Adicionada uma URL (`iniciar_automacao/`) e uma view (`iniciar_automacao`) em `apps/automacao_ipiranga/` para disparar a automação via requisição POST.
+## 05/08/2025 15:35:00 - Atualização de Dependências
 
-## 2025-08-01 - Otimizações, Segurança e Processamento de Múltiplos Certificados
+- **Atualização de `pyproject.toml`:**
+    - Atualizadas as versões de `line-profiler` para `5.0.1` e `ruff` para `0.12.7` no `pyproject.toml`.
 
-- **Refatoração do Comando `automacao_documentos_ipiranga`:**
-    - **Suporte a Múltiplos IDs:** O comando agora aceita múltiplos `certificado_ids` como argumento, permitindo o processamento em lote.
-    - **Inicialização Única do Navegador e Login:** O navegador e o login no portal são realizados apenas uma vez por execução do comando, otimizando o desempenho.
-    - **Extração de Dados do PDF Aprimorada:**
-        - O número do documento é extraído e formatado para conter apenas dígitos (removendo pontos e letras como 'A').
-        - A data de vencimento é extraída de forma mais robusta, buscando a última data no formato `DD/MON/YY` no primeiro bloco do certificado, garantindo a precisão.
-    - **Lógica de Confirmação de Sucesso:** A confirmação final de salvamento é feita aguardando o redirecionamento para a página de listagem de veículos, tornando a automação mais confiável.
-    - **Limpeza Automática:**
-        - Em caso de sucesso, o registro `CertificadoVeiculo` e o arquivo PDF associado são removidos do banco de dados e do sistema de arquivos, respectivamente.
-        - Arquivos temporários de log (`temp_automation.log`) e de depuração (`debug_*.png`, `debug_*.html`) são removidos incondicionalmente ao final da execução.
-        - Screenshots de erro (`error_screenshot_*.png`, `login_error_screenshot.png`) são agora removidos, conforme solicitação do usuário.
-    - **Tratamento de Erros por Certificado:** Se um certificado individual falhar, a automação registra o erro, atualiza o status do certificado para 'falha' e tenta continuar com o próximo, sem interromper todo o processo.
-
-- **Aprimoramentos no `apps/common/services.py`:**
-    - Adicionada a importação do módulo `asyncio`.
-    - Implementada lógica de resiliência para instabilidade de login no portal Ipiranga: o script aguarda alguns segundos e recarrega a página se detectar a mensagem "Erro Inesperado. Favor tente novamente.", aumentando a robustez da automação.
-
-- **Atualizações de Configuração (`core/settings.py`):**
-    - O app `apps.automacao_documentos` foi adicionado à lista `INSTALLED_APPS`.
-    - Implementada uma configuração de logging centralizada, direcionando os logs para um diretório `logs/` com rotação, melhorando a organização e o gerenciamento de logs.
-
-- **Atualizações de Rotas (`core/urls.py`):**
-    - A inclusão das URLs para o app `apps.automacao_documentos` foi adicionada.
-
-- **Documentação de Armazenamento (`apps/common/storage.py`):**
-    - Adicionado um comentário explícito na classe `OriginalFilenameStorage` para documentar o comportamento intencional de sobrescrita de arquivos com o mesmo nome.
-
-- **Organização de Scripts (`create_test_data.py`):**
-    - Adicionado um comentário no topo do arquivo `create_test_data.py` recomendando sua realocação para um diretório de scripts utilitários para melhor organização do projeto.
-
-- **Análise de Estrutura e Boas Práticas:**
-    - A estrutura geral do projeto "Orchestra" foi confirmada como modular e bem organizada, seguindo as convenções do Django.
-    - Reforçada a importância de executar comandos de automação diretamente no terminal do usuário para depuração visual, devido às limitações do ambiente do Gemini sem interface gráfica.
-
-## 2025-08-01 - Configuração e Execução de Ferramentas de Qualidade e Performance
-
-- **Configuração e Execução do Ruff (Linter e Formatador):**
-    - **Instalação:** `ruff` e `ruff-django` instalados como dependências de desenvolvimento.
-    - **Configuração:** `pyproject.toml` atualizado com regras abrangentes (incluindo `DJ` para Django), exclusões de diretórios e configurações de formatação (`ruff format`).
-    - **Execução:** `ruff check .` e `ruff format .` executados para garantir a conformidade com o estilo e a identificação de problemas. Todos os erros de linting foram resolvidos.
-
-- **Configuração e Execução do Pyright (Verificador de Tipos Estático):**
-    - **Instalação:** `pyright` e `django-stubs` instalados como dependências de desenvolvimento.
-    - **Configuração:** `pyrightconfig.json` criado com configurações recomendadas para projetos Django, incluindo `include`, `exclude`, `extraPaths`, `pythonVersion`, `pythonPlatform`, `typeCheckingMode`, e `reportMissingTypeStubs`.
-    - **Correções:** Erros de `reportAttributeAccessIssue` e `reportMissingTypeStubs` foram resolvidos através da adição de `type: ignore` em linhas específicas e instalação de `decouple-types`.
-    - **Execução:** `pyright` executado, resultando em "0 errors, 0 warnings, 0 informations".
-
-- **Configuração e Execução de Profiling (`cProfile` e `line_profiler`):**
-    - **Instalação:** `line-profiler` instalado como dependências de desenvolvimento.
-    - **Preparação do Script:** `create_test_data.py` modificado para permitir profiling com `cProfile` (via `--profile-cprofile`) e `line_profiler` (via `@profile` e `kernprof`).
-    - **Execução `cProfile`:** `python create_test_data.py --profile-cprofile` executado com sucesso.
-    - **Execução `line_profiler`:** `kernprof -l create_test_data.py` executado com sucesso, gerando o arquivo `.lprof`.
-    - **Análise:** Resultados de profiling obtidos, identificando as operações de criação do ORM do Django como as mais custosas em `create_test_data.py`.
-    - **Reversão:** Decorador `@profile` removido de `create_test_data.py` após o profiling.
+## 05/08/2025 15:40:00 - Configuração e Execução de Ferramentas de Qualidade de Código
 
 - **Configuração do `pre-commit`:**
-    - **Instalação:** `pre-commit` instalado como dependência de desenvolvimento.
-    - **Configuração:** `.pre-commit-config.yaml` criado com hooks para `pre-commit-hooks`, `ruff-pre-commit` e `pyright-python`.
-    - **Execução:** `pre-commit install` e `pre-commit run --all-files` executados com sucesso após a resolução de problemas de versão e configuração.
+    - Adicionado o hook `pyright` ao `.pre-commit-config.yaml`.
+    - Descomentado o hook `end-of-file-fixer` no `.pre-commit-config.yaml`.
+    - Instalados os hooks do `pre-commit` (`pre-commit install`).
+- **Execução e Correção:**
+    - Executados todos os hooks do `pre-commit` (`pre-commit run --all-files`).
+    - Corrigido o erro de `import` não utilizado (`import time`) em `apps/analise_infracoes/management/commands/sincronizar_infracoes.py`.
+    - Todos os hooks do `pre-commit` passaram com sucesso após as correções.
 
-- **Instalação do `safety`:**
-    - **Instalação:** `safety` instalado como dependência de desenvolvimento.
+## 05/08/2025 16:15:00 - Correção de Logging da Automação
 
-- **Configuração do `django-debug-toolbar`:**
-    - **Instalação:** `django-debug-toolbar` instalado como dependência de desenvolvimento.
-    - **Configuração:** `core/settings.py` e `core/urls.py` atualizados para integrar o `django-debug-toolbar` em ambiente de desenvolvimento.
+- **Modificação de `apps/automacao_ipiranga/signals.py`:**
+    - Removida a criação de arquivos de log separados (`automation_stdout.log`, `automation_stderr.log`) para o subprocesso da automação.
+    - Configurado o subprocesso para redirecionar `stdout` e `stderr` para `subprocess.DEVNULL`, garantindo que o logging seja tratado pelo sistema de logging padrão do Django e direcionado para `logs/automation.log`.
 
-## 2025-08-04 - Limpeza do Projeto e Refatoração de Logs
+## 05/08/2025 16:20:00 - Remoção do Campo Renavam e Limpeza de Dados
 
-- **Análise e Limpeza de Arquivos Temporários:**
-    - Realizada uma verificação completa na estrutura do projeto para identificar arquivos de log, cache, e outros artefatos temporários.
-    - Removidos os diretórios `.pytest_cache`, `.ruff_cache`, `htmlcov` e todos os `__pycache__`.
-    - Excluídos arquivos de log (`*.log`) e screenshots de erro (`*.png`) antigos da raiz do projeto e do diretório `logs/`.
-
-- **Refatoração do Comando de Automação:**
-    - O comando `automacao_documentos_ipiranga` foi modificado para eliminar a criação de arquivos de depuração (`.png`, `.html`) e logs temporários.
-    - A geração de screenshots de erro foi mantida, mas agora os arquivos são salvos diretamente no diretório `logs/`, que é ignorado pelo Git, mantendo a raiz do projeto limpa.
-
-- **Verificação Final:**
-    - Confirmado que não há mais geração de arquivos desnecessários. A configuração de logging está centralizada e os mecanismos de depuração estão organizados.
-
-## 2025-08-04 - Criação do App "Análise de Infrações"
-
-- **Criação da Estrutura do App:**
-    - Criado o novo app `analise_infracoes` dentro do diretório `apps/` utilizando `manage.py startapp`.
-    - Corrigido o arquivo `apps.py` gerado para corresponder ao caminho completo do app (`apps.analise_infracoes`).
-
-- **Configuração de Banco de Dados Multi-DB:**
-    - Adicionados os drivers `mysqlclient` e `psycopg2-binary` para conectividade com MySQL e PostgreSQL.
-    - O arquivo `.env` foi atualizado com variáveis de ambiente para as duas novas conexões de banco de dados (origem MySQL e destino PostgreSQL).
-    - O `settings.py` foi configurado para ler as novas variáveis e estabelecer as conexões `mysql_source` e `postgres_db`.
-
-- **Desenvolvimento do App:**
-    - O novo app foi registrado em `INSTALLED_APPS`.
-    - Criado o modelo `Infracao` para representar os dados a serem sincronizados.
-    - Geradas e aplicadas as migrações para o banco de dados PostgreSQL (destino).
-    - Desenvolvido um *custom command* (`sincronizar_infracoes`) com a lógica para ler do MySQL e escrever no PostgreSQL.
-    - Criadas as rotas, a view (`listar_infracoes`) e o template (`listar_infracoes.html`) para exibir os dados na interface web.
-    - Adicionado um link no menu principal do Orchestra para a nova página de "Análise de Infrações".
-    - O modelo `Infracao` foi registrado no `admin.py` para gerenciamento.
-
-## 05/08/2025 15:00:00 - Depuração da Automação e Problemas de Ambiente
-
-- **Problema:** A automação do Ipiranga não está sendo executada visualmente após o upload de arquivos, e os logs não estão sendo gerados, mesmo com configurações de `DEBUG` ativadas.
-- **Tentativas de Depuração:**
-    - Verificação e correção da URL de `process-documents/` no frontend (`orchestra.html`) e backend (`apps/dashboard/urls.py`).
-    - Adição de logging explícito na `process_documents_view` (`apps/dashboard/views.py`) para rastrear a execução.
-    - Aumento do nível de logging para `DEBUG` em `core/settings.py` para os loggers `apps`, `apps.automacao_ipiranga` e `apps.dashboard`.
-    - Tentativa de execução do servidor Django em primeiro plano para capturar a saída bruta, mas o servidor não inicializou completamente ou travou.
-    - Finalização manual de processos nas portas `5171`, `8000` e `37019` para garantir que não havia conflitos de porta.
-- **Diagnóstico:** A ausência persistente de logs e o comportamento de "somente carregando" do navegador, juntamente com o histórico de que um reinício do WSL resolveu o problema anteriormente, sugerem um problema de ambiente ou de estado do sistema operacional subjacente no WSL, e não um bug no código da aplicação Django.
-- **Próximo Passo:** Reiniciar o WSL para tentar resolver o problema de ambiente.
+- **Remoção do Campo `renavam`:**
+    - Removido o campo `renavam` do modelo `VeiculoIpiranga` em `apps/automacao_ipiranga/models.py`.
+    - Atualizado `apps/automacao_ipiranga/admin.py` para remover a referência ao campo `renavam`.
+    - Gerada e aplicada a migração `0003_remove_veiculoipiranga_renavam.py` para refletir a remoção do campo no banco de dados.
+- **Limpeza de Dados:**
+    - Deletados todos os registros existentes dos modelos `VeiculoIpiranga` e `CertificadoVeiculo` para garantir um ambiente de teste limpo.
