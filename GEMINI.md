@@ -119,9 +119,12 @@ O comando `testes` não está mais disponível, pois todas as ferramentas de tes
         4.  **Verificação de Vulnerabilidades de Dependências (`safety`):**
             *   **Instalação:** `uv add safety --group dev`
             *   **Uso:** `safety check -r requirements.txt`
+                *   **Instalação:** `uv add safety --group dev`
+        *   **Uso:** `safety check -r requirements.txt`
         5.  **Análise de Performance e Otimização:** Para investigar gargalos de performance em códigos complexos ou de longa duração (como `management commands`), utilize o seguinte fluxo de trabalho robusto. Para análise de performance de requisições web (views), prefira usar o `django-debug-toolbar`.
             *   **Instalação de Ferramentas:**
-                *   `uv add line-profiler snakeviz --group dev`
+                *   `uv add line-profiler==5.0.0 snakeviz --group dev`
+            *   **Fixação de Versão (`line-profiler`):** A versão do `line-profiler` foi fixada em `5.0.0` no `pyproject.toml` para evitar incompatibilidades com versões futuras do Python. Mantenha esta versão a menos que uma nova versão seja explicitamente testada e aprovada para todas as versões de Python suportadas.
             *   **Fluxo de Análise:**
                 1.  **Visão Macro com `cProfile`:**
                     *   **Objetivo:** Identificar as funções mais lentas em um `management command`.
