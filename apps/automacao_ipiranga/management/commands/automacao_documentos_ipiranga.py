@@ -17,6 +17,27 @@ from apps.common.services import (
 # Configuração do logger (agora centralizada em settings.py)
 logger = logging.getLogger(__name__)
 
+# --- TEMPORARY DEBUG LOGGING ---
+# This section is for debugging purposes only.
+# It redirects all logs from this command to a specific file.
+# REMOVE THIS BLOCK AFTER DEBUGGING.
+debug_log_file = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "..",
+    "..",
+    "logs",
+    "temp_automation_debug.log",
+)
+debug_handler = logging.FileHandler(debug_log_file)
+debug_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+debug_handler.setFormatter(formatter)
+logger.addHandler(debug_handler)
+logger.setLevel(logging.DEBUG)  # Ensure all debug messages are captured
+logger.info(f"Debugging logs are being written to: {debug_log_file}")
+# --- END TEMPORARY DEBUG LOGGING ---
+
 
 class Command(BaseCommand):
     """Comando Django para automatizar a atualização de documentos no portal Ipiranga."""
@@ -28,7 +49,7 @@ class Command(BaseCommand):
         browser = None
         try:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
+                browser = await p.chromium.launch(headless=False)
                 page = await browser.new_page()
 
                 # Login

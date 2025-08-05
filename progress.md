@@ -38,3 +38,7 @@
     - Gerada e aplicada a migração `0003_remove_veiculoipiranga_renavam.py` para refletir a remoção do campo no banco de dados.
 - **Limpeza de Dados:**
     - Deletados todos os registros existentes dos modelos `VeiculoIpiranga` e `CertificadoVeiculo` para garantir um ambiente de teste limpo.
+
+## 05/08/2025 - Atualização de Diretrizes do Gemini
+
+- **Instrução para `db.sqlite3`:** Adicionada diretriz ao `GEMINI.md` principal para não excluir o arquivo `db.sqlite3` durante a limpeza pré-commit, garantindo a persistência do banco de dados de desenvolvimento.
