@@ -200,8 +200,7 @@
                 });
 
                 try {
-                    // Substitua '/api/process-documents/' pelo endpoint real no seu backend
-                    const response = await fetch('/process-documents/', {
+                    const response = await fetch('{% url "dashboard:process_documents" %}', {
                         method: 'POST',
                         body: formData,
                         // Django CSRF token (necessário para requisições POST)

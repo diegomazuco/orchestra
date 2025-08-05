@@ -1,4 +1,4 @@
-## 2025-08-04 - Criação do App
+## 04/08/2025 - Criação do App
 
 - **Criação da Estrutura do App:**
     - Criado o novo app `analise_infracoes` dentro do diretório `apps/` utilizando `manage.py startapp`.

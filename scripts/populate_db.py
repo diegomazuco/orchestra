@@ -9,6 +9,9 @@ import string
 import sys
 from io import StringIO
 
+# Adiciona a raiz do projeto ao sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import django
 import fitz  # Import PyMuPDF # type: ignore
 from django.conf import settings

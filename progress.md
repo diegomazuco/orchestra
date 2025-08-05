@@ -67,7 +67,7 @@
     - **Execução:** `pyright` executado, resultando em "0 errors, 0 warnings, 0 informations".
 
 - **Configuração e Execução de Profiling (`cProfile` e `line_profiler`):**
-    - **Instalação:** `line-profiler` instalado como dependência de desenvolvimento.
+    - **Instalação:** `line-profiler` instalado como dependências de desenvolvimento.
     - **Preparação do Script:** `create_test_data.py` modificado para permitir profiling com `cProfile` (via `--profile-cprofile`) e `line_profiler` (via `@profile` e `kernprof`).
     - **Execução `cProfile`:** `python create_test_data.py --profile-cprofile` executado com sucesso.
     - **Execução `line_profiler`:** `kernprof -l create_test_data.py` executado com sucesso, gerando o arquivo `.lprof`.
@@ -119,3 +119,15 @@
     - Criadas as rotas, a view (`listar_infracoes`) e o template (`listar_infracoes.html`) para exibir os dados na interface web.
     - Adicionado um link no menu principal do Orchestra para a nova página de "Análise de Infrações".
     - O modelo `Infracao` foi registrado no `admin.py` para gerenciamento.
+
+## 05/08/2025 15:00:00 - Depuração da Automação e Problemas de Ambiente
+
+- **Problema:** A automação do Ipiranga não está sendo executada visualmente após o upload de arquivos, e os logs não estão sendo gerados, mesmo com configurações de `DEBUG` ativadas.
+- **Tentativas de Depuração:**
+    - Verificação e correção da URL de `process-documents/` no frontend (`orchestra.html`) e backend (`apps/dashboard/urls.py`).
+    - Adição de logging explícito na `process_documents_view` (`apps/dashboard/views.py`) para rastrear a execução.
+    - Aumento do nível de logging para `DEBUG` em `core/settings.py` para os loggers `apps`, `apps.automacao_ipiranga` e `apps.dashboard`.
+    - Tentativa de execução do servidor Django em primeiro plano para capturar a saída bruta, mas o servidor não inicializou completamente ou travou.
+    - Finalização manual de processos nas portas `5171`, `8000` e `37019` para garantir que não havia conflitos de porta.
+- **Diagnóstico:** A ausência persistente de logs e o comportamento de "somente carregando" do navegador, juntamente com o histórico de que um reinício do WSL resolveu o problema anteriormente, sugerem um problema de ambiente ou de estado do sistema operacional subjacente no WSL, e não um bug no código da aplicação Django.
+- **Próximo Passo:** Reiniciar o WSL para tentar resolver o problema de ambiente.

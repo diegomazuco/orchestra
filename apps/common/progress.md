@@ -2,7 +2,7 @@
 
 Este arquivo registra as principais ações e configurações realizadas especificamente no app "Common".
 
-## 30 de Julho de 2025
+## 30/07/2025
 
 ### Criação e Configuração do App
 - Criado o diretório `apps/common` (`mkdir -p apps/common`).
@@ -19,7 +19,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **`upload_licenca.py`:** Modificado para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
 - **`automacao_documentos_ipiranga.py`:** Modificado para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
 
-## 2025-08-01 - Aprimoramentos de Robustez
+## 01/08/2025 - Aprimoramentos de Robustez
 
 - **Função `login_to_portran`:**
     - Adicionada a importação do módulo `asyncio`.

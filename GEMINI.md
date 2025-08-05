@@ -119,19 +119,40 @@ O comando `testes` não está mais disponível, pois todas as ferramentas de tes
         4.  **Verificação de Vulnerabilidades de Dependências (`safety`):**
             *   **Instalação:** `uv add safety --group dev`
             *   **Uso:** `safety check -r requirements.txt`
-        5.  **Otimização de Performance (`cProfile` e `line_profiler`):** Aplicada a um código já funcionalmente correto e sem erros de estilo ou tipo.
-            *   **`cProfile` (Profiling de Funções):**
-                *   **Uso:** Para obter um resumo do tempo gasto em cada função.
-                *   **Execução:** `python create_test_data.py --profile-cprofile`
-                *   **Análise:** A saída será impressa no console. Para análise mais detalhada, você pode salvar o resultado em um arquivo `.prof` e usar `snakeviz` (instale com `uv add snakeviz`) para visualização:
-                    `snakeviz create_test_data_cprofile.prof`
-            *   **`line_profiler` (Profiling Linha a Linha):**
-                *   **Uso:** Para identificar qual linha dentro de uma função específica está consumindo mais tempo.
-                *   **Preparação:** Adicione o decorador `@profile` à função `run()` no arquivo `create_test_data.py`.
-                *   **Execução:** `kernprof -l create_test_data.py`
-                *   **Análise:** Após a execução, um arquivo `.lprof` será gerado (ex: `create_test_data.py.lprof`). Para visualizar os resultados, execute:
-                    `python -m line_profiler create_test_data.py.lprof`
-                *   **Importante:** Lembre-se de remover o decorador `@profile` do código antes de fazer o commit, pois ele adiciona overhead e não deve ser usado em produção.
+        5.  **Análise de Performance e Otimização:** Para investigar gargalos de performance em códigos complexos ou de longa duração (como `management commands`), utilize o seguinte fluxo de trabalho robusto. Para análise de performance de requisições web (views), prefira usar o `django-debug-toolbar`.
+            *   **Instalação de Ferramentas:**
+                *   `uv add line-profiler snakeviz --group dev`
+            *   **Fluxo de Análise:**
+                1.  **Visão Macro com `cProfile`:**
+                    *   **Objetivo:** Identificar as funções mais lentas em um `management command`.
+                    *   **Execução:** Execute o comando usando `cProfile`, salvando a saída em um arquivo binário `.prof`. É crucial redirecionar a saída de texto (`stdout` e `stderr`) para `/dev/null` para evitar sobrecarga de logs.
+                        ```bash
+                        python -m cProfile -o logs/my_command.prof manage.py my_command > /dev/null 2>&1
+                        ```
+                    *   **Análise Visual:** Use `snakeviz` para explorar o arquivo de resultados de forma interativa.
+                        ```bash
+                        snakeviz logs/my_command.prof
+                        ```
+                2.  **Visão Micro com `line_profiler`:**
+                    *   **Objetivo:** Analisar o tempo de execução linha a linha *dentro* das funções lentas identificadas pelo `cProfile`.
+                    *   **Preparação:** Modifique o código-fonte e adicione o decorador `@profile` diretamente acima da definição da(s) função(ões) que você deseja analisar.
+                        ```python
+                        from line_profiler import profile # Adicione este import se necessário
+
+                        @profile
+                        def minha_funcao_lenta():
+                            # ...
+                        ```
+                    *   **Execução:** Use `kernprof` para executar o script. Ele irá automaticamente encontrar o decorador `@profile` e gerar um arquivo `.lprof`.
+                        ```bash
+                        kernprof -l manage.py my_command
+                        ```
+                    *   **Análise:** Visualize o resultado linha a linha no console.
+                        ```bash
+                        python -m line_profiler manage.py.lprof
+                        ```
+                    *   **Limpeza:** **Lembre-se de remover o decorador `@profile` do código antes de fazer o commit**, pois ele não deve ser usado em produção.
+
     * **Ferramenta de Depuração em Desenvolvimento (`django-debug-toolbar`):**
         *   **Instalação:** `uv add django-debug-toolbar --group dev`
         *   **Configuração em `core/settings.py`:**

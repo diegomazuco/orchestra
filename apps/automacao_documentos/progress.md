@@ -2,7 +2,7 @@
 
 Este arquivo registra as principais ações e configurações realizadas especificamente no app "Automação de Documentos".
 
-## 25 de Julho de 2025
+## 25/07/2025
 
 ### Criação e Configuração do App
 - Criado o diretório `apps/automacao_documentos` (`mkdir -p apps/automacao_documentos`).
@@ -23,7 +23,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Utilizar Playwright para navegar, logar, e simular o upload de arquivo.
     - Atualizar o status da licença no banco de dados.
 
-## 28 de Julho de 2025
+## 28/07/2025
 
 ### Alinhamento com as Diretrizes Globais do Projeto
 - **Atualização do `GEMINI.md` do App:** O arquivo de diretrizes do app (`apps/automacao_documentos/GEMINI.md`) foi atualizado para refletir as novas regras de fluxo de trabalho com o Git, garantindo consistência com as diretrizes do projeto principal `Orchestra`.
@@ -43,7 +43,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - Criados os modelos `Portal`, `Automacao` e `LogExecucaoAutomacao` em `apps/automacao_documentos/models.py`.
 - Criadas e aplicadas as migrações para os novos modelos (`python manage.py makemigrations automacao_documentos` e `python manage.py migrate`).
 
-## 29 de Julho de 2025
+## 29/07/2025
 
 ### Correções de Qualidade de Código e Tipagem
 - **Correção de `SyntaxError`:** Corrigido erro de sintaxe em `apps/automacao_documentos/management/commands/upload_licenca.py` relacionado à string do seletor.
@@ -56,7 +56,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Adicionados comentários `# type: ignore` para suprimir falsos positivos do `pyright` relacionados a `BaseCommand.style`, `BooleanField(default=True)` em migrações e modelos, e acesso a atributos de `ForeignKey` e `DateTimeField` em `__str__`.
     - Adicionadas importações de `Any` e `cast` e uso de `cast(Any, self.style)` para suprimir erros de tipagem relacionados ao objeto `style` de `BaseCommand`.
 
-## 30 de Julho de 2025
+## 30/07/2025
 
 ### Refatoração da Automação de Documentos
 - **Centralização do Login:** O comando `login_portran.py` e `upload_licenca.py` foram refatorados para utilizar o serviço de login centralizado (`login_to_portran`) do app `common`.
@@ -70,7 +70,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ### Limpeza de Referências Antigas
 - **Remoção de URLs Fictícias do IBAMA:** As URLs fictícias e comentários relacionados ao IBAMA foram removidos de `apps/automacao_documentos/management/commands/upload_licenca.py` para evitar confusão e garantir que apenas referências reais sejam mantidas no código ativo.
 
-## 31 de Julho de 2025
+## 31/07/2025
 
 ### Limpeza de Código Obsoleto
 - **Remoção de Comandos:** Excluídos `login_portran.py` e `upload_licenca.py` de `apps/automacao_documentos/management/commands/`.
@@ -79,7 +79,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Remoção de Migrações:** Excluídos os arquivos de migração obsoletos (`0001_initial.py`, `0002_automacao_portal_logexecucaoautomacao_and_more.py`, `0003_remove_portal_senha.py`) de `apps/automacao_documentos/migrations/`.
 - **Remoção de Arquivos Obsoletos:** Removidos os arquivos `admin.py`, `urls.py` e `views.py` do diretório `apps/automacao_documentos/`, que estavam obsoletos após a refatoração do app.
 
-## 2025-08-01 - Limpeza e Atualização
+## 01/08/2025 - Limpeza e Atualização
 
 - **Remoção de Testes:** Todos os arquivos de teste (`tests.py`) foram removidos do projeto, incluindo os testes específicos deste app.
 - **Limpeza do App:** Confirmado que o app `automacao_documentos` foi limpo e está pronto para novas implementações, sem modelos, views ou comandos próprios atualmente.

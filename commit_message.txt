@@ -1,0 +1,23 @@
+feat: Atualiza formatos de data em arquivos de documentação e logs de depuração
+
+Este commit padroniza o formato de data e hora em todos os arquivos `progress.md` e `GEMINI.md` para `dd/mm/yyyy` ou `dd/mm/yyyy hh:mm:ss`, conforme solicitado.
+
+Além disso, inclui as seguintes alterações:
+- **`progress.md` (raiz):** Adiciona uma entrada detalhada sobre as tentativas de depuração da automação do Ipiranga, incluindo a verificação de logs, a correção da URL no frontend, a adição de logging explícito nas views, o aumento do nível de logging no `settings.py`, e a decisão de reiniciar o WSL devido a problemas de ambiente.
+- **`apps/analise_infracoes/progress.md`:** Atualiza o formato de data.
+- **`apps/automacao_documentos/progress.md`:** Atualiza o formato de data.
+- **`apps/automacao_ipiranga/progress.md`:** Atualiza o formato de data.
+- **`apps/common/progress.md`:** Atualiza o formato de data.
+- **`apps/dashboard/progress.md`:** Atualiza o formato de data.
+- **`apps/analise_infracoes/tests.py`:** Remove o arquivo de teste, conforme a diretriz de remoção de testes do projeto.
+- **`scripts/create_test_data.py`:** Renomeado para `scripts/populate_db.py` e movido para o diretório `scripts/` para melhor organização, refletindo sua função de popular o banco de dados.
+- **`apps/analise_infracoes/management/commands/sincronizar_infracoes.py`:** Modificado para usar dados de teste em memória quando a conexão com o MySQL falha, permitindo o profiling e a depuração da lógica interna.
+- **`apps/dashboard/templates/dashboard/orchestra.html`:** Corrige a URL do endpoint de processamento de documentos para usar a tag `{% url %}` do Django, garantindo a geração correta da URL.
+- **`apps/dashboard/urls.py`:** Adiciona `app_name = "dashboard"` para criar um namespace para as URLs do app, melhorando a organização.
+- **`apps/dashboard/views.py`:** Adiciona logging mais detalhado para auxiliar na depuração do fluxo de processamento de documentos.
+- **`core/settings.py`:** Ajusta os níveis de logging para `DEBUG` para os loggers `apps`, `apps.automacao_ipiranga` e `apps.dashboard`, direcionando as mensagens para o console e para o arquivo `orchestra.log`.
+- **`core/urls.py`:** Adiciona `# type: ignore` à importação do `debug_toolbar` para resolver erros de tipagem.
+- **`pyproject.toml`:** Adiciona `snakeviz` às dependências de desenvolvimento.
+- **`uv.lock`:** Atualizado para refletir as novas dependências.
+
+Este commit visa melhorar a manutenibilidade do projeto, a rastreabilidade de eventos e a capacidade de depuração, além de padronizar a documentação.

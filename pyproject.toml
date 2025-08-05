@@ -97,4 +97,5 @@ dev = [
     "pyright>=1.1.403",
     "ruff>=0.12.5",
     "safety>=3.6.0",
+    "snakeviz>=2.2.2",
 ]

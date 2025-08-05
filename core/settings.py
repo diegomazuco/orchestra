@@ -202,17 +202,22 @@ LOGGING = {
         },
         "apps": {  # Logger para todos os apps customizados
             "handlers": ["console", "file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False,
         },
         "apps.automacao_ipiranga": {  # Logger específico para a automação
             "handlers": ["console", "automation_file"],
-            "level": "INFO",
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "apps.dashboard": {  # Logger específico para o dashboard
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
             "propagate": False,
         },
     },
     "root": {
         "handlers": ["console", "file"],
-        "level": "INFO",
+        "level": "DEBUG",
     },
 }

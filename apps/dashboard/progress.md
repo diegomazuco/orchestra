@@ -2,7 +2,7 @@
 
 Este arquivo registra as principais ações e configurações realizadas especificamente no app "Dashboard".
 
-## 28 de Julho de 2025
+## 28/07/2025
 
 ### Criação e Configuração do App
 - Criado o diretório `apps/dashboard` (`mkdir -p apps/dashboard`).
@@ -16,7 +16,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - Criado o endpoint `/process-documents/` em `apps/dashboard/urls.py` e a view `process_documents_view` em `apps/dashboard/views.py` para receber os arquivos enviados pelo frontend.
 - A view `process_documents_view` foi inicialmente configurada para salvar os arquivos enviados temporariamente e chamar o custom command `automacao_documentos_ipiranga` com os dados extraídos do nome do arquivo.
 
-## 30 de Julho de 2025
+## 30/07/2025
 
 ### Integração com Modelos Django e Automação via Sinal
 - **Modificação da `process_documents_view`:** A view em `apps/dashboard/views.py` foi refatorada para:
@@ -31,13 +31,13 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ### Correção de Segurança
 - **Remoção de `@csrf_exempt`:** O decorador `@csrf_exempt` foi removido da `process_documents_view` em `apps/dashboard/views.py` para reabilitar a proteção CSRF, aumentando a segurança da aplicação.
 
-## 31 de Julho de 2025
+## 31/07/2025
 
 ### Depuração de Inicialização do Servidor
 - **Problema:** O servidor Django inicia, mas a página `http://127.0.0.1:8000/` não carrega, ficando em estado de "carregando".
 - **Diagnóstico:** Após extensiva depuração, incluindo análise de logs, verificação de portas e configurações do Django, a causa provável foi identificada como um problema de firewall, VPN/proxy, software de segurança ou configuração de rede local na máquina do usuário, impedindo a comunicação entre o navegador e o servidor. O problema não foi no código do projeto.
 
-## 2025-08-01 - Processamento de Documentos
+## 01/08/2025 - Processamento de Documentos
 
 - **View `process_documents_view`:** Confirmado o funcionamento correto da view para receber múltiplos arquivos PDF, extrair informações do nome do arquivo e criar registros `CertificadoVeiculo` no banco de dados, disparando a automação via sinal `post_save` para cada certificado.
 
