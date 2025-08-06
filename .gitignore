@@ -1,2 +1,31 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Django stuff:
+*.log
+*.pot
+*.mo
+*.sqlite3
+db.sqlite3
+media/
+
+# Environments
+.env
+.venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.Trashes
+Thumbs.db
+
 # Playwright browsers
 .playwright-browsers/
+
+# Logs
+logs/
