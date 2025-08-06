@@ -30,14 +30,13 @@ def run_automation_command(instance_id):
 
         logger.info(f"[SIGNAL] Executando comando em subprocesso: {' '.join(command)}")
 
-        # Inicia o processo em segundo plano, desanexando-o completamente
-        # Redireciona stdout e stderr para /dev/null para evitar que o processo pai espere
-        # e para que o logging seja tratado pelo sistema de logging do Django no subprocesso.
+        # Inicia o processo em segundo plano, desanexando-o completamente para não bloquear o servidor.
+        # A visibilidade da automação dependerá do ambiente em que o servidor Django foi iniciado.
         process = subprocess.Popen(
             command,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            preexec_fn=os.setsid,  # Essencial para desanexar em Unix-like systems
+            stdout=subprocess.DEVNULL,  # Descarta a saída padrão
+            stderr=subprocess.DEVNULL,  # Descarta a saída de erro
+            preexec_fn=os.setsid,  # Desanexa o processo em sistemas Unix-like
             cwd=project_root,
         )
         logger.info(

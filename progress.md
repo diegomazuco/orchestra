@@ -42,3 +42,18 @@
 ## 05/08/2025 - Atualização de Diretrizes do Gemini
 
 - **Instrução para `db.sqlite3`:** Adicionada diretriz ao `GEMINI.md` principal para não excluir o arquivo `db.sqlite3` durante a limpeza pré-commit, garantindo a persistência do banco de dados de desenvolvimento.
+
+## 06/08/2025 - Diagnóstico e Solução para Problema de Conectividade do WSL
+
+- **Problema:** O servidor Django, embora executando corretamente dentro do WSL, estava inacessível a partir do navegador no Windows. As tentativas de conexão resultavam em um carregamento infinito.
+- **Investigação:**
+    - Confirmação de que o servidor estava ativo e escutando na porta 8000 dentro do WSL via `lsof`.
+    - Testes de conectividade local bem-sucedidos dentro do WSL usando `curl`.
+    - A análise do `netstat` no Windows revelou que as conexões para a porta 8000 estavam presas no estado `SYN_SENT`, indicando que os pacotes de início de conexão não estavam recebendo resposta do WSL.
+- **Causa Raiz:** O estado `SYN_SENT` confirmou uma falha na camada de rede virtual do WSL2, que impedia a comunicação entre o ambiente do Windows e o ambiente do WSL.
+- **Solução Proposta (Permanente):** Foi recomendado ao usuário configurar o WSL para usar o modo de rede "Mirrored" (Espelhado). Isso é feito criando um arquivo `.wslconfig` no diretório de perfil do usuário do Windows (`%USERPROFILE%`) com o seguinte conteúdo:
+    ```ini
+    [wsl2]
+    networkingMode=mirrored
+    ```
+- **Próximo Passo:** O usuário aplicará esta configuração e reiniciará o WSL com `wsl --shutdown` para que a nova configuração de rede entre em vigor, resolvendo o problema de conectividade de forma definitiva.
