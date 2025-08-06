@@ -1,7 +1,6 @@
 import logging
 import os
 import subprocess
-import sys
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -17,9 +16,14 @@ def run_automation_command(instance_id):
     Redireciona a saída para arquivos de log específicos.
     """
     try:
-        python_executable = sys.executable
-        manage_py_path = os.path.abspath("./manage.py")
-        project_root = os.path.dirname(manage_py_path)
+        logger.info(
+            f"[SIGNAL] run_automation_command chamado para Certificado ID: {instance_id}"
+        )
+        project_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "..")
+        )
+        python_executable = os.path.join(project_root, ".venv", "bin", "python")
+        manage_py_path = os.path.join(project_root, "manage.py")
 
         command = [
             python_executable,
@@ -28,20 +32,38 @@ def run_automation_command(instance_id):
             str(instance_id),
         ]
 
-        logger.info(f"[SIGNAL] Executando comando em subprocesso: {' '.join(command)}")
+        logger.info(f"[SIGNAL] Comando a ser executado: {' '.join(command)}")
 
-        # Inicia o processo em segundo plano, desanexando-o completamente para não bloquear o servidor.
-        # A visibilidade da automação dependerá do ambiente em que o servidor Django foi iniciado.
+        env = os.environ.copy()
+        env["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(
+            project_root, ".playwright-browsers"
+        )
+        env["PATH"] = (
+            os.path.join(project_root, ".venv", "bin")
+            + os.pathsep
+            + env.get("PATH", "")
+        )
+        logger.info(
+            f"[SIGNAL] Variáveis de ambiente para o subprocesso: PLAYWRIGHT_BROWSERS_PATH={env['PLAYWRIGHT_BROWSERS_PATH']}, PATH={env['PATH']}"
+        )
+
+        logger.debug(
+            f"[SIGNAL] Preparando para executar subprocess.Popen com o comando: {command}"
+        )
         process = subprocess.Popen(
             command,
-            stdout=subprocess.DEVNULL,  # Descarta a saída padrão
-            stderr=subprocess.DEVNULL,  # Descarta a saída de erro
+            stdout=subprocess.PIPE,  # Captura a saída padrão
+            stderr=subprocess.PIPE,  # Captura a saída de erro
             preexec_fn=os.setsid,  # Desanexa o processo em sistemas Unix-like
             cwd=project_root,
+            env=env,
         )
+        stdout, stderr = process.communicate()
         logger.info(
             f"[SIGNAL] Subprocesso iniciado para Certificado ID: {instance_id}. PID: {process.pid}"
         )
+        logger.info(f"[SIGNAL] STDOUT do subprocesso: {stdout.decode()}")
+        logger.error(f"[SIGNAL] STDERR do subprocesso: {stderr.decode()}")
 
     except Exception as e:
         logger.error(
@@ -53,8 +75,8 @@ def run_automation_command(instance_id):
 @receiver(post_save, sender=CertificadoVeiculo)
 def trigger_automacao_certificado(sender, instance, created, **kwargs):
     """Dispara a automação quando um novo CertificadoVeiculo pendente é criado."""
-    logger.info(
-        f"[SIGNAL] Sinal post_save recebido para CertificadoVeiculo ID: {instance.id} (Created: {created}, Status: {instance.status})"
+    logger.debug(
+        f"[SIGNAL] trigger_automacao_certificado - Início. Sender: {sender.__name__}, Instance ID: {instance.id}, Created: {created}, Status: {instance.status}"
     )
     if created and instance.status == "pendente":
         logger.info(

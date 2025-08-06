@@ -2,11 +2,6 @@ from typing import ClassVar
 
 from django.db import models
 
-from apps.common.storage import OriginalFilenameStorage
-
-# Instancia o storage personalizado
-original_filename_storage = OriginalFilenameStorage()
-
 
 class VeiculoIpiranga(models.Model):
     """Modelo para armazenar informações de veículos Ipiranga."""
@@ -37,9 +32,7 @@ class CertificadoVeiculo(models.Model):
         VeiculoIpiranga, on_delete=models.CASCADE, related_name="certificados"
     )
     nome = models.CharField(max_length=255)
-    arquivo = models.FileField(
-        upload_to="certificados_veiculos/", storage=original_filename_storage
-    )
+    arquivo = models.FileField(upload_to="certificados_veiculos/")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)

@@ -1,59 +1,22 @@
-## 05/08/2025 15:30:00 - Refatoração de Modelos e Limpeza de Arquivos
+## 06/08/2025 - Diagnóstico e Depuração da Automação Playwright
 
-- **Criação de Modelos em `automacao_documentos`:**
-    - Criados os modelos `Portal`, `Documento`, `Automacao` e `LogExecucaoAutomacao` em `apps/automacao_documentos/models.py`.
-    - Geradas e aplicadas as migrações para o app `automacao_documentos`.
-    - Criado o arquivo `apps/automacao_documentos/admin.py` e registrados os novos modelos para gerenciamento no Django Admin.
+- **Problema Persistente "no such table":**
+    - O erro `OperationalError: no such table: automacao_ipiranga_veiculoipiranga` persistiu mesmo após múltiplas tentativas de limpeza do `db.sqlite3` e recriação/aplicação de migrações.
+    - **Tentativas de Solução:**
+        - Limpeza agressiva de `db.sqlite3` e diretórios `__pycache__` em `apps/automacao_ipiranga/` e `apps/dashboard/`.
+        - Execução de `python manage.py makemigrations` e `python manage.py migrate`.
+        - Tentativas de usar `sqlite3` e `python manage.py dbshell` para inspecionar o banco de dados, que falharam devido à ausência do executável `sqlite3` no PATH e/ou problemas de permissão/interatividade.
+        - Adição temporária de logs em `core/settings.py` para verificar o caminho do `db.sqlite3` (removido posteriormente).
+        - Remoção completa dos arquivos de migração do app `automacao_ipiranga` (`rm -rf apps/automacao_ipiranga/migrations/*`) seguida de `makemigrations` e `migrate` para forçar a recriação das migrações.
+    - **Status:** O erro "no such table" parou de aparecer nos logs mais recentes após a recriação das migrações, indicando que a tabela agora existe.
 
-- **Limpeza de Arquivos de Modelo Vazios:**
-    - Removidos os arquivos `apps/common/models.py` e `apps/dashboard/models.py`, que estavam vazios e não eram mais necessários.
+- **Depuração da Automação Playwright (automation.log vazio):**
+    - **Problema:** A automação Playwright não estava iniciando em primeiro plano e o `logs/automation.log` permanecia vazio.
+    - **Diagnóstico:**
+        - Identificado que `signals.py` estava redirecionando `stdout` e `stderr` do subprocesso para `subprocess.DEVNULL`, o que impedia a captura de logs.
+        - **Modificação em `apps/automacao_ipiranga/signals.py`:** Alterado o redirecionamento de `stdout` e `stderr` para `subprocess.PIPE` para capturar a saída do subprocesso no `orchestra.log`.
+    - **Status:** O `automation.log` ainda está vazio, mas agora a saída do subprocesso (se houver) será direcionada para o `orchestra.log`, permitindo uma depuração mais aprofundada.
 
-## 05/08/2025 15:35:00 - Atualização de Dependências
-
-- **Atualização de `pyproject.toml`:**
-    - Atualizadas as versões de `line-profiler` para `5.0.1` e `ruff` para `0.12.7` no `pyproject.toml`.
-
-## 05/08/2025 15:40:00 - Configuração e Execução de Ferramentas de Qualidade de Código
-
-- **Configuração do `pre-commit`:**
-    - Adicionado o hook `pyright` ao `.pre-commit-config.yaml`.
-    - Descomentado o hook `end-of-file-fixer` no `.pre-commit-config.yaml`.
-    - Instalados os hooks do `pre-commit` (`pre-commit install`).
-- **Execução e Correção:**
-    - Executados todos os hooks do `pre-commit` (`pre-commit run --all-files`).
-    - Corrigido o erro de `import` não utilizado (`import time`) em `apps/analise_infracoes/management/commands/sincronizar_infracoes.py`.
-    - Todos os hooks do `pre-commit` passaram com sucesso após as correções.
-
-## 05/08/2025 16:15:00 - Correção de Logging da Automação
-
-- **Modificação de `apps/automacao_ipiranga/signals.py`:**
-    - Removida a criação de arquivos de log separados (`automation_stdout.log`, `automation_stderr.log`) para o subprocesso da automação.
-    - Configurado o subprocesso para redirecionar `stdout` e `stderr` para `subprocess.DEVNULL`, garantindo que o logging seja tratado pelo sistema de logging padrão do Django e direcionado para `logs/automation.log`.
-
-## 05/08/2025 16:20:00 - Remoção do Campo Renavam e Limpeza de Dados
-
-- **Remoção do Campo `renavam`:**
-    - Removido o campo `renavam` do modelo `VeiculoIpiranga` em `apps/automacao_ipiranga/models.py`.
-    - Atualizado `apps/automacao_ipiranga/admin.py` para remover a referência ao campo `renavam`.
-    - Gerada e aplicada a migração `0003_remove_veiculoipiranga_renavam.py` para refletir a remoção do campo no banco de dados.
-- **Limpeza de Dados:**
-    - Deletados todos os registros existentes dos modelos `VeiculoIpiranga` e `CertificadoVeiculo` para garantir um ambiente de teste limpo.
-
-## 05/08/2025 - Atualização de Diretrizes do Gemini
-
-- **Instrução para `db.sqlite3`:** Adicionada diretriz ao `GEMINI.md` principal para não excluir o arquivo `db.sqlite3` durante a limpeza pré-commit, garantindo a persistência do banco de dados de desenvolvimento.
-
-## 06/08/2025 - Diagnóstico e Solução para Problema de Conectividade do WSL
-
-- **Problema:** O servidor Django, embora executando corretamente dentro do WSL, estava inacessível a partir do navegador no Windows. As tentativas de conexão resultavam em um carregamento infinito.
-- **Investigação:**
-    - Confirmação de que o servidor estava ativo e escutando na porta 8000 dentro do WSL via `lsof`.
-    - Testes de conectividade local bem-sucedidos dentro do WSL usando `curl`.
-    - A análise do `netstat` no Windows revelou que as conexões para a porta 8000 estavam presas no estado `SYN_SENT`, indicando que os pacotes de início de conexão não estavam recebendo resposta do WSL.
-- **Causa Raiz:** O estado `SYN_SENT` confirmou uma falha na camada de rede virtual do WSL2, que impedia a comunicação entre o ambiente do Windows e o ambiente do WSL.
-- **Solução Proposta (Permanente):** Foi recomendado ao usuário configurar o WSL para usar o modo de rede "Mirrored" (Espelhado). Isso é feito criando um arquivo `.wslconfig` no diretório de perfil do usuário do Windows (`%USERPROFILE%`) com o seguinte conteúdo:
-    ```ini
-    [wsl2]
-    networkingMode=mirrored
-    ```
-- **Próximo Passo:** O usuário aplicará esta configuração e reiniciará o WSL com `wsl --shutdown` para que a nova configuração de rede entre em vigor, resolvendo o problema de conectividade de forma definitiva.
+- **Próximos Passos:**
+    - O usuário irá reiniciar o WSL para garantir um ambiente limpo para os próximos testes.
+    - A próxima etapa de depuração se concentrará na análise do `orchestra.log` após um novo teste de upload para identificar a saída do subprocesso Playwright e diagnosticar por que a automação não está sendo executada visualmente.

@@ -53,6 +53,9 @@ O comando `testes` não está mais disponível, pois todas as ferramentas de tes
 #### 2.4. Análise de Arquivos
 *   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.
 
+#### 2.5. Análise Holística e Contextual
+Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto do projeto, a análise não deve se limitar ao ponto específico do problema. É crucial adotar uma perspectiva holística, investigando as interações entre módulos, as dependências, o fluxo de dados e as possíveis causas raiz em outras partes do sistema. O rastreamento de ponta a ponta do fluxo de execução e dados através de diferentes componentes (frontend, backend, banco de dados, subprocessos, etc.) é essencial para identificar onde a cadeia de eventos se quebra e para garantir que as soluções sejam robustas e duradouras. O contexto histórico, incluindo `progress.md` e `GEMINI.md` de cada app, deve ser sempre consultado para identificar padrões e lições aprendidas.
+
 ---
 
 ### 3. Contexto Técnico Geral
@@ -209,6 +212,9 @@ O comando `testes` não está mais disponível, pois todas as ferramentas de tes
     3.  **Executar Push:** Execute `git push`.
     4.  **Verificação Pós-Push:** Após o push, execute `git fetch && git status` para garantir que a branch local esteja sincronizada com a remota. A mensagem "Your branch is up to date with 'origin/main'." confirma o sucesso.
     5.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
+
+### 2.5. Análise Holística e Contextual
+Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto do projeto, a análise não deve se limitar ao ponto específico do problema. É crucial adotar uma perspectiva holística, investigando as interações entre módulos, as dependências, o fluxo de dados e as possíveis causas raiz em outras partes do sistema. O rastreamento de ponta a ponta do fluxo de execução e dados através de diferentes componentes (frontend, backend, banco de dados, subprocessos, etc.) é essencial para identificar onde a cadeia de eventos se quebra e para garantir que as soluções sejam robustas e duradouras. O contexto histórico, incluindo `progress.md` e `GEMINI.md` de cada app, deve ser sempre consultado para identificar padrões e lições aprendidas.
 
 ---
 

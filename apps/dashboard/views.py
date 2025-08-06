@@ -13,7 +13,8 @@ def orchestra_view(request):
 
 
 def process_documents_view(request):
-    """Processa o upload de documentos, extrai informações e salva no banco de dados."""
+    """Processa o upload de documentos e inicia a automação."""
+    logger.info(f"[POST] process_documents_view foi chamada. Método: {request.method}")
     logger.debug(
         "[%s] Requisição recebida para process_documents_view.", request.method
     )
@@ -31,6 +32,7 @@ def process_documents_view(request):
         for uploaded_file in uploaded_files:
             file_name = uploaded_file.name
             logger.info(f"[POST] Processando arquivo: {file_name}")
+            logger.debug(f"[POST] Tentando extrair placa e certificado de: {file_name}")
             match = re.match(r"([A-Z0-9]+)_([A-Z_]+)", file_name, re.IGNORECASE)
 
             placa = None
@@ -41,19 +43,41 @@ def process_documents_view(request):
                 nome_certificado = (
                     match.group(2).replace("_", " ").title()
                 )  # Formata para leitura
-                logger.info(f"[POST] Placa: {placa}, Certificado: {nome_certificado}")
+                logger.info(
+                    f"[POST] Placa extraída: {placa}, Certificado extraído: {nome_certificado}"
+                )
 
                 try:
+                    logger.debug(
+                        f"[POST] Tentando obter ou criar VeiculoIpiranga com placa: {placa}"
+                    )
                     # 1. Obter ou criar o VeiculoIpiranga
                     veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create(  # type: ignore
                         placa=placa, defaults={}
                     )
-                    if created_veiculo:
-                        logger.info(f"[POST] Veículo {placa} criado no banco de dados.")
-                    else:
-                        logger.info(
-                            f"[POST] Veículo {placa} já existe no banco de dados."
+                    logger.debug(
+                        f"[POST] Resultado VeiculoIpiranga: veiculo={veiculo.placa}, created={created_veiculo}"
+                    )
+
+                    logger.debug(
+                        f"[POST] Tentando criar CertificadoVeiculo para {placa} - {nome_certificado}"
+                    )
+                    logger.debug(
+                        f"[POST] Detalhes do uploaded_file: name={uploaded_file.name}, size={uploaded_file.size}, content_type={uploaded_file.content_type}"
+                    )
+                    try:
+                        # Tenta ler uma pequena parte do arquivo para verificar se está acessível
+                        uploaded_file.seek(0)  # Garante que o ponteiro está no início
+                        sample_content = uploaded_file.read(100)
+                        logger.debug(
+                            f"[POST] Amostra do conteúdo do uploaded_file (primeiros 100 bytes): {sample_content[:50]}..."
                         )
+                        uploaded_file.seek(
+                            0
+                        )  # Volta o ponteiro para o início para o FileField
+                    except Exception as e:
+                        logger.error(f"[POST] Erro ao tentar ler uploaded_file: {e}")
+                        raise  # Re-levanta a exceção para que o processo falhe e possamos depurar
 
                     # 2. Criar o CertificadoVeiculo e anexar o arquivo
                     # O status inicial é 'pendente', o que acionará o sinal
@@ -63,6 +87,9 @@ def process_documents_view(request):
                         arquivo=uploaded_file,  # O arquivo é salvo automaticamente aqui
                         status="pendente",
                     )
+                    logger.debug(
+                        f"[POST] CertificadoVeiculo criado com sucesso. ID: {certificado.id}"
+                    )
                     logger.info(
                         f"[POST] Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}"  # type: ignore
                     )
@@ -70,9 +97,11 @@ def process_documents_view(request):
                     logger.info(f"[POST] Status final do certificado: {status}")
 
                 except Exception as e:
-                    status = f"Erro ao salvar certificado no banco de dados: {e}"
-                    logger.error(
-                        f"[POST] Erro ao salvar certificado: {e}", exc_info=True
+                    status = (
+                        f"Erro CRÍTICO ao salvar certificado no banco de dados: {e}"
+                    )
+                    logger.critical(
+                        f"[POST] Erro CRÍTICO ao salvar certificado: {e}", exc_info=True
                     )
             else:
                 logger.warning("[POST] Nome de arquivo fora do padrão esperado.")
