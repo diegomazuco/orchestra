@@ -32,16 +32,31 @@ class Command(BaseCommand):
 
     async def handle_async(self, certificado_id, *args, **options):
         """Lógica assíncrona principal do comando de automação."""
+        logger.info(
+            f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
+        )
         browser = None
         certificado = None
         try:
+            logger.info(
+                "[AUTOMACAO_IPIRANGA] Buscando certificado no banco de dados..."
+            )
             certificado = await sync_to_async(
                 CertificadoVeiculo.objects.select_related("veiculo").get
             )(pk=certificado_id)
+            logger.info(
+                f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id} encontrado."
+            )
 
+            logger.info("[AUTOMACAO_IPIRANGA] Iniciando Playwright...")
             async with async_playwright() as p:
+                logger.info("[AUTOMACAO_IPIRANGA] Lançando navegador Chromium...")
                 browser = await p.chromium.launch(headless=True)
+                logger.info(
+                    "[AUTOMACAO_IPIRANGA] Navegador lançado. Criando nova página..."
+                )
                 page = await browser.new_page()
+                logger.info("[AUTOMACAO_IPIRANGA] Página criada. Iniciando login...")
 
                 logger.info("Iniciando login no portal Ipiranga...")
                 await login_to_portran(page, logger)
@@ -204,6 +219,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Executa o comando de automação de forma síncrona."""
         try:
-            asyncio.run(self.handle_async(options["certificado_id"], *args, **options))
+            asyncio.run(self.handle_async(*args, **options))
         except CommandError as e:
             self.stderr.write(self.style.ERROR(f"Erro no comando: {e}"))

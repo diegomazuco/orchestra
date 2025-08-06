@@ -1,3 +1,28 @@
+## 06/08/2025 - Depuração da Automação Playwright e Erros de Inicialização do Servidor
+
+- **Problema Inicial:** A automação Playwright não estava iniciando o navegador após o processamento do PDF, embora a mensagem "Processamento iniciado com sucesso!" fosse exibida.
+
+- **Verificação da Instalação do Playwright:**
+    - Confirmado que `playwright` está instalado (`1.54.0`).
+    - Tentativa de `playwright install --with-deps` falhou devido à necessidade de `sudo` e senha.
+    - Execução de `test_playwright.py` (script temporário) foi bem-sucedida, confirmando que o Playwright e seus navegadores estão funcionando no ambiente.
+
+- **Investigação da Execução do Subprocesso:**
+    - Adicionados logs em `apps/automacao_ipiranga/signals.py` e `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para rastrear o fluxo.
+    - Identificado `TypeError: Command.handle_async() got multiple values for argument 'certificado_id'` no comando Django da automação.
+    - **Correção:** Ajustada a chamada `asyncio.run` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para passar os argumentos corretamente.
+    - Teste temporário com `test_subprocess.py` (executado via `signals.py`) foi bem-sucedido, confirmando que a execução de subprocessos funciona.
+    - Revertida a alteração temporária em `signals.py` para chamar o comando Django novamente.
+
+- **Problema Crítico Atual: Erro de Indentação no `signals.py`:**
+    - Após as últimas modificações, o servidor Django parou de iniciar, apresentando `IndentationError: unexpected indent` em `apps/automacao_ipiranga/signals.py`, linha 29.
+    - Múltiplas tentativas de correção da indentação via `replace` falharam devido à sensibilidade da ferramenta a espaços em branco.
+    - Este erro impede a inicialização do servidor e, consequentemente, qualquer teste da automação.
+
+- **Próximos Passos:**
+    - A prioridade é corrigir o `IndentationError` em `apps/automacao_ipiranga/signals.py` de forma robusta para permitir que o servidor Django inicie.
+    - Após a correção, será necessário reiniciar o servidor e realizar novos testes da automação.
+
 ## 06/08/2025 - Ajustes e Refinamentos Pós-Diagnóstico
 
 - **Remoção de Referências a `renavam`:**

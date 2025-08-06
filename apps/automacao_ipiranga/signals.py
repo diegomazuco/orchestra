@@ -15,6 +15,9 @@ def run_automation_command(instance_id):
 
     Redireciona a saída para arquivos de log específicos.
     """
+    logger.info(
+        f"[SIGNAL] run_automation_command INICIADO para Certificado ID: {instance_id}"
+    )
     try:
         logger.info(
             f"[SIGNAL] run_automation_command chamado para Certificado ID: {instance_id}"
