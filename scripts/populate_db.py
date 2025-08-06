@@ -40,14 +40,12 @@ if LineProfiler:
 
 def run():
     """Cria dados de teste para o projeto Orchestra."""
-    # Generate a unique renavam
-    unique_renavam = "".join(random.choices("0123456789", k=11))
     # Generate a unique placa
     unique_placa = "".join(random.choices(string.ascii_uppercase, k=3)) + "".join(
         random.choices(string.digits, k=4)
     )
 
-    veiculo = VeiculoIpiranga.objects.create(placa=unique_placa, renavam=unique_renavam)  # type: ignore
+    veiculo = VeiculoIpiranga.objects.create(placa=unique_placa)  # type: ignore
     certificado = CertificadoVeiculo.objects.create(  # type: ignore
         veiculo=veiculo,
         nome="CERTIFICADO_TESTE",

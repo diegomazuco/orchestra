@@ -26,7 +26,7 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 ### 3. Contexto Técnico do App
 
 *   **Modelos Principais (Sugestões Iniciais):**
-    *   `VeiculoIpiranga`: Para armazenar dados de veículos específicos do portal Ipiranga (placa, renavam, status de documentos, etc.).
+    *   `VeiculoIpiranga`: Para armazenar dados de veículos específicos do portal Ipiranga (placa, status de documentos, etc.).
 
 *   **Lógica de Negócio Chave:** A lógica principal envolve a criação de "robôs" (web scrapers) para interagir com o portal Ipiranga. Esses robôs serão executados periodicamente através de `custom commands` do Django (gerenciados por um `cron` no servidor) para coletar e atualizar as informações nos modelos do banco de dados. O app também deve prover uma interface para visualização dos dados coletados e geração de relatórios.
 
@@ -40,7 +40,7 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ### 4. Exemplos de Prompts para este App
 
-> "Na aplicação `automacao_ipiranga`, crie o modelo `VeiculoIpiranga` com campos para placa e renavam. Gere a migração e registre o modelo no `admin.py`."
+> "Na aplicação `automacao_ipiranga`, crie o modelo `VeiculoIpiranga` com campos para placa. Gere a migração e registre o modelo no `admin.py`."
 
 > "Crie um custom command do Django chamado `sincronizar_veiculos_ipiranga`. O comando deve buscar veículos no portal Ipiranga e atualizar o status no modelo `VeiculoIpiranga`."
 

@@ -40,7 +40,7 @@ class Command(BaseCommand):
             )(pk=certificado_id)
 
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=False)
+                browser = await p.chromium.launch(headless=True)
                 page = await browser.new_page()
 
                 logger.info("Iniciando login no portal Ipiranga...")

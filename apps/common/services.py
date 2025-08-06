@@ -68,7 +68,9 @@ async def login_to_portran(page: Page, logger: logging.Logger):
                 logger.warning(
                     "Detectada página de 'Erro Inesperado'. Tentando recuperar a sessão..."
                 )
-                await asyncio.sleep(5)  # Pausa estratégica
+                await asyncio.sleep(
+                    5
+                )  # Pausa estratégica para aguardar a estabilização da sessão após erro inesperado.
                 logger.info("Atualizando a página para tentar autenticar a sessão.")
                 await page.reload(wait_until="domcontentloaded")
 
