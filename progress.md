@@ -1,61 +1,23 @@
-## 06/08/2025 - Depuração da Automação Playwright e Erros de Inicialização do Servidor
+## 07/08/2025 - Análise e Correção da Automação Playwright
 
-- **Problema Inicial:** A automação Playwright não estava iniciando o navegador após o processamento do PDF, embora a mensagem "Processamento iniciado com sucesso!" fosse exibida.
+- **Problema Inicial:** A automação Playwright não estava abrindo o navegador e falhava com um erro de "Não foi possível encontrar um bloco de 'CERTIFICADO DE INSPEÇÃO VEICULAR' no PDF".
 
-- **Verificação da Instalação do Playwright:**
-    - Confirmado que `playwright` está instalado (`1.54.0`).
-    - Tentativa de `playwright install --with-deps` falhou devido à necessidade de `sudo` e senha.
-    - Execução de `test_playwright.py` (script temporário) foi bem-sucedida, confirmando que o Playwright e seus navegadores estão funcionando no ambiente.
+- **Diagnóstico Detalhado:**
+    - **`headless=True`:** O navegador não abria porque estava configurado para rodar em modo headless (invisível).
+    - **Erro de Extração de Texto:** A regex usada para encontrar o texto no PDF era muito específica e/ou o texto extraído do PDF estava com problemas de formatação/OCR, impedindo a correspondência.
+    - **Caminho Incorreto do Python no Subprocesso:** O `FileNotFoundError` indicava que o `project_root` estava sendo calculado incorretamente em `apps/automacao_ipiranga/signals.py`, levando a um caminho inválido para o executável do Python.
+    - **Erro de Indentação:** Um `IndentationError` anterior em `apps/automacao_ipiranga/signals.py` impedia o servidor de iniciar.
 
-- **Investigação da Execução do Subprocesso:**
-    - Adicionados logs em `apps/automacao_ipiranga/signals.py` e `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para rastrear o fluxo.
-    - Identificado `TypeError: Command.handle_async() got multiple values for argument 'certificado_id'` no comando Django da automação.
-    - **Correção:** Ajustada a chamada `asyncio.run` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para passar os argumentos corretamente.
-    - Teste temporário com `test_subprocess.py` (executado via `signals.py`) foi bem-sucedido, confirmando que a execução de subprocessos funciona.
-    - Revertida a alteração temporária em `signals.py` para chamar o comando Django novamente.
+- **Soluções Aplicadas:**
+    - **Limpeza Completa do Ambiente:** Realizada uma limpeza completa do ambiente de desenvolvimento (remoção de `db.sqlite3`, `logs/`, `media/`, `__pycache__`, `.ruff_cache`, `.venv`) e reinstalação de todas as dependências. Isso resolveu problemas persistentes de ambiente e garantiu um estado limpo para os testes.
+    - **Correção do `IndentationError`:** O arquivo `apps/automacao_ipiranga/signals.py` foi reescrito para garantir a indentação correta.
+    - **Correção do Caminho do Python:** O cálculo do `project_root` em `apps/automacao_ipiranga/signals.py` foi ajustado para `Path(__file__).resolve().parent.parent.parent` para apontar para a raiz correta do projeto.
+    - **`headless=False` para Depuração:** O parâmetro `headless` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` foi alterado para `False` para permitir a visualização do navegador durante a depuração. **(Lembrete: Reverter para `True` em produção).**
+    - **Normalização do Texto do PDF:** Adicionada a função `normalize_text` em `apps/common/services.py` para limpar o texto extraído do PDF (removendo caracteres não alfanuméricos e normalizando espaços em branco).
+    - **Regex Mais Flexível:** A lógica de busca no PDF em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` foi alterada para usar `re.search` com uma regex mais flexível (`r"(CERTIFICADO DE INSPEÇÃO(?: VEICULAR)?.*)"`) para encontrar o bloco de texto, tornando-a mais robusta a variações.
 
-- **Problema Crítico Atual: Erro de Indentação no `signals.py`:**
-    - Após as últimas modificações, o servidor Django parou de iniciar, apresentando `IndentationError: unexpected indent` em `apps/automacao_ipiranga/signals.py`, linha 29.
-    - Múltiplas tentativas de correção da indentação via `replace` falharam devido à sensibilidade da ferramenta a espaços em branco.
-    - Este erro impede a inicialização do servidor e, consequentemente, qualquer teste da automação.
-
-- **Próximos Passos:**
-    - A prioridade é corrigir o `IndentationError` em `apps/automacao_ipiranga/signals.py` de forma robusta para permitir que o servidor Django inicie.
-    - Após a correção, será necessário reiniciar o servidor e realizar novos testes da automação.
-
-## 06/08/2025 - Ajustes e Refinamentos Pós-Diagnóstico
-
-- **Remoção de Referências a `renavam`:**
-    - As referências ao campo `renavam` foram removidas dos arquivos `apps/automacao_ipiranga/progress.md` e `apps/automacao_documentos/progress.md`, pois o problema foi resolvido e o campo não é mais utilizado.
-
-- **Atualização de `GEMINI.md`:**
-    - O arquivo `GEMINI.md` foi atualizado para incluir diretrizes mais claras sobre o uso de `headless=False` em automações (sugerindo `True` para produção) e `asyncio.sleep` (sugerindo comentários para explicar pausas estratégicas).
-
-- **Ajuste em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`:**
-    - O parâmetro `headless` na inicialização do navegador Playwright foi alterado de `False` para `True` para otimizar a execução em ambientes de produção.
-
-- **Ajuste em `apps/common/services.py`:**
-    - Adicionado um comentário explicativo à linha `await asyncio.sleep(5)` para esclarecer que se trata de uma "Pausa estratégica para aguardar a estabilização da sessão após erro inesperado."
-
-## 06/08/2025 - Diagnóstico e Depuração da Automação Playwright
-
-- **Problema Persistente "no such table":**
-    - O erro `OperationalError: no such table: automacao_ipiranga_veiculoipiranga` persistiu mesmo após múltiplas tentativas de limpeza do `db.sqlite3` e recriação/aplicação de migrações.
-    - **Tentativas de Solução:**
-        - Limpeza agressiva de `db.sqlite3` e diretórios `__pycache__` em `apps/automacao_ipiranga/` e `apps/dashboard/`
-        - Execução de `python manage.py makemigrations` e `python manage.py migrate`
-        - Tentativas de usar `sqlite3` e `python manage.py dbshell` para inspecionar o banco de dados, que falharam devido à ausência do executável `sqlite3` no PATH e/ou problemas de permissão/interatividade.
-        - Adição temporária de logs em `core/settings.py` para verificar o caminho do `db.sqlite3` (removido posteriormente).
-        - Remoção completa dos arquivos de migração do app `automacao_ipiranga` (`rm -rf apps/automacao_ipiranga/migrations/*`) seguida de `makemigrations` e `migrate` para forçar a recriação das migrações.
-    - **Status:** O erro "no such table" parou de aparecer nos logs mais recentes após a recriação das migrações, indicando que a tabela agora existe.
-
-- **Depuração da Automação Playwright (automation.log vazio):**
-    - **Problema:** A automação Playwright não estava iniciando em primeiro plano e o `logs/automation.log` permanecia vazio.
-    - **Diagnóstico:**
-        - Identificado que `signals.py` estava redirecionando `stdout` e `stderr` do subprocesso para `subprocess.DEVNULL`, o que impedia a captura de logs.
-        - **Modificação em `apps/automacao_ipiranga/signals.py`:** Alterado o redirecionamento de `stdout` e `stderr` para `subprocess.PIPE` para capturar a saída do subprocesso no `orchestra.log`.
-    - **Status:** O `automation.log` ainda está vazio, mas agora a saída do subprocesso (se houver) será direcionada para o `orchestra.log`, permitindo uma depuração mais aprofundada.
+- **Resultado:** O navegador do Playwright agora abre e a automação pode ser visualmente acompanhada, indicando que as correções foram eficazes.
 
 - **Próximos Passos:**
-    - O usuário irá reiniciar o WSL para garantir um ambiente limpo para os próximos testes.
-    - A próxima etapa de depuração se concentrará na análise do `orchestra.log` após um novo teste de upload para identificar a saída do subprocesso Playwright e diagnosticar por que a automação não está sendo executada visualmente.
+    - Reverter `headless=False` para `headless=True` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` antes de qualquer deploy em produção.
+    - Continuar o desenvolvimento da automação, focando na lógica de interação com o portal Ipiranga após o login e extração de dados.

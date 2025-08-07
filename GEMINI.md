@@ -198,6 +198,27 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
     * **Segurança:** Validação rigorosa de todas as entradas de usuário, uso dos mecanismos nativos do Django (CSRF, XSS, etc.).
     * **Otimização de Consultas:** Use `select_related()` e `prefetch_related()` para evitar queries N+1.
 
+    * **Depuração de Automações Playwright:**
+        Para depurar visualmente as automações do Playwright (ver o navegador abrir e interagir), altere o parâmetro `headless` para `False` na chamada `p.chromium.launch()` dentro do comando de automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`).
+        ```python
+        browser = await p.chromium.launch(headless=False) # Para depuração visual
+        ```
+        **IMPORTANTE:** Lembre-se de reverter `headless` para `True` antes de qualquer deploy em ambiente de produção, pois a execução headless é mais eficiente e não requer um ambiente gráfico.
+
+    * **Normalização de Dados:**
+        Ao extrair texto de PDFs ou outras fontes não estruturadas (web scraping), é crucial normalizar o texto antes de realizar operações de busca ou extração com expressões regulares. Isso envolve remover caracteres não alfanuméricos indesejados e normalizar espaços em branco, garantindo que a correspondência de padrões seja mais robusta e menos suscetível a variações de formatação ou erros de OCR.
+        Exemplo de normalização:
+        ```python
+        import re
+
+        def normalize_text(text: str) -> str:
+            # Remove caracteres não alfanuméricos, exceto espaços
+            normalized_text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+            # Substitui múltiplos espaços por um único espaço
+            normalized_text = re.sub(r'\s+', ' ', normalized_text).strip()
+            return normalized_text
+        ```
+
 ---
 
 ### 5. Fluxo de Trabalho e Automação (Git)

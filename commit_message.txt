@@ -1,0 +1,16 @@
+feat(automacao): Corrige e aprimora automação Playwright para depuração e robustez
+
+Este commit aborda as seguintes melhorias na automação Playwright:
+
+- **Correção de Erros de Execução:**
+    - Resolvido `IndentationError` em `apps/automacao_ipiranga/signals.py`.
+    - Ajustado o cálculo do `project_root` em `apps/automacao_ipiranga/signals.py` para garantir o caminho correto do Python no subprocesso.
+- **Melhorias na Depuração:**
+    - Alterado `headless=True` para `headless=False` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` para permitir a depuração visual do navegador. (Lembrete: Reverter para `True` em produção).
+- **Robustez na Extração de Texto de PDF:**
+    - Adicionada a função `normalize_text` em `apps/common/services.py` para limpar e normalizar o texto extraído de PDFs, tornando a busca mais confiável.
+    - A regex para encontrar o bloco de "CERTIFICADO DE INSPEÇÃO VEICULAR" em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` foi flexibilizada para lidar com variações de formatação.
+- **Limpeza de Ambiente:**
+    - Realizada limpeza completa de caches (`__pycache__`, `.ruff_cache`) e arquivos temporários (`*.lprof`) para garantir um ambiente de desenvolvimento limpo.
+
+Essas mudanças visam estabilizar a execução da automação, facilitar a depuração e aumentar a resiliência na extração de dados de documentos.

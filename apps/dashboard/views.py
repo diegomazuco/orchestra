@@ -59,6 +59,17 @@ def process_documents_view(request):
                         f"[POST] Resultado VeiculoIpiranga: veiculo={veiculo.placa}, created={created_veiculo}"
                     )
 
+                    # 2. Excluir certificados anteriores para esta placa e nome
+                    logger.info(
+                        f"[POST] Verificando e excluindo certificados anteriores para Placa: {placa}, Certificado: {nome_certificado}"
+                    )
+                    CertificadoVeiculo.objects.filter(
+                        veiculo=veiculo, nome=nome_certificado
+                    ).delete()  # type: ignore
+                    logger.info(
+                        f"[POST] Certificados anteriores para {placa} - {nome_certificado} excluídos, se existiam."
+                    )
+
                     logger.debug(
                         f"[POST] Tentando criar CertificadoVeiculo para {placa} - {nome_certificado}"
                     )
@@ -79,7 +90,7 @@ def process_documents_view(request):
                         logger.error(f"[POST] Erro ao tentar ler uploaded_file: {e}")
                         raise  # Re-levanta a exceção para que o processo falhe e possamos depurar
 
-                    # 2. Criar o CertificadoVeiculo e anexar o arquivo
+                    # 3. Criar o CertificadoVeiculo e anexar o arquivo
                     # O status inicial é 'pendente', o que acionará o sinal
                     certificado = CertificadoVeiculo.objects.create(  # type: ignore
                         veiculo=veiculo,

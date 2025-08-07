@@ -20,3 +20,4 @@ repos:
     rev: v1.1.403 # Use uma versão estável recente
     hooks:
       - id: pyright
+        additional_dependencies: [".[all]"]

@@ -1,6 +1,7 @@
 import asyncio
 import io
 import logging
+import re
 
 import fitz  # PyMuPDF # type: ignore
 import pytesseract  # type: ignore
@@ -138,7 +139,7 @@ def extract_text_from_pdf_image(
             page_text = pytesseract.image_to_string(
                 img, lang="por", config=tesseract_config
             )  # lang='por' para português
-            text += page_text
+            text += normalize_text(page_text)
             logger.info(
                 f"Texto extraído da página {page_num + 1}:\n{page_text[:500]}..."
             )  # Log dos primeiros 500 caracteres
@@ -150,6 +151,15 @@ def extract_text_from_pdf_image(
         if "doc" in locals() and doc:
             doc.close()
     return text
+
+
+def normalize_text(text: str) -> str:
+    """Normaliza o texto removendo caracteres não alfanuméricos e espaços extras."""
+    # Remove caracteres não alfanuméricos, exceto espaços
+    normalized_text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    # Substitui múltiplos espaços por um único espaço
+    normalized_text = re.sub(r"\s+", " ", normalized_text).strip()
+    return normalized_text
 
 
 def convert_date_format(date_str: str) -> str:

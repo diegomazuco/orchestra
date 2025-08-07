@@ -5,14 +5,9 @@
     ],
     "exclude": [
         "**/__pycache__",
-        "**/.venv",
         "**/migrations",
         "**/node_modules",
         "**/*.pyi"
-    ],
-    "extraPaths": [
-        "./core",
-        "./apps"
     ],
     "pythonVersion": "3.12",
     "pythonPlatform": "Linux",
@@ -23,6 +18,6 @@
     "reportUnusedImport": true,
     "reportAttributeAccessIssue": "none",
     "reportPrivateImportUsage": "none",
-    "venvPath": ".",
+    "venvPath": "/home/diegomazuco/dev/orchestra",
     "venv": ".venv"
 }
