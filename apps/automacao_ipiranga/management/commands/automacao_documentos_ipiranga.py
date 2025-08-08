@@ -89,7 +89,7 @@ class Command(BaseCommand):
                         "Texto do PDF extraído. Buscando bloco de certificado..."
                     )
                     match = re.search(
-                        r"(CERTIFICADO DE INSPEÇÃO(?: VEICULAR)?.*)",
+                        r"(CERTIFICADO DE INSPE.*?)",
                         pdf_text,
                         re.IGNORECASE | re.DOTALL,
                     )
@@ -113,7 +113,7 @@ class Command(BaseCommand):
                     )
                     logger.info("Número do documento extraído. Extraindo datas...")
                     all_dates = re.findall(
-                        r"\b(\d{2}/[A-Z]{3}/\d{2})\b", first_block, re.IGNORECASE
+                        r"(\d{2}/[A-Z]{3}/\d{2})", first_block, re.IGNORECASE
                     )
                     vencimento_valor_pdf = all_dates[-1] if all_dates else "N/A"
                     logger.info("Datas extraídas. Processamento do PDF concluído.")

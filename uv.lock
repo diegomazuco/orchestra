@@ -615,6 +615,28 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+all = [
+    { name = "decouple-types" },
+    { name = "django" },
+    { name = "django-debug-toolbar" },
+    { name = "django-stubs" },
+    { name = "line-profiler" },
+    { name = "mysqlclient" },
+    { name = "playwright" },
+    { name = "pre-commit" },
+    { name = "psycopg2-binary" },
+    { name = "pymupdf" },
+    { name = "pyright" },
+    { name = "pytesseract" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-django" },
+    { name = "python-decouple" },
+    { name = "python-dotenv" },
+    { name = "ruff" },
+    { name = "safety" },
+    { name = "snakeviz" },
+]
 dev = [
     { name = "decouple-types" },
     { name = "django-debug-toolbar" },
@@ -647,6 +669,28 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+all = [
+    { name = "decouple-types", specifier = ">=1.0.2" },
+    { name = "django", specifier = ">=5.2.4" },
+    { name = "django-debug-toolbar", specifier = ">=6.0.0" },
+    { name = "django-stubs", specifier = ">=5.2.2" },
+    { name = "line-profiler", specifier = "==5.0.0" },
+    { name = "mysqlclient", specifier = ">=2.2.7" },
+    { name = "playwright", specifier = ">=1.54.0" },
+    { name = "pre-commit", specifier = ">=4.2.0" },
+    { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "pymupdf", specifier = ">=1.26.3" },
+    { name = "pyright", specifier = ">=1.1.403" },
+    { name = "pytesseract", specifier = ">=0.3.13" },
+    { name = "pytest", specifier = ">=8.4.1" },
+    { name = "pytest-cov", specifier = ">=6.2.1" },
+    { name = "pytest-django", specifier = ">=4.11.1" },
+    { name = "python-decouple", specifier = ">=3.8" },
+    { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "ruff", specifier = ">=0.12.7" },
+    { name = "safety", specifier = ">=3.6.0" },
+    { name = "snakeviz", specifier = ">=2.2.2" },
+]
 dev = [
     { name = "decouple-types", specifier = ">=1.0.2" },
     { name = "django-debug-toolbar", specifier = ">=6.0.0" },

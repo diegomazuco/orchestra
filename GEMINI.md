@@ -32,7 +32,7 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 3.  **Configuração do Ambiente Python:**
     *   **Ambiente Virtual (`.venv`):** Verifique se o diretório `./.venv` existe. Se não, crie-o executando `uv venv`.
     *   **Ativação e Execução de Comandos:** Certifique-se de que todos os comandos (incluindo `custom commands` em subprocessos) utilizem o executável do Python localizado em `.venv/bin/python`. A falha em usar o Python do ambiente virtual correto pode levar a erros de `FileNotFoundError` ou `ModuleNotFoundError`.
-    *   **Instalação de Dependências:** Execute `uv pip install -r requirements.txt` para instalar todas as dependências do projeto.
+    *   **Instalação de Dependências:** Execute `uv install` para instalar todas as dependências do projeto (baseado no `pyproject.toml` e `uv.lock`).
     *   **Instalação de Ferramentas de Desenvolvimento:** Instale `pytest`, `ruff` e `pyright` executando `uv add pytest ruff pyright`.
 4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem ser configuradas no `.env`.
 5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
@@ -45,7 +45,7 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
     *   Sugerir otimizações, como a substituição de lógica de placeholder (ex: `asyncio.sleep`) por implementações robustas e a centralização de funcionalidades repetidas. Para `asyncio.sleep`, se for uma pausa estratégica, adicione um comentário explicando o motivo.
     *   Proponha um plano de ação detalhado para as correções e refatorações, solicitando confirmação antes de aplicar.
 8.  **Configuração de Logging Centralizada:** Verifique se a configuração de logging está centralizada em `core/settings.py` e se os logs estão sendo direcionados para um diretório `logs/` com rotação. Caso contrário, proponha a implementação.
-9.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `pyproject.toml`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações.
+9.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `pyproject.toml`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações. Para atualizar um pacote específico, use `uv pip install --upgrade <nome-do-pacote>`. Para atualizar todos os pacotes, você pode usar `uv pip install --upgrade -r requirements.txt` (se o `requirements.txt` estiver atualizado) ou atualizar individualmente os pacotes listados como desatualizados por `uv pip list --outdated`.
 
 #### 2.3. Ao executar (`testes`)
 
@@ -237,6 +237,6 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
 *   **Diagnosticar falha de inicialização:** `python manage.py runserver --noreload` (mostra o erro exato sem o ruído do auto-reloader).
 *   **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
 *   **Aplicar migrações:** `python manage.py migrate`
-*   **Instalar dependências do projeto:** `uv pip install -r requirements.txt`
+*   **Instalar dependências do projeto:** `uv install`
 *   **Adicionar nova dependência:** `uv add <nome-do-pacote>`
 *   **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`
