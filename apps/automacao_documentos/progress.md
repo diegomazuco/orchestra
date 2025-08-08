@@ -1,6 +1,7 @@
-## 06/08/2025 - Diagnóstico e Depuração da Automação Playwright
+## 08/08/2025 - Refinamento do Processo de Automação
 
-- **Problema de Execução do Subprocesso:**
-    - O subprocesso que executa o script Playwright não estava produzindo logs no `automation.log`.
-    - **Diagnóstico:** O `stdout` e `stderr` do `subprocess.Popen` estavam sendo redirecionados para `subprocess.DEVNULL`.
-    - **Solução:** Alterado o redirecionamento de `stdout` e `stderr` para `subprocess.PIPE` em `apps/automacao_ipiranga/signals.py` para capturar a saída no `orchestra.log`.
+- **Contexto:** Durante a depuração da automação do app `automacao_ipiranga`, foi identificado um problema fundamental na forma como os subprocessos eram disparados a partir dos sinais do Django.
+
+- **Problema:** O subprocesso que executava o `custom command` não utilizava o ambiente virtual (`.venv`) do projeto, levando a falhas silenciosas por falta de dependências.
+
+- **Solução Aplicada (no app `automacao_ipiranga`):** A lógica em `signals.py` foi corrigida para apontar explicitamente para o executável do Python dentro do `.venv`. Esta solução, embora aplicada em um app específico, estabelece um padrão para todas as futuras automações orquestradas por este app, garantindo que elas sejam executadas no contexto correto.

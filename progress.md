@@ -1,23 +1,15 @@
-## 07/08/2025 - Análise e Correção da Automação Playwright
+## 08/08/2025 - Diagnóstico e Correção Definitiva da Automação Playwright
 
-- **Problema Inicial:** A automação Playwright não estava abrindo o navegador e falhava com um erro de "Não foi possível encontrar um bloco de 'CERTIFICADO DE INSPEÇÃO VEICULAR' no PDF".
+- **Problema:** A automação Playwright falhava de forma intermitente e com múltiplos sintomas, incluindo: o servidor não iniciar, a automação não prosseguir após o login, e erros na extração de dados de PDFs. Além disso, arquivos e registros de banco de dados órfãos eram deixados para trás a cada falha.
 
-- **Diagnóstico Detalhado:**
-    - **`headless=True`:** O navegador não abria porque estava configurado para rodar em modo headless (invisível).
-    - **Erro de Extração de Texto:** A regex usada para encontrar o texto no PDF era muito específica e/ou o texto extraído do PDF estava com problemas de formatação/OCR, impedindo a correspondência.
-    - **Caminho Incorreto do Python no Subprocesso:** O `FileNotFoundError` indicava que o `project_root` estava sendo calculado incorretamente em `apps/automacao_ipiranga/signals.py`, levando a um caminho inválido para o executável do Python.
-    - **Erro de Indentação:** Um `IndentationError` anterior em `apps/automacao_ipiranga/signals.py` impedia o servidor de iniciar.
+- **Diagnóstico Abrangente:** Uma análise detalhada revelou uma cadeia de problemas interligados:
+    1.  **Erro de Execução do Subprocesso (Causa Raiz):** O `signals.py` chamava `python` diretamente, usando o Python do sistema em vez do Python do ambiente virtual (`.venv`). Isso causava um `ModuleNotFoundError` silencioso no subprocesso, que não conseguia encontrar as dependências do projeto (Django, Playwright), fazendo com que a automação falhasse antes mesmo de começar a logar.
+    2.  **Erro de Extração de OCR:** A busca pelo texto "CERTIFICADO DE INSPEÇÃO" no PDF era muito rígida. O OCR frequentemente lia a string como "CERTIFICADO DE INSPEO", causando uma falha na extração de dados e interrompendo o script.
+    3.  **Falta de Limpeza em Caso de Falha:** A lógica para deletar o `CertificadoVeiculo` e o arquivo PDF associado só era executada em caso de sucesso. Qualquer falha no processo deixava lixo no sistema, explicando os IDs incrementais a cada nova tentativa.
 
-- **Soluções Aplicadas:**
-    - **Limpeza Completa do Ambiente:** Realizada uma limpeza completa do ambiente de desenvolvimento (remoção de `db.sqlite3`, `logs/`, `media/`, `__pycache__`, `.ruff_cache`, `.venv`) e reinstalação de todas as dependências. Isso resolveu problemas persistentes de ambiente e garantiu um estado limpo para os testes.
-    - **Correção do `IndentationError`:** O arquivo `apps/automacao_ipiranga/signals.py` foi reescrito para garantir a indentação correta.
-    - **Correção do Caminho do Python:** O cálculo do `project_root` em `apps/automacao_ipiranga/signals.py` foi ajustado para `Path(__file__).resolve().parent.parent.parent` para apontar para a raiz correta do projeto.
-    - **`headless=False` para Depuração:** O parâmetro `headless` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` foi alterado para `False` para permitir a visualização do navegador durante a depuração. **(Lembrete: Reverter para `True` em produção).**
-    - **Normalização do Texto do PDF:** Adicionada a função `normalize_text` em `apps/common/services.py` para limpar o texto extraído do PDF (removendo caracteres não alfanuméricos e normalizando espaços em branco).
-    - **Regex Mais Flexível:** A lógica de busca no PDF em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` foi alterada para usar `re.search` com uma regex mais flexível (`r"(CERTIFICADO DE INSPEÇÃO(?: VEICULAR)?.*)"`) para encontrar o bloco de texto, tornando-a mais robusta a variações.
+- **Soluções Estruturais Aplicadas:**
+    - **Caminho Explícito do Python:** O `signals.py` foi corrigido para usar o caminho absoluto do executável do Python do ambiente virtual (`.venv/bin/python`), garantindo que a automação sempre rode com as dependências corretas.
+    - **Regex Flexível para OCR:** A expressão regular no comando de automação foi alterada para `r"(CERTIFICADO DE INSPE.*?)"`, tornando a busca pelo bloco de texto tolerante a falhas de OCR.
+    - **Limpeza Robusta com `finally`:** A lógica de exclusão do registro e do arquivo foi movida para um bloco `finally` dentro do `custom command`. Isso garante que a limpeza seja executada **sempre**, independentemente do sucesso ou falha da automação.
 
-- **Resultado:** O navegador do Playwright agora abre e a automação pode ser visualmente acompanhada, indicando que as correções foram eficazes.
-
-- **Próximos Passos:**
-    - Reverter `headless=False` para `headless=True` em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py` antes de qualquer deploy em produção.
-    - Continuar o desenvolvimento da automação, focando na lógica de interação com o portal Ipiranga após o login e extração de dados.
+- **Resultado:** A automação tornou-se significativamente mais robusta, confiável e resiliente. O processo de debugging e limpeza foi solidificado, evitando problemas futuros e facilitando a manutenção.

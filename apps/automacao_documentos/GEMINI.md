@@ -10,32 +10,32 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ### 1. Visão Geral do App
 
-* **Objetivo do App:** Este app é responsável por automatizar processos e interações com diversos sistemas externos para atualização e gestão de documentos. Ele serve como um contêiner para diferentes automações, cada uma focada em um portal ou tipo de documento específico.
-
-
+*   **Objetivo do App:** Este app serve como o **orquestrador central** para os processos de automação. Ele define os modelos de dados e a lógica de negócio **base** para o registro, disparo e monitoramento de robôs de automação. As implementações específicas de cada robô (ex: a interação com o portal Ipiranga) residem em seus próprios apps dedicados (ex: `apps/automacao_ipiranga`), que por sua vez utilizam a estrutura fornecida por este app.
 
 ### 2. Dependências e Restrições Específicas
 
-* **Exceção Crítica de Pacotes:** Nenhuma definida até o momento. (Avaliar a necessidade de fixar versões de pacotes de web scraping como `selenium` ou `playwright` se forem utilizados, para evitar que atualizações do browser quebrem a automação).
+*   **Exceção Crítica de Pacotes:** Nenhuma definida até o momento. (Avaliar a necessidade de fixar versões de pacotes de web scraping como `playwright` se forem utilizados, para evitar que atualizações do browser quebrem a automação).
 
-* **Fontes de Dados Adicionais:**
-    * **Principal:** Diversos portais externos (ex: Ipiranga, IBAMA, etc.).
-    * **Secundária:** Possível consumo de APIs de dados abertos ou sistemas internos.
+*   **Fontes de Dados Adicionais:**
+    *   **Principal:** Diversos portais externos (ex: Ipiranga, IBAMA, etc.).
+    *   **Secundária:** Possível consumo de APIs de dados abertos ou sistemas internos.
 
 ---
 
 ### 3. Contexto Técnico do App
 
-* **Modelos Principais (Sugestões Iniciais):**
-    * `Documento`: Para armazenar dados de documentos (tipo, número, status, data de validade, arquivo, portal de origem).
-    * `Portal`: Para registrar os portais externos com os quais o sistema interage (nome, URL base, credenciais).
-    * `Automacao`: Para agendar e registrar a execução de rotinas automáticas (ex: `automacao_documentos_ipiranga`).
-    * `LogExecucaoAutomacao`: Para armazenar os logs detalhados de cada `Automacao` (sucesso, falha, dados coletados).
+*   **Modelos Principais (Arquitetura Base):**
+    *   `Automacao(models.Model)`: Um modelo central para registrar cada tipo de automação disponível no sistema. Ex: "Ipiranga - Atualização de CIPP", "IBAMA - Consulta de Licenças".
+    *   `ExecucaoAutomacao(models.Model)`: Um registro para **cada vez** que uma automação é disparada. Contém o status (`pendente`, `processando`, `sucesso`, `falha`), um `ForeignKey` para o modelo `Automacao`, e um campo para armazenar o log detalhado da execução ou o caminho para o arquivo de log.
 
-* **Lógica de Negócio Chave:** A lógica principal envolve a criação de "robôs" (web scrapers ou consumidores de API) para interagir com as fontes de dados dos portais. Esses robôs serão executados periodicamente através de `custom commands` do Django (gerenciados por um `cron` no servidor) para coletar e atualizar as informações nos modelos do banco de dados. O app também deve prover uma interface para visualização dos dados coletados e geração de relatórios.
+*   **Lógica de Negócio Chave (Fluxo Padrão):**
+    1.  Um evento externo (como um upload de arquivo, um agendamento `cron`, ou uma ação manual do usuário) cria um registro de `ExecucaoAutomacao` com o status `pendente`.
+    2.  Um sinal `post_save` no modelo `ExecucaoAutomacao` detecta a nova entrada.
+    3.  O sinal dispara o `custom command` do Django correspondente à automação (ex: `automacao_documentos_ipiranga`), passando o ID da `ExecucaoAutomacao`.
+    4.  O `custom command` executa a lógica do robô, atualizando o status da `ExecucaoAutomacao` para `processando`, e depois para `sucesso` ou `falha`, preenchendo os logs ao final.
 
-* **Comandos de Teste Específicos:**
-    * Para rodar os testes apenas deste app com relatório de cobertura:
+*   **Comandos de Teste Específicos:**
+    *   Para rodar os testes apenas deste app com relatório de cobertura:
         ```bash
         pytest apps/automacao_documentos/ --cov=apps.automacao_documentos --cov-report=html
         ```
@@ -44,8 +44,6 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ### 4. Exemplos de Prompts para este App
 
-> "Na aplicação `automacao_documentos`, crie o modelo `Portal` com campos para nome e URL. Gere a migração e registre o modelo no `admin.py`."
+> "Na aplicação `automacao_documentos`, crie o modelo `Automacao` com um campo `nome` e um campo `comando_django` para armazenar o nome do custom command a ser executado."
 
-> "Crie um custom command do Django chamado `automacao_documentos_ibama`. O comando deve buscar documentos vencidos no portal do IBAMA e criar um registro de `LogExecucaoAutomacao` com o status 'ALERTA' para cada um deles."
-
----
+> "Crie o modelo `ExecucaoAutomacao` com os campos `automacao` (ForeignKey para `Automacao`), `status` (CharField com choices), `log` (TextField) e `data_inicio` / `data_fim` (DateTimeField)."

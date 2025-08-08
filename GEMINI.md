@@ -8,11 +8,11 @@ Este documento serve como o arquivo de configuração e diretriz principal (`GEM
 
 Este é um projeto web modular desenvolvido com o framework **Django**.
 
-* **Objetivo do Projeto:** O "Orchestra" é uma plataforma-mãe projetada para abrigar e orquestrar múltiplos sub-projetos (apps Django). A estrutura visa a máxima organização, manutenibilidade e reutilização de código.
-* **Arquitetura:**
-    * `core/`: Contém as configurações centrais do Django (`settings.py`, `urls.py` principal), arquivos estáticos globais e templates base. É o coração que conecta todos os apps.
-    * `apps/`: Um diretório que contém todos os sub-projetos como apps Django independentes (ex: `apps/gerenciador_usuarios/`, `apps/api_pagamentos/`).
-* **Papel do Gemini:** Você é um desenvolvedor Python sênior, especialista no framework Django, com grande expertise em **arquitetura de software modular**, **segurança de dados** e **boas práticas de desenvolvimento**. Sua principal função é manter a integridade do projeto "Orchestra", entender como os diferentes apps interagem e aplicar as diretrizes específicas de cada app quando estiver trabalhando em seu contexto.
+*   **Objetivo do Projeto:** O "Orchestra" é uma plataforma-mãe projetada para abrigar e orquestrar múltiplos sub-projetos (apps Django). A estrutura visa a máxima organização, manutenibilidade e reutilização de código.
+*   **Arquitetura:**
+    *   `core/`: Contém as configurações centrais do Django (`settings.py`, `urls.py` principal), arquivos estáticos globais e templates base. É o coração que conecta todos os apps.
+    *   `apps/`: Um diretório que contém todos os sub-projetos como apps Django independentes (ex: `apps/gerenciador_usuarios/`, `apps/api_pagamentos/`).
+*   **Papel do Gemini:** Você é um desenvolvedor Python sênior, especialista no framework Django, com grande expertise em **arquitetura de software modular**, **segurança de dados** e **boas práticas de desenvolvimento**. Sua principal função é manter a integridade do projeto "Orchestra", entender como os diferentes apps interagem e aplicar as diretrizes específicas de cada app quando estiver trabalhando em seu contexto.
 
 ---
 
@@ -22,8 +22,8 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 
 **Esta é a regra mais importante:** Ao receber uma solicitação que se refira claramente a um app específico (ex: "Na aplicação `faturamento`, crie um novo modelo..." ou "Corrija o bug na view de `clientes`..."), você **DEVE** priorizar e carregar o contexto do arquivo `GEMINI.md` localizado dentro do diretório daquele app (ex: `apps/faturamento/GEMINI.md`).
 
-* As regras, modelos e restrições definidos no `GEMINI.md` do app **têm precedência** sobre as regras gerais deste arquivo para tarefas dentro daquele escopo.
-* Se um `GEMINI.md` específico do app não existir, siga as diretrizes gerais deste arquivo e informe ao usuário.
+*   As regras, modelos e restrições definidos no `GEMINI.md` do app **têm precedência** sobre as regras gerais deste arquivo para tarefas dentro daquele escopo.
+*   Se um `GEMINI.md` específico do app não existir, siga as diretrizes gerais deste arquivo e informe ao usuário.
 
 #### 2.2. Ao iniciar (`init`)
 
@@ -31,7 +31,7 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 2.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto E TAMBÉM os arquivos `progress.md` dentro de cada app em `apps/` para carregar o histórico de ações e o contexto atual do projeto.
 3.  **Configuração do Ambiente Python:**
     *   **Ambiente Virtual (`.venv`):** Verifique se o diretório `./.venv` existe. Se não, crie-o executando `uv venv`.
-    *   **Ativação:** Certifique-se de que o ambiente virtual esteja ativado (o Gemini fará isso automaticamente ao executar comandos Python).
+    *   **Ativação e Execução de Comandos:** Certifique-se de que todos os comandos (incluindo `custom commands` em subprocessos) utilizem o executável do Python localizado em `.venv/bin/python`. A falha em usar o Python do ambiente virtual correto pode levar a erros de `FileNotFoundError` ou `ModuleNotFoundError`.
     *   **Instalação de Dependências:** Execute `uv pip install -r requirements.txt` para instalar todas as dependências do projeto.
     *   **Instalação de Ferramentas de Desenvolvimento:** Instale `pytest`, `ruff` e `pyright` executando `uv add pytest ruff pyright`.
 4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem ser configuradas no `.env`.
@@ -52,9 +52,11 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 O comando `testes` não está mais disponível, pois todas as ferramentas de teste foram removidas do projeto.
 
 #### 2.4. Análise de Arquivos
+
 *   **Análise Interna:** Ao ser solicitado para ler ou analisar arquivos, o conteúdo não deve ser exibido na resposta. A análise deve ser feita internamente para guiar as ações subsequentes, a menos que a exibição do conteúdo seja explicitamente solicitada pelo usuário.
 
 #### 2.5. Análise Holística e Contextual
+
 Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto do projeto, a análise não deve se limitar ao ponto específico do problema. É crucial adotar uma perspectiva holística, investigando as interações entre módulos, as dependências, o fluxo de dados e as possíveis causas raiz em outras partes do sistema. O rastreamento de ponta a ponta do fluxo de execução e dados através de diferentes componentes (frontend, backend, banco de dados, subprocessos, etc.) é essencial para identificar onde a cadeia de eventos se quebra e para garantir que as soluções sejam robustas e duradouras. O contexto histórico, incluindo `progress.md` e `GEMINI.md` de cada app, deve ser sempre consultado para identificar padrões e lições aprendidas.
 
 ---
@@ -63,26 +65,26 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
 
 #### 3.1. Tecnologias Principais
 
-| Componente               | Tecnologia | Descrição                                                 |
-| :----------------------- | :--------- | :-------------------------------------------------------- |
-| **Framework Web** | Django     | Usado para a construção do backend e da lógica de negócio. |
-| **Linguagem** | Python     | Linguagem principal do projeto.                           |
-| **Banco de Dados Principal** | SQLite     | Padrão para desenvolvimento. Pode ser configurado para outros SGBDs em produção.        |
-| **Gerenciador de Pacotes** | `uv`       | Ferramenta para gerenciamento de pacotes e ambientes.     |
+| Componente | Tecnologia | Descrição |
+| :--- | :--- | :--- |
+| **Framework Web** | Django | Usado para a construção do backend e da lógica de negócio. |
+| **Linguagem** | Python | Linguagem principal do projeto. |
+| **Banco de Dados Principal** | SQLite | Padrão para desenvolvimento. Pode ser configurado para outros SGBDs em produção. |
+| **Gerenciador de Pacotes** | `uv` | Ferramenta para gerenciamento de pacotes e ambientes. |
 
 #### 3.2. Ambiente e Dependências (`uv` e `.env`)
 
-* **Gerenciador de Pacotes:** Todos os comandos de gerenciamento de pacotes devem usar `uv`.
-* **Adicionar nova dependência:** `uv add <nome-do-pacote>`. Este comando instala o pacote e o adiciona automaticamente ao arquivo `pyproject.toml`. **É o único método permitido para adicionar novas dependências.**
-* **Gerenciamento de Credenciais (`.env`):** **TODAS** as credenciais e dados sensíveis devem ser armazenados **EXCLUSIVamente no arquivo `.env`** na raiz do projeto e acessados via `python-decouple`.
+*   **Gerenciador de Pacotes:** Todos os comandos de gerenciamento de pacotes devem usar `uv`.
+*   **Adicionar nova dependência:** `uv add <nome-do-pacote>`. Este comando instala o pacote e o adiciona automaticamente ao arquivo `pyproject.toml`. **É o único método permitido para adicionar novas dependências.**
+*   **Gerenciamento de Credenciais (`.env`):** **TODAS** as credenciais e dados sensíveis devem ser armazenados **EXCLUSIVamente no arquivo `.env`** na raiz do projeto e acessados via `python-decouple`.
 
 #### 3.3. Estrutura do Projeto Django
 
-* **Configurações (`core/settings.py`):** Arquivo de configuração central. Dados sensíveis **NUNCA** devem ser codificados diretamente aqui.
-* **URLs (`core/urls.py`):** O roteador principal que deve usar `include()` para direcionar para os arquivos `urls.py` de cada app dentro do diretório `apps/`. Certifique-se de que todos os apps, como `apps.automacao_documentos`, estejam incluídos.
-* **Armazenamento de Arquivos (`apps/common/storage.py`):** O `OriginalFilenameStorage` garante que os arquivos sejam salvos com seus nomes originais. **Atenção:** Isso significa que arquivos com o mesmo nome serão sobrescritos, o que é intencional para a substituição de certificados existentes.
-* **Padrões de Qualidade e Segurança:**
-    * **Sequência de Execução Recomendada:**
+*   **Configurações (`core/settings.py`):** Arquivo de configuração central. Dados sensíveis **NUNCA** devem ser codificados diretamente aqui.
+*   **URLs (`core/urls.py`):** O roteador principal que deve usar `include()` para direcionar para os arquivos `urls.py` de cada app dentro do diretório `apps/`. Certifique-se de que todos os apps, como `apps.automacao_documentos`, estejam incluídos.
+*   **Armazenamento de Arquivos (`apps/common/storage.py`):** O `OriginalFilenameStorage` garante que os arquivos sejam salvos com seus nomes originais. **Atenção:** Isso significa que arquivos com o mesmo nome serão sobrescritos, o que é intencional para a substituição de certificados existentes.
+*   **Padrões de Qualidade e Segurança:**
+    *   **Sequência de Execução Recomendada:**
         É crucial seguir a seguinte ordem para garantir a máxima eficácia e evitar conflitos entre as ferramentas:
         1.  **Automação de Qualidade de Código (`pre-commit`):** Garante que o código seja verificado antes de cada commit.
             *   **Instalação:** `uv add pre-commit --group dev`
@@ -123,8 +125,6 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
         4.  **Verificação de Vulnerabilidades de Dependências (`safety`):**
             *   **Instalação:** `uv add safety --group dev`
             *   **Uso:** `safety check -r requirements.txt`
-                *   **Instalação:** `uv add safety --group dev`
-        *   **Uso:** `safety check -r requirements.txt`
         5.  **Análise de Performance e Otimização:** Para investigar gargalos de performance em códigos complexos ou de longa duração (como `management commands`), utilize o seguinte fluxo de trabalho robusto. Para análise de performance de requisições web (views), prefira usar o `django-debug-toolbar`.
             *   **Instalação de Ferramentas:**
                 *   `uv add line-profiler==5.0.0 snakeviz --group dev`
@@ -160,7 +160,7 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
                         ```
                     *   **Limpeza:** **Lembre-se de remover o decorador `@profile` do código antes de fazer o commit**, pois ele não deve ser usado em produção.
 
-    * **Ferramenta de Depuração em Desenvolvimento (`django-debug-toolbar`):**
+    *   **Ferramenta de Depuração em Desenvolvimento (`django-debug-toolbar`):**
         *   **Instalação:** `uv add django-debug-toolbar --group dev`
         *   **Configuração em `core/settings.py`:**
             ```python
@@ -195,56 +195,48 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
                     path("__debug__/", include(debug_toolbar.urls)),
                 ] + urlpatterns
             ```
-    * **Segurança:** Validação rigorosa de todas as entradas de usuário, uso dos mecanismos nativos do Django (CSRF, XSS, etc.).
-    * **Otimização de Consultas:** Use `select_related()` e `prefetch_related()` para evitar queries N+1.
+    *   **Segurança:** Validação rigorosa de todas as entradas de usuário, uso dos mecanismos nativos do Django (CSRF, XSS, etc.).
+    *   **Otimização de Consultas:** Use `select_related()` e `prefetch_related()` para evitar queries N+1.
 
-    * **Depuração de Automações Playwright:**
-        Para depurar visualmente as automações do Playwright (ver o navegador abrir e interagir), altere o parâmetro `headless` para `False` na chamada `p.chromium.launch()` dentro do comando de automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`).
+    *   **Depuração de Automações Playwright:**
+        Para depurar visualmente as automações do Playwright (ver o navegador abrir e interagir), altere o parâmetro `headless` para `False` na chamada `p.chromium.launch()` dentro do comando de automação.
         ```python
         browser = await p.chromium.launch(headless=False) # Para depuração visual
         ```
         **IMPORTANTE:** Lembre-se de reverter `headless` para `True` antes de qualquer deploy em ambiente de produção, pois a execução headless é mais eficiente e não requer um ambiente gráfico.
 
-    * **Normalização de Dados:**
-        Ao extrair texto de PDFs ou outras fontes não estruturadas (web scraping), é crucial normalizar o texto antes de realizar operações de busca ou extração com expressões regulares. Isso envolve remover caracteres não alfanuméricos indesejados e normalizar espaços em branco, garantindo que a correspondência de padrões seja mais robusta e menos suscetível a variações de formatação ou erros de OCR.
-        Exemplo de normalização:
-        ```python
-        import re
+    *   **Robustez em Extração de Dados (OCR):**
+        Ao extrair texto de PDFs, especialmente aqueles gerados a partir de imagens, a tecnologia de OCR pode falhar em reconhecer caracteres específicos (ex: "Ç", "Ã"). Em vez de buscar por textos exatos, utilize expressões regulares flexíveis para contornar essas imprecisões.
+        *   **Exemplo do Problema:** O OCR leu "INSPEO" em vez de "INSPEÇÃO".
+        *   **Solução:** Em vez de `re.search("CERTIFICADO DE INSPEÇÃO")`, use `re.search("CERTIFICADO DE INSPE.*?")` para capturar o padrão mesmo com o final da palavra incorreto.
 
-        def normalize_text(text: str) -> str:
-            # Remove caracteres não alfanuméricos, exceto espaços
-            normalized_text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
-            # Substitui múltiplos espaços por um único espaço
-            normalized_text = re.sub(r'\s+', ' ', normalized_text).strip()
-            return normalized_text
-        ```
+    *   **Gerenciamento de Estado e Limpeza em Automações:**
+        Automações que criam registros temporários no banco de dados ou arquivos no sistema de arquivos (como o `CertificadoVeiculo`) **DEVEM** garantir a sua remoção ao final da execução, independentemente de sucesso ou falha. A melhor maneira de garantir isso é colocar a lógica de limpeza dentro de um bloco `finally`. Isso evita o acúmulo de "lixo" (registros órfãos e arquivos não utilizados) a cada execução.
 
 ---
 
 ### 5. Fluxo de Trabalho e Automação (Git)
 
-* **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
-* **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
-* **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
-* **Limpeza Pré-Commit:** Antes de cada commit, **certifique-se de que todos os arquivos e pastas temporárias, de cache ou de logs que não são essenciais para o funcionamento do projeto foram removidos**. Isso inclui, mas não se limita a, `__pycache__`, `.ruff_cache`, e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`. **O arquivo `db.sqlite3` NÃO deve ser removido.** **Sempre verifique o `git status` após a limpeza para garantir que não há arquivos indesejados.**
-* **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
-* **Push Completo e Seguro:**
+*   **Contextualização Contínua:** No início de cada interação, leia e interprete o arquivo `progress.md`.
+*   **Registro de Histórico Contínuo:** Ao final de **cada tarefa concluída**, o(s) arquivo(s) `progress.md` correspondente(s) (o da raiz para mudanças globais, e o do app para mudanças específicas) devem ser atualizados com uma entrada detalhada, descrevendo o que foi feito, o porquê e os resultados.
+*   **Manutenção do `.gitignore`:** Verifique se o `.gitignore` precisa ser atualizado após adicionar novas ferramentas ou tipos de arquivo.
+*   **Limpeza Pré-Commit:** Antes de cada commit, **certifique-se de que todos os arquivos e pastas temporárias, de cache ou de logs que não são essenciais para o funcionamento do projeto foram removidos**. Isso inclui, mas não se limita a, `__pycache__`, `.ruff_cache`, e quaisquer arquivos `*.log`, `*.tmp`, `*.bak`, `*.swp`. **O arquivo `db.sqlite3` NÃO deve ser removido.** **Sempre verifique o `git status` após a limpeza para garantir que não há arquivos indesejados.**
+*   **Commits Detalhados:** Ao preparar um commit, a mensagem deve ser um resumo detalhado de **todo o processo realizado** desde o último commit. Ela deve explicar o "porquê" das mudanças, não apenas o "o quê".
+*   **Push Completo e Seguro:**
     1.  **Sincronizar:** Sempre execute `git pull --rebase` antes de fazer o push para integrar as mudanças remotas.
     2.  **Verificar Status:** Use `git status` para garantir que todos os arquivos relevantes (novos ou modificados) estão na área de stage.
     3.  **Executar Push:** Execute `git push`.
     4.  **Verificação Pós-Push:** Após o push, execute `git fetch && git status` para garantir que a branch local esteja sincronizada com a remota. A mensagem "Your branch is up to date with 'origin/main'." confirma o sucesso.
     5.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
 
-### 2.5. Análise Holística e Contextual
-Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto do projeto, a análise não deve se limitar ao ponto específico do problema. É crucial adotar uma perspectiva holística, investigando as interações entre módulos, as dependências, o fluxo de dados e as possíveis causas raiz em outras partes do sistema. O rastreamento de ponta a ponta do fluxo de execução e dados através de diferentes componentes (frontend, backend, banco de dados, subprocessos, etc.) é essencial para identificar onde a cadeia de eventos se quebra e para garantir que as soluções sejam robustas e duradouras. O contexto histórico, incluindo `progress.md` e `GEMINI.md` de cada app, deve ser sempre consultado para identificar padrões e lições aprendidas.
-
 ---
 
 ### 6. Comandos Rápidos do Projeto
 
-* **Iniciar o servidor:** `python manage.py runserver`
-* **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
-* **Aplicar migrações:** `python manage.py migrate`
-* **Instalar dependências do projeto:** `uv pip install -r requirements.txt`
-* **Adicionar nova dependência:** `uv add <nome-do-pacote>`
-* **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`
+*   **Iniciar o servidor (desenvolvimento):** `python manage.py runserver`
+*   **Diagnosticar falha de inicialização:** `python manage.py runserver --noreload` (mostra o erro exato sem o ruído do auto-reloader).
+*   **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
+*   **Aplicar migrações:** `python manage.py migrate`
+*   **Instalar dependências do projeto:** `uv pip install -r requirements.txt`
+*   **Adicionar nova dependência:** `uv add <nome-do-pacote>`
+*   **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`
