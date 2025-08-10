@@ -73,7 +73,7 @@ def trigger_automacao_certificado(sender, instance, created, **kwargs):
         f"Sender: {sender.__name__}, Instance ID: {instance.id}, "
         f"Created: {created}, Status: {instance.status}"
     )
-    if created and instance.status == "pendente":
+    if instance.status == "pendente":
         logger.info(
             f"[SIGNAL] Condições atendidas. Disparando automação para o Certificado ID: {instance.id}"
         )

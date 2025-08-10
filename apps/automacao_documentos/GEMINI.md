@@ -14,7 +14,7 @@ Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `pro
 
 ### 2. Dependências e Restrições Específicas
 
-*   **Exceção Crítica de Pacotes:** Nenhuma definida até o momento. (Avaliar a necessidade de fixar versões de pacotes de web scraping como `playwright` se forem utilizados, para evitar que atualizações do browser quebrem a automação).
+*   **Exceção Crítica de Pacotes:** A versão do pacote `playwright` deve ser fixada para garantir a estabilidade das automações. A versão atualmente em uso e testada é `1.54.0`. Garanta que o `pyproject.toml` contenha a linha `playwright==1.54.0`.
 
 *   **Fontes de Dados Adicionais:**
     *   **Principal:** Diversos portais externos (ex: Ipiranga, IBAMA, etc.).

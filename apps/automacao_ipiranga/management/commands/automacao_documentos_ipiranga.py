@@ -10,6 +10,7 @@ from playwright.async_api import async_playwright, expect
 from apps.automacao_ipiranga.models import CertificadoVeiculo
 from apps.common.services import (
     convert_date_format,
+    extract_cipp_data,
     extract_text_from_pdf_image,
     login_to_portran,
 )
@@ -35,36 +36,34 @@ class Command(BaseCommand):
         logger.info(
             f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
         )
-        browser = None
-        certificado = None
+
+        certificado = None  # Initialize certificado here for finally block access
         try:
-            logger.info(
-                "[AUTOMACAO_IPIRANGA] Buscando certificado no banco de dados..."
-            )
             certificado = await sync_to_async(
                 CertificadoVeiculo.objects.select_related("veiculo").get
             )(pk=certificado_id)
             logger.info(
                 f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id} encontrado."
             )
+        except CertificadoVeiculo.DoesNotExist as err:
+            logger.error(f"Certificado com ID {certificado_id} não encontrado.")
+            raise CommandError(
+                f"Certificado com ID {certificado_id} não encontrado."
+            ) from err
 
-            logger.info("[AUTOMACAO_IPIRANGA] Iniciando Playwright...")
-            async with async_playwright() as p:
-                logger.info("[AUTOMACAO_IPIRANGA] Lançando navegador Chromium...")
-                browser = await p.chromium.launch(headless=False)
-                logger.info(
-                    "[AUTOMACAO_IPIRANGA] Navegador lançado. Criando nova página..."
-                )
+        async with async_playwright() as p:
+            browser = None
+            page = None
+            try:
+                browser = await p.chromium.launch(
+                    headless=False
+                )  # Keep headless=False for debugging
                 page = await browser.new_page()
-                page.set_default_timeout(
-                    30000
-                )  # Timeout padrão de 30 segundos para operações da página
+                page.set_default_timeout(60000)
                 logger.info("[AUTOMACAO_IPIRANGA] Página criada. Iniciando login...")
 
-                logger.info("Iniciando login no portal Ipiranga...")
                 await login_to_portran(page, logger)
                 logger.info("Login realizado com sucesso.")
-                logger.info(f"URL atual após login: {page.url}")
 
                 placa_alvo = certificado.veiculo.placa
                 nome_certificado_alvo = certificado.nome
@@ -82,119 +81,75 @@ class Command(BaseCommand):
                         f"O arquivo do certificado não foi encontrado em: {file_path_upload}"
                     )
 
-                try:
-                    logger.info("Iniciando extração de texto do PDF...")
-                    pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
+                # --- Start of new PDF processing logic ---
+                logger.info("Iniciando extração de texto do PDF...")
+                pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
+                logger.info(
+                    "Texto do PDF extraído. Identificando tipo de certificado..."
+                )
+
+                numero_documento_valor = "N/A"
+                vencimento_valor_pdf = "N/A"
+
+                if "CIPP" in nome_certificado_alvo.upper():
                     logger.info(
-                        "Texto do PDF extraído. Buscando bloco de certificado..."
+                        "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
                     )
-                    match = re.search(
-                        r"(CERTIFICADO DE INSPE.*?)",
-                        pdf_text,
-                        re.IGNORECASE | re.DOTALL,
+                    numero_documento_valor, vencimento_valor_pdf = extract_cipp_data(
+                        pdf_text, logger
                     )
-
-                    if not match:
-                        raise CommandError(
-                            "Não foi possível encontrar um bloco de 'CERTIFICADO DE INSPEÇÃO' no PDF."
-                        )
-
-                    first_block = match.group(1)
-                    logger.info(
-                        "Bloco de certificado encontrado. Extraindo número do documento..."
+                else:
+                    logger.warning(
+                        f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."
                     )
-                    match_numero = re.search(
-                        r"([A-Z0-9]{1,3}\.\d{3}\.\d{3})", first_block
-                    )
-                    numero_documento_valor = (
-                        re.sub(r"\D", "", match_numero.group(1))
-                        if match_numero
-                        else "N/A"
-                    )
-                    logger.info("Número do documento extraído. Extraindo datas...")
-                    all_dates = re.findall(
-                        r"(\d{2}/[A-Z]{3}/\d{2})", first_block, re.IGNORECASE
-                    )
-                    vencimento_valor_pdf = all_dates[-1] if all_dates else "N/A"
-                    logger.info("Datas extraídas. Processamento do PDF concluído.")
-
-                except Exception as e:
-                    logger.error(
-                        f"Erro durante o processamento do PDF: {e}", exc_info=True
-                    )
-                    raise CommandError(
-                        f"Erro durante o processamento do PDF: {e}"
-                    ) from e
+                    # For now, it will remain "N/A" if not CIPP
 
                 logger.info(f"Número do Documento Extraído: {numero_documento_valor}")
                 logger.info(f"Data de Vencimento Extraída: {vencimento_valor_pdf}")
+                # --- End of new PDF processing logic ---
 
                 vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
                 a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
 
                 placa_encontrada = False
                 logger.info("Iniciando loop de navegação para páginas de veículos...")
-                try:
-                    for url, nome_pagina in [
-                        (vencidos_url, "Vencidos"),
-                        (a_vencer_url, "À vencer"),
-                    ]:
-                        logger.info(f"Navegando para a página: {nome_pagina} ({url})")
-                        await page.goto(url, timeout=60000)
-                        await page.wait_for_load_state("networkidle", timeout=60000)
 
-                        # Esperar pelo seletor da tabela
-                        await page.locator("table#tabela-veiculo").wait_for(
-                            state="visible", timeout=30000
-                        )
+                for url, nome_pagina in [
+                    (vencidos_url, "Vencidos"),
+                    (a_vencer_url, "À vencer"),
+                ]:
+                    await page.goto(url, timeout=60000)
+                    await page.wait_for_load_state("networkidle", timeout=60000)
 
-                        table_content = await page.locator(
-                            "table#tabela-veiculo"
-                        ).text_content()
-                        logger.info(f"""Conteúdo da tabela na página {nome_pagina}:
-{(table_content or "")[:1000]}...""")  # Log dos primeiros 1000 caracteres
-
-                        rows = page.locator("table#tabela-veiculo tbody tr")
-                        num_rows = await rows.count()
-                        logger.info(
-                            f"Número de linhas encontradas na tabela: {num_rows}"
-                        )
-
-                        for i in range(num_rows):
-                            row = rows.nth(i)
-                            placa_text = (
-                                await row.locator("td:nth-child(2)").text_content()
-                                or ""
-                            ).strip()
-                            logger.info(
-                                f"Verificando linha {i + 1}: Placa encontrada na linha: '{placa_text}'"
-                            )
-                            if placa_alvo in placa_text:
-                                logger.info(
-                                    f"Placa '{placa_alvo}' encontrada na página {nome_pagina}!"
-                                )
-                                await row.locator(
-                                    "a.btn.btn--square.alterar-veiculo-js"
-                                ).click()
-                                await page.wait_for_load_state(
-                                    "networkidle", timeout=60000
-                                )
-                                placa_encontrada = True
-                                break
-                        if placa_encontrada:
-                            break
-                except Exception as e:
-                    logger.error(
-                        f"Erro durante a navegação ou busca de placa: {e}",
-                        exc_info=True,
+                    await page.locator("table#tabela-veiculo").wait_for(
+                        state="visible", timeout=30000
                     )
-                    raise CommandError(
-                        f"Erro durante a navegação ou busca de placa: {e}"
-                    ) from e
+
+                    rows = page.locator("table#tabela-veiculo tbody tr")
+                    num_rows = await rows.count()
+                    logger.info(f"Número de linhas encontradas na tabela: {num_rows}")
+
+                    for i in range(num_rows):
+                        row = rows.nth(i)
+                        placa_text = (
+                            await row.locator("td:nth-child(2)").text_content() or ""
+                        ).strip()
+                        if placa_alvo in placa_text:
+                            logger.info(
+                                f"Placa '{placa_alvo}' encontrada na página {nome_pagina}!"
+                            )
+                            await row.locator(
+                                "a.btn.btn--square.alterar-veiculo-js"
+                            ).click()
+                            await page.wait_for_load_state("networkidle", timeout=60000)
+                            placa_encontrada = True
+                            break
+                    if placa_encontrada:
+                        break
 
                 if not placa_encontrada:
                     raise CommandError(
-                        f"Placa '{placa_alvo}' não encontrada nas páginas de vencidos/a vencer."
+                        f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado."
                     )
 
                 logger.info("Clicando na aba 'Certificados'...")
@@ -221,10 +176,6 @@ class Command(BaseCommand):
                         > 0
                     )
 
-                    logger.info(
-                        f"Verificando certificado {i + 1}: Nome: '{current_name}' , Vencido: {is_vencido}"
-                    )
-
                     if (
                         nome_certificado_alvo.upper() in current_name.upper()
                         and is_vencido
@@ -235,25 +186,22 @@ class Command(BaseCommand):
                         await fieldset.locator("button.btn-atualizar-requisito").click()
                         await page.wait_for_load_state("networkidle")
 
-                        logger.info(
-                            f"Preenchendo número do documento: {numero_documento_valor}"
-                        )
-                        await page.fill("#licenca-numero-1", numero_documento_valor)
+                        # Construct dynamic IDs based on sequential numbering
+                        numero_id = f"#licenca-numero-{i + 1}"
+                        vencimento_id = f"#licenca-vencimento-{i + 1}"
+
+                        await page.wait_for_selector(numero_id, timeout=30000)
+                        await page.fill(numero_id, numero_documento_valor)
                         vencimento_formatado = convert_date_format(vencimento_valor_pdf)
-                        logger.info(
-                            f"Preenchendo data de vencimento: {vencimento_formatado}"
-                        )
-                        await page.fill("#licenca-vencimento-1", vencimento_formatado)
-                        logger.info(f"Anexando arquivo: {file_path_upload}")
+                        await page.wait_for_selector(vencimento_id, timeout=30000)
+                        await page.fill(vencimento_id, vencimento_formatado)
                         await fieldset.locator(
                             'input[type="file"]:visible'
                         ).set_input_files(file_path_upload)
 
-                        logger.info("Clicando em 'Enviar novo certificado'...")
                         await fieldset.locator(
                             'button:has-text("Enviar novo certificado")'
                         ).click()
-                        logger.info("Aguardando mensagem de sucesso...")
                         await page.locator(
                             'span.js-successArea:has-text("sucesso")'
                         ).wait_for(timeout=30000)
@@ -269,38 +217,51 @@ class Command(BaseCommand):
 
                 logger.info("Clicando no botão 'Atualizar'...")
                 await page.locator("a#botaoAtualizar").click()
-                logger.info("Aguardando redirecionamento para a página de veículos...")
+                await page.wait_for_load_state(
+                    "networkidle", timeout=60000
+                )  # Added this
                 await expect(page).to_have_url(
                     re.compile(r".*/veiculo/index"), timeout=60000
                 )
                 logger.info("Operação salva com sucesso.")
 
-                await sync_to_async(certificado.delete)()
-                if os.path.exists(file_path_upload):
-                    os.remove(file_path_upload)
-
-                logger.info(
-                    f"SUCESSO: Certificado ID {certificado.id} processado e removido."
+            except Exception as e:
+                logger.error(
+                    f"FALHA na automação para o certificado ID {certificado_id}: {e}",
+                    exc_info=True,
                 )
+                if "certificado" in locals() and certificado:
+                    await sync_to_async(setattr)(certificado, "status", "falha")
+                    await sync_to_async(certificado.save)()
 
-        except Exception as e:
-            logger.error(
-                f"FALHA na automação para o certificado ID {certificado_id}: {e}",
-                exc_info=True,
+                if page:
+                    try:
+                        screenshot_path = os.path.join(
+                            "logs", f"error_screenshot_cert_{certificado_id}.png"
+                        )
+                        await page.screenshot(path=screenshot_path)
+                        logger.info(f"Screenshot de erro salvo em: {screenshot_path}")
+                    except Exception as screenshot_error:
+                        logger.error(f"Falha ao tirar screenshot: {screenshot_error}")
+
+                raise CommandError(f"Erro na automação: {e}") from e
+
+            finally:
+                if browser:
+                    await browser.close()
+
+        # Cleanup: Delete certificate and associated file regardless of success or failure
+        if (
+            certificado and certificado.pk
+        ):  # Ensure certificado object exists and has a primary key
+            await sync_to_async(certificado.delete)()
+            if os.path.exists(
+                file_path_upload
+            ):  # Use file_path_upload from outer scope
+                os.remove(file_path_upload)
+            logger.info(
+                f"Certificado ID {certificado.id} e arquivo associado removidos no cleanup final."
             )
-            if certificado:
-                await sync_to_async(setattr)(certificado, "status", "falha")
-                await sync_to_async(certificado.save)()
-            if browser and page:
-                screenshot_path = os.path.join(
-                    "logs", f"error_screenshot_cert_{certificado_id}.png"
-                )
-                await page.screenshot(path=screenshot_path)
-                logger.error(f"Screenshot de erro salvo em: {screenshot_path}")
-            raise CommandError(f"Erro na automação: {e}") from e
-        finally:
-            if browser:
-                await browser.close()
 
     def handle(self, *args, **options):
         """Executa o comando de automação de forma síncrona."""

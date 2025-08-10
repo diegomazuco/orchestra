@@ -153,6 +153,68 @@ def extract_text_from_pdf_image(
     return text
 
 
+def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
+    """Extrai dados específicos (número do documento e vencimento) de um certificado CIPP.
+
+    Args:
+        pdf_text: O texto completo extraído do PDF.
+        logger: A instância do logger para registrar os passos.
+
+    Returns:
+        Uma tupla contendo (numero_documento_valor, vencimento_valor_pdf).
+    """
+    logger.info("Iniciando extração de dados específicos para certificado CIPP...")
+
+    # Buscar o bloco de certificado
+    match = re.search(
+        r"(CERTIFICADO DE INSPE.*?)(?=(CERTIFICADO DE INSPEÇÃO|$))",  # Added lookahead to stop at next certificate or end of text
+        pdf_text,
+        re.IGNORECASE | re.DOTALL,
+    )
+
+    if not match:
+        logger.warning(
+            "Não foi possível encontrar um bloco de 'CERTIFICADO DE INSPEÇÃO' no PDF CIPP."
+        )
+        return "N/A", "N/A"
+
+    first_block = match.group(1)
+    logger.info(f"Bloco de certificado CIPP encontrado: {first_block[:200]}...")
+
+    logger.info(
+        f"Bloco de certificado CIPP encontrado: {first_block[:500]}..."
+    )  # Log more of the block
+
+    # Extrair número do documento
+    # O número do certificado CIPP pode ter uma letra inicial e é uma sequência de dígitos.
+    # Ex: "A760379". A busca será ancorada em "CIPP" para maior precisão.
+    match_numero = re.search(
+        r"CIPP.*?([A-Z]?\d{6,})", first_block, re.IGNORECASE | re.DOTALL
+    )
+    numero_documento_valor = (
+        re.sub(r"\D", "", match_numero.group(1))  # Remove non-digits for final format
+        if match_numero
+        else "N/A"
+    )
+    logger.info(f"Número do documento CIPP extraído: {numero_documento_valor}")
+
+    # Extrair datas (vencimento)
+    # Buscar a última data no formato DD/MMM/AA ou DD/MM/AAAA, com robustez a erros de OCR (ex: 'O' para '0')
+    # e permitindo qualquer sequência de 3 letras para o mês, além de espaços flexíveis.
+    all_dates = re.findall(
+        r"([0O]\d|[0-3]\d)\s*/\s*([A-Z]{3})\s*/\s*(\d{2,4})",  # Allow any 3 letters for month, and spaces around slashes
+        first_block,
+        re.IGNORECASE,
+    )
+    logger.info(
+        f"Resultado de re.findall para datas: {all_dates}"
+    )  # Log the result of findall
+    vencimento_valor_pdf = all_dates[-1] if all_dates else "N/A"
+    logger.info(f"Data de vencimento CIPP extraída: {vencimento_valor_pdf}")
+
+    return numero_documento_valor, vencimento_valor_pdf
+
+
 def normalize_text(text: str) -> str:
     """Normaliza o texto removendo caracteres não alfanuméricos e espaços extras."""
     # Remove caracteres não alfanuméricos, exceto espaços
@@ -169,22 +231,49 @@ def convert_date_format(date_str: str) -> str:
     """
     month_map = {
         "JAN": "01",
+        "JAN.": "01",
+        "FEV": "02",
         "FEB": "02",
         "MAR": "03",
+        "MAR.": "03",
+        "ABR": "04",
         "APR": "04",
+        "MAI": "05",
         "MAY": "05",
         "JUN": "06",
+        "JUN.": "06",
         "JUL": "07",
+        "JUL.": "07",
+        "AGO": "08",
         "AUG": "08",
+        "SET": "09",
         "SEP": "09",
+        "OUT": "10",
         "OCT": "10",
         "NOV": "11",
+        "NOV.": "11",
+        "DEZ": "12",
         "DEC": "12",
+        # Common OCR errors for months
+        "FES": "02",  # Example from log
     }
     parts = date_str.split("/")
     day = parts[0]
-    month = month_map[parts[1].upper()]
-    year = (
-        f"20{parts[2]}" if int(parts[2]) < 50 else f"19{parts[2]}"
-    )  # Assume anos 2000 para YY < 50 e 1900 para YY >= 50
-    return f"{day}/{month}/{year}"
+    month_abbr = parts[1].upper()
+
+    # Handle potential OCR errors in the day part (e.g., 'O' instead of '0', 'S' instead of '5')
+    day_cleaned = day.replace("O", "0").replace("S", "5")
+
+    month = month_map.get(month_abbr)
+
+    if month is None:
+        # Fallback for unmapped month abbreviations
+        if "FEV" in month_abbr or "FEB" in month_abbr:
+            month = "02"
+        elif "JUL" in month_abbr:
+            month = "07"
+        else:
+            return "N/A"  # Return N/A if month cannot be converted
+
+    year = f"20{parts[2]}" if int(parts[2]) < 50 else f"19{parts[2]}"
+    return f"{day_cleaned}/{month}/{year}"

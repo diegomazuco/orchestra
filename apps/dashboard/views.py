@@ -59,45 +59,23 @@ def process_documents_view(request):
                         f"[POST] Resultado VeiculoIpiranga: veiculo={veiculo.placa}, created={created_veiculo}"
                     )
 
-                    # 2. Excluir certificados anteriores para esta placa e nome
-                    logger.info(
-                        f"[POST] Verificando e excluindo certificados anteriores para Placa: {placa}, Certificado: {nome_certificado}"
-                    )
-                    CertificadoVeiculo.objects.filter(
-                        veiculo=veiculo, nome=nome_certificado
-                    ).delete()  # type: ignore
-                    logger.info(
-                        f"[POST] Certificados anteriores para {placa} - {nome_certificado} excluídos, se existiam."
-                    )
-
-                    logger.debug(
-                        f"[POST] Tentando criar CertificadoVeiculo para {placa} - {nome_certificado}"
-                    )
-                    logger.debug(
-                        f"[POST] Detalhes do uploaded_file: name={uploaded_file.name}, size={uploaded_file.size}, content_type={uploaded_file.content_type}"
-                    )
-                    try:
-                        # Tenta ler uma pequena parte do arquivo para verificar se está acessível
-                        uploaded_file.seek(0)  # Garante que o ponteiro está no início
-                        sample_content = uploaded_file.read(100)
-                        logger.debug(
-                            f"[POST] Amostra do conteúdo do uploaded_file (primeiros 100 bytes): {sample_content[:50]}..."
-                        )
-                        uploaded_file.seek(
-                            0
-                        )  # Volta o ponteiro para o início para o FileField
-                    except Exception as e:
-                        logger.error(f"[POST] Erro ao tentar ler uploaded_file: {e}")
-                        raise  # Re-levanta a exceção para que o processo falhe e possamos depurar
-
-                    # 3. Criar o CertificadoVeiculo e anexar o arquivo
-                    # O status inicial é 'pendente', o que acionará o sinal
-                    certificado = CertificadoVeiculo.objects.create(  # type: ignore
+                    # Use update_or_create para garantir que apenas um registro exista para a mesma placa e tipo de certificado
+                    certificado, created = CertificadoVeiculo.objects.update_or_create(
                         veiculo=veiculo,
                         nome=nome_certificado,
-                        arquivo=uploaded_file,  # O arquivo é salvo automaticamente aqui
-                        status="pendente",
+                        defaults={
+                            "arquivo": uploaded_file,
+                            "status": "pendente",
+                        },
                     )
+                    if created:
+                        logger.info(
+                            f"[POST] Novo CertificadoVeiculo criado. ID: {certificado.id}"
+                        )
+                    else:
+                        logger.info(
+                            f"[POST] CertificadoVeiculo existente atualizado. ID: {certificado.id}"
+                        )
                     logger.debug(
                         f"[POST] CertificadoVeiculo criado com sucesso. ID: {certificado.id}"
                     )

@@ -27,25 +27,25 @@ Este é um projeto web modular desenvolvido com o framework **Django**.
 
 #### 2.2. Ao iniciar (`init`)
 
-1.  **Sincronização com o Repositório:** Execute `git pull` para garantir que o ambiente local esteja atualizado com a versão mais recente do repositório.
-2.  **Leitura do Histórico de Progresso:** Leia e analise o arquivo `progress.md` na raiz do projeto E TAMBÉM os arquivos `progress.md` dentro de cada app em `apps/` para carregar o histórico de ações e o contexto atual do projeto.
-3.  **Configuração do Ambiente Python:**
-    *   **Ambiente Virtual (`.venv`):** Verifique se o diretório `./.venv` existe. Se não, crie-o executando `uv venv`.
-    *   **Ativação e Execução de Comandos:** Certifique-se de que todos os comandos (incluindo `custom commands` em subprocessos) utilizem o executável do Python localizado em `.venv/bin/python`. A falha em usar o Python do ambiente virtual correto pode levar a erros de `FileNotFoundError` ou `ModuleNotFoundError`.
-    *   **Instalação de Dependências:** Execute `uv install` para instalar todas as dependências do projeto (baseado no `pyproject.toml` e `uv.lock`).
-    *   **Instalação de Ferramentas de Desenvolvimento:** Instale `pytest`, `ruff` e `pyright` executando `uv add pytest ruff pyright`.
-4.  **Conexão com o Banco de Dados Principal:** O Django requer uma configuração de banco de dados desde o início. Verifique a conectividade com o banco de dados `default` (SQLite é o padrão para desenvolvimento) configurado em `core/settings.py`. Credenciais para bancos de dados externos devem ser configuradas no `.env`.
-5.  **Migrações:** Execute `python manage.py makemigrations` e `python manage.py migrate` para sincronizar o schema de todos os apps.
-6.  **Análise Estrutural e de Código:** Analise a estrutura geral do projeto (`core`, `apps/`) em busca de melhorias de organização, modularidade e aderência às boas práticas (ex: uso de variáveis de ambiente para configurações sensíveis, configuração adequada do `.gitignore`). **Proponha explicitamente ao usuário quaisquer mudanças estruturais significativas ou melhorias identificadas, explicando o porquê e solicitando confirmação antes de aplicar.**
-7.  **Análise de Sanidade do Código (Pós-Setup):** Após a configuração do ambiente, execute uma análise completa do código-fonte para:
-    *   Identificar e remover códigos, comandos, modelos ou testes redundantes e não utilizados.
-    *   Verificar a consistência entre os modelos e as migrações, propondo a remoção de migrações órfãs.
-    *   Sugerir otimizações, como a substituição de lógica de placeholder (ex: `asyncio.sleep`) por implementações robustas e a centralização de funcionalidades repetidas.
-    *   Apontar potenciais bugs, como o uso de `headless=False` em automações que deveriam rodar em background (sem interface gráfica) ou testes que acessam atributos inexistentes. **Para depuração visual, o comando de automação deve ser executado diretamente no terminal do usuário, pois o ambiente do Gemini não possui interface gráfica.**
-    *   Sugerir otimizações, como a substituição de lógica de placeholder (ex: `asyncio.sleep`) por implementações robustas e a centralização de funcionalidades repetidas. Para `asyncio.sleep`, se for uma pausa estratégica, adicione um comentário explicando o motivo.
-    *   Proponha um plano de ação detalhado para as correções e refatorações, solicitando confirmação antes de aplicar.
-8.  **Configuração de Logging Centralizada:** Verifique se a configuração de logging está centralizada em `core/settings.py` e se os logs estão sendo direcionados para um diretório `logs/` com rotação. Caso contrário, proponha a implementação.
-9.  **Atualização de Dependências (Com Cautela):** Verifique se existem versões mais recentes e estáveis para os pacotes em `pyproject.toml`. **Esteja ciente de que exceções e versões fixas podem ser definidas nos `GEMINI.md` específicos de cada app.** Analise changelogs para breaking changes antes de propor atualizações. Para atualizar um pacote específico, use `uv pip install --upgrade <nome-do-pacote>`. Para atualizar todos os pacotes, você pode usar `uv pip install --upgrade -r requirements.txt` (se o `requirements.txt` estiver atualizado) ou atualizar individualmente os pacotes listados como desatualizados por `uv pip list --outdated`.
+O processo de inicialização segue estritamente duas etapas principais para garantir o contexto completo do projeto:
+
+1.  **Análise das Instruções (`GEMINI.md`):**
+    *   **Listar e Ler:** A primeira ação é listar e ler o conteúdo completo de todos os arquivos `GEMINI.md` na raiz e em cada sub-app (`apps/`).
+    *   **Análise Criteriosa:** Cada arquivo `GEMINI.md` é analisado do início ao fim para compreender todas as regras, arquitetura, restrições e diretrizes do projeto "Orchestra".
+
+2.  **Análise do Histórico (`progress.md`):**
+    *   **Listar e Ler:** A segunda ação é listar e ler o conteúdo completo de todos os arquivos `progress.md`.
+    *   **Análise Histórica:** Cada arquivo `progress.md` é analisado para entender o histórico de desenvolvimento, as decisões tomadas e as tarefas já concluídas.
+
+A combinação das instruções (`GEMINI.md`) e do histórico (`progress.md`) é usada para guiar todas as ações subsequentes, garantindo consistência e aderência às práticas do projeto. Após a análise, as seguintes etapas técnicas são executadas:
+
+- **Sincronização com o Repositório:** Executa `git pull` para garantir que o código local esteja atualizado.
+- **Configuração do Ambiente Python:**
+    - **Ambiente Virtual (`.venv`):** Verifica se o diretório `./.venv` existe. Se não, cria-o com `uv venv`.
+    - **Instalação de Dependências:** Instala todas as dependências do projeto com `uv pip install`.
+    - **Ferramentas de Desenvolvimento:** Instala as ferramentas de desenvolvimento como `pytest`, `ruff` e `pyright` a partir dos grupos definidos no `pyproject.toml`.
+- **Migrações de Banco de Dados:** Executa `.venv/bin/python manage.py makemigrations` e `.venv/bin/python manage.py migrate` para sincronizar o schema.
+- **Análise de Sanidade e Propostas:** Executa análises de código e estrutura, propondo melhorias ou correções conforme necessário.
 
 #### 2.3. Ao executar (`testes`)
 
@@ -229,14 +229,22 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
     4.  **Verificação Pós-Push:** Após o push, execute `git fetch && git status` para garantir que a branch local esteja sincronizada com a remota. A mensagem "Your branch is up to date with 'origin/main'." confirma o sucesso.
     5.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
 
+*   **Fluxo de Finalização de Dia (Commit e Push):** Ao final de uma sessão de trabalho, quando o commit e push forem solicitados, o seguinte processo deve ser seguido rigorosamente **antes** do versionamento:
+    1.  **Reanálise de Contexto:** Reler e reanalisar completamente todos os arquivos `GEMINI.md` e `progress.md` do projeto.
+    2.  **Revisão da Sessão:** Analisar todo o histórico de comandos e diálogos da sessão atual para entender o trabalho realizado.
+    3.  **Sincronização da Documentação:** Com base nas análises, atualizar os arquivos `progress.md` com um resumo detalhado de todas as tarefas concluídas na sessão. Se alguma regra ou processo mudou, o(s) arquivo(s) `GEMINI.md` também devem ser ajustados.
+    4.  **Processo de Commit:** Somente após a sincronização da documentação, iniciar o fluxo padrão de `git add`, `git commit` e `git push`.
+
 ---
 
 ### 6. Comandos Rápidos do Projeto
 
-*   **Iniciar o servidor (desenvolvimento):** `python manage.py runserver`
-*   **Diagnosticar falha de inicialização:** `python manage.py runserver --noreload` (mostra o erro exato sem o ruído do auto-reloader).
-*   **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
-*   **Aplicar migrações:** `python manage.py migrate`
-*   **Instalar dependências do projeto:** `uv install`
+*   **Nota sobre o Ambiente Virtual:** Todos os comandos `python` devem ser executados com o interpretador do ambiente virtual. Ex: `.venv/bin/python manage.py runserver`.
+
+*   **Iniciar o servidor (desenvolvimento):** `.venv/bin/python manage.py runserver`
+*   **Diagnosticar falha de inicialização:** `.venv/bin/python manage.py runserver --noreload`
+*   **Criar novas migrações:** `.venv/bin/python manage.py makemigrations [nome_do_app]`
+*   **Aplicar migrações:** `.venv/bin/python manage.py migrate`
+*   **Instalar dependências do projeto:** `uv pip install`
 *   **Adicionar nova dependência:** `uv add <nome-do-pacote>`
 *   **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`
