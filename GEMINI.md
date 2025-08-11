@@ -47,6 +47,8 @@ A combinação das instruções (`GEMINI.md`) e do histórico (`progress.md`) é
 - **Migrações de Banco de Dados:** Executa `.venv/bin/python manage.py makemigrations` e `.venv/bin/python manage.py migrate` para sincronizar o schema.
 - **Análise de Sanidade e Propostas:** Executa análises de código e estrutura, propondo melhorias ou correções conforme necessário.
 
+
+
 #### 2.3. Ao executar (`testes`)
 
 O comando `testes` não está mais disponível, pois todas as ferramentas de teste foram removidas do projeto.
@@ -229,22 +231,14 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
     4.  **Verificação Pós-Push:** Após o push, execute `git fetch && git status` para garantir que a branch local esteja sincronizada com a remota. A mensagem "Your branch is up to date with 'origin/main'." confirma o sucesso.
     5.  **Tratamento de Falhas:** **PARE** e avise o usuário imediatamente em caso de qualquer falha (ex: `merge conflict`, `push rejected`).
 
-*   **Fluxo de Finalização de Dia (Commit e Push):** Ao final de uma sessão de trabalho, quando o commit e push forem solicitados, o seguinte processo deve ser seguido rigorosamente **antes** do versionamento:
-    1.  **Reanálise de Contexto:** Reler e reanalisar completamente todos os arquivos `GEMINI.md` e `progress.md` do projeto.
-    2.  **Revisão da Sessão:** Analisar todo o histórico de comandos e diálogos da sessão atual para entender o trabalho realizado.
-    3.  **Sincronização da Documentação:** Com base nas análises, atualizar os arquivos `progress.md` com um resumo detalhado de todas as tarefas concluídas na sessão. Se alguma regra ou processo mudou, o(s) arquivo(s) `GEMINI.md` também devem ser ajustados.
-    4.  **Processo de Commit:** Somente após a sincronização da documentação, iniciar o fluxo padrão de `git add`, `git commit` e `git push`.
-
 ---
 
 ### 6. Comandos Rápidos do Projeto
 
-*   **Nota sobre o Ambiente Virtual:** Todos os comandos `python` devem ser executados com o interpretador do ambiente virtual. Ex: `.venv/bin/python manage.py runserver`.
-
-*   **Iniciar o servidor (desenvolvimento):** `.venv/bin/python manage.py runserver`
-*   **Diagnosticar falha de inicialização:** `.venv/bin/python manage.py runserver --noreload`
-*   **Criar novas migrações:** `.venv/bin/python manage.py makemigrations [nome_do_app]`
-*   **Aplicar migrações:** `.venv/bin/python manage.py migrate`
-*   **Instalar dependências do projeto:** `uv pip install`
+*   **Iniciar o servidor (desenvolvimento):** `python manage.py runserver`
+*   **Diagnosticar falha de inicialização:** `python manage.py runserver --noreload` (mostra o erro exato sem o ruído do auto-reloader).
+*   **Criar novas migrações:** `python manage.py makemigrations [nome_do_app]`
+*   **Aplicar migrações:** `python manage.py migrate`
+*   **Instalar dependências do projeto:** `uv install`
 *   **Adicionar nova dependência:** `uv add <nome-do-pacote>`
 *   **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`
