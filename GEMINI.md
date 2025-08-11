@@ -47,8 +47,6 @@ A combinação das instruções (`GEMINI.md`) e do histórico (`progress.md`) é
 - **Migrações de Banco de Dados:** Executa `.venv/bin/python manage.py makemigrations` e `.venv/bin/python manage.py migrate` para sincronizar o schema.
 - **Análise de Sanidade e Propostas:** Executa análises de código e estrutura, propondo melhorias ou correções conforme necessário.
 
-
-
 #### 2.3. Ao executar (`testes`)
 
 O comando `testes` não está mais disponível, pois todas as ferramentas de teste foram removidas do projeto.
@@ -210,7 +208,7 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
     *   **Robustez em Extração de Dados (OCR):**
         Ao extrair texto de PDFs, especialmente aqueles gerados a partir de imagens, a tecnologia de OCR pode falhar em reconhecer caracteres específicos (ex: "Ç", "Ã"). Em vez de buscar por textos exatos, utilize expressões regulares flexíveis para contornar essas imprecisões.
         *   **Exemplo do Problema:** O OCR leu "INSPEO" em vez de "INSPEÇÃO".
-        *   **Solução:** Em vez de `re.search("CERTIFICADO DE INSPEÇÃO")`, use `re.search("CERTIFICADO DE INSPE.*?")` para capturar o padrão mesmo com o final da palavra incorreto.
+        *   **Solução:** Em vez de `re.search("CERTIFICADO DE INSPEÇÃO")`, use `re.search("CERTIFICADO DE INSPE.*?")` para capturar o padrão mesmo com o final da palavra incorreta.
 
     *   **Gerenciamento de Estado e Limpeza em Automações:**
         Automações que criam registros temporários no banco de dados ou arquivos no sistema de arquivos (como o `CertificadoVeiculo`) **DEVEM** garantir a sua remoção ao final da execução, independentemente de sucesso ou falha. A melhor maneira de garantir isso é colocar a lógica de limpeza dentro de um bloco `finally`. Isso evita o acúmulo de "lixo" (registros órfãos e arquivos não utilizados) a cada execução.
