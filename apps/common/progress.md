@@ -6,7 +6,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Análise Rigorosa do Projeto:** Contribuição para a análise detalhada de toda a estrutura do projeto Orchestra.
 - **Refatoração de `GEMINI.md`:** O arquivo `GEMINI.md` deste app (se existir) foi lido em todas as suas versões históricas, analisado e refatorado para conter as melhores e mais robustas instruções. A versão refatorada foi substituída no seu devido local.
-- **Refatoração de `progress.md`:** Este arquivo `progress.md` foi lido em todas as suas versões históricas, analisado e refatorado para consolidar e refinar o histórico de desenvolvimento do app. A versão refatorada será substituída no seu devido local.
+- **Refatoração de `progress.md`:** Este arquivo `progress.2md` foi lido em todas as suas versões históricas, analisado e refatorado para consolidar e refinar o histórico de desenvolvimento do app. A versão refatorada será substituída no seu devido local.
 
 ## 01/08/2025 - Aprimoramentos de Robustez e Configuração de Ferramentas
 
@@ -21,3 +21,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Criação e Configuração do App:** Criado o app Django `common` e registrado em `INSTALLED_APPS`.
 - **Centralização de Serviços:** Criado o arquivo `apps/common/services.py` e implementada a função assíncrona `login_to_portran(page, logger)` para encapsular a lógica de login.
 - **Refatoração de Comandos Existentes:** Comandos como `login_portran.py`, `upload_licenca.py` e `automacao_documentos_ipiranga.py` foram modificados para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
+
+## 11/08/2025 - Atualização de Dependências
+
+- **Atualização de Dependências:**
+    - O arquivo `apps/common/services.py` foi modificado devido à instalação de todas as dependências do projeto e ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) utilizando `uv pip install --group all`.

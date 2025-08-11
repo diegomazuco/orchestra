@@ -37,11 +37,13 @@ class Command(BaseCommand):
             f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
         )
 
-        certificado = None  # Initialize certificado here for finally block access
+        certificado = None
+        file_path_upload = None
         try:
             certificado = await sync_to_async(
                 CertificadoVeiculo.objects.select_related("veiculo").get
             )(pk=certificado_id)
+            file_path_upload = certificado.arquivo.path
             logger.info(
                 f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id} encontrado."
             )
@@ -67,7 +69,6 @@ class Command(BaseCommand):
 
                 placa_alvo = certificado.veiculo.placa
                 nome_certificado_alvo = certificado.nome
-                file_path_upload = certificado.arquivo.path
 
                 logger.info(
                     f"--- INÍCIO DA AUTOMAÇÃO PARA O CERTIFICADO ID: {certificado.id} ---"
@@ -95,9 +96,14 @@ class Command(BaseCommand):
                     logger.info(
                         "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
                     )
-                    numero_documento_valor, vencimento_valor_pdf = extract_cipp_data(
-                        pdf_text, logger
-                    )
+                    try:
+                        numero_documento_valor, vencimento_valor_pdf = (
+                            extract_cipp_data(pdf_text, logger)
+                        )
+                    except ValueError as ve:
+                        raise CommandError(
+                            f"Erro na extração de dados do PDF: {ve}"
+                        ) from ve
                 else:
                     logger.warning(
                         f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."
@@ -192,7 +198,12 @@ class Command(BaseCommand):
 
                         await page.wait_for_selector(numero_id, timeout=30000)
                         await page.fill(numero_id, numero_documento_valor)
-                        vencimento_formatado = convert_date_format(vencimento_valor_pdf)
+                        vencimento_formatado = convert_date_format(
+                            vencimento_valor_pdf, logger
+                        )
+                        logger.info(
+                            f"[AUTOMACAO_IPIRANGA] Vencimento formatado para preenchimento: {vencimento_formatado}"
+                        )
                         await page.wait_for_selector(vencimento_id, timeout=30000)
                         await page.fill(vencimento_id, vencimento_formatado)
                         await fieldset.locator(
@@ -204,7 +215,7 @@ class Command(BaseCommand):
                         ).click()
                         await page.locator(
                             'span.js-successArea:has-text("sucesso")'
-                        ).wait_for(timeout=30000)
+                        ).wait_for(timeout=60000)
                         logger.info("Mensagem de sucesso encontrada.")
 
                         found_certificate = True
@@ -224,6 +235,11 @@ class Command(BaseCommand):
                     re.compile(r".*/veiculo/index"), timeout=60000
                 )
                 logger.info("Operação salva com sucesso.")
+
+                logger.info("Clicando no botão 'Salvar'...")
+                await page.locator("#botaoAtualizar").click()
+                await page.wait_for_load_state("networkidle", timeout=60000)
+                logger.info("Botão 'Salvar' clicado com sucesso.")
 
             except Exception as e:
                 logger.error(
@@ -249,19 +265,14 @@ class Command(BaseCommand):
             finally:
                 if browser:
                     await browser.close()
-
-        # Cleanup: Delete certificate and associated file regardless of success or failure
-        if (
-            certificado and certificado.pk
-        ):  # Ensure certificado object exists and has a primary key
-            await sync_to_async(certificado.delete)()
-            if os.path.exists(
-                file_path_upload
-            ):  # Use file_path_upload from outer scope
-                os.remove(file_path_upload)
-            logger.info(
-                f"Certificado ID {certificado.id} e arquivo associado removidos no cleanup final."
-            )
+                # Cleanup: Delete certificate and associated file regardless of success or failure
+                if certificado and certificado.pk:
+                    await sync_to_async(certificado.delete)()
+                    if file_path_upload and os.path.exists(file_path_upload):
+                        os.remove(file_path_upload)
+                    logger.info(
+                        f"Certificado ID {certificado.id} e arquivo associado removidos no cleanup final."
+                    )
 
     def handle(self, *args, **options):
         """Executa o comando de automação de forma síncrona."""

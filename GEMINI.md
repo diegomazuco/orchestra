@@ -37,7 +37,7 @@ O processo de inicialização segue estritamente duas etapas principais para gar
     *   **Listar e Ler:** A segunda ação é listar e ler o conteúdo completo de todos os arquivos `progress.md`.
     *   **Análise Histórica:** Cada arquivo `progress.md` é analisado para entender o histórico de desenvolvimento, as decisões tomadas e as tarefas já concluídas.
 
-A combinação das instruções (`GEMINI.md`) e do histórico (`progress.md`) é usada para guiar todas as ações subsequentes, garantindo consistência e aderência às práticas do projeto. Após a análise, as seguintes etapas técnicas são executadas:
+A combinação das instruções (`GEMINI.MD`) e do histórico (`progress.md`) é usada para guiar todas as ações subsequentes, garantindo consistência e aderência às práticas do projeto. Após a análise, as seguintes etapas técnicas são executadas:
 
 - **Sincronização com o Repositório:** Executa `git pull` para garantir que o código local esteja atualizado.
 - **Configuração do Ambiente Python:**
@@ -240,3 +240,7 @@ Ao investigar falhas, bugs, segurança, otimização ou qualquer outro aspecto d
 *   **Instalar dependências do projeto:** `uv install`
 *   **Adicionar nova dependência:** `uv add <nome-do-pacote>`
 *   **Sincronizar dependências (após edições manuais em `requirements.txt`):** `uv pip sync`
+*   **Limpar arquivos de mídia e registros temporários:** `python manage.py cleanup_media` (Executar antes de iniciar o servidor para garantir um ambiente limpo).
+
+## Gemini Added Memories
+- O comando 'init' foi executado e o projeto foi configurado com sucesso, incluindo a instalação de dependências e a correção de problemas de qualidade de código.

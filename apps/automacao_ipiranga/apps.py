@@ -9,4 +9,5 @@ class AutomacaoIpirangaConfig(AppConfig):
 
     def ready(self):
         """Configurações a serem executadas quando a aplicação estiver pronta."""
+        print("AutomacaoIpirangaConfig ready() called")
         import apps.automacao_ipiranga.signals  # type: ignore

@@ -59,26 +59,17 @@ def process_documents_view(request):
                         f"[POST] Resultado VeiculoIpiranga: veiculo={veiculo.placa}, created={created_veiculo}"
                     )
 
-                    # Use update_or_create para garantir que apenas um registro exista para a mesma placa e tipo de certificado
-                    certificado, created = CertificadoVeiculo.objects.update_or_create(
+                    # Sempre cria um novo registro para disparar a automação
+                    certificado = CertificadoVeiculo.objects.create(
                         veiculo=veiculo,
                         nome=nome_certificado,
-                        defaults={
-                            "arquivo": uploaded_file,
-                            "status": "pendente",
-                        },
+                        arquivo=uploaded_file,
+                        status="pendente",
                     )
-                    if created:
-                        logger.info(
-                            f"[POST] Novo CertificadoVeiculo criado. ID: {certificado.id}"
-                        )
-                    else:
-                        logger.info(
-                            f"[POST] CertificadoVeiculo existente atualizado. ID: {certificado.id}"
-                        )
-                    logger.debug(
-                        f"[POST] CertificadoVeiculo criado com sucesso. ID: {certificado.id}"
+                    logger.info(
+                        f"[POST] Novo CertificadoVeiculo criado. ID: {certificado.id}"
                     )
+
                     logger.info(
                         f"[POST] Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}"  # type: ignore
                     )

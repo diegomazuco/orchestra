@@ -25,16 +25,23 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 30/07/2025 - Refatoração da Automação Ipiranga com DB, Signals e Login Centralizado
 
-- **Refatoração da Automação Ipiranga:** A automação Ipiranga foi refatorada para usar DB, Signals e login centralizado.
+- **Refatoração da Automação Ipiranga:** A automacao Ipiranga foi refatorada para usar DB, Signals e login centralizado.
 - **Implementação de Preenchimento de Vencimento e Armazenamento de Arquivo Original:** Funcionalidades para preenchimento de dados e armazenamento de arquivos originais foram implementadas.
 - **Melhoria na Depuração de Sinal:** A depuração de sinais foi aprimorada.
 
 ## 29/07/2025 - Aprimoramento da Automação Ipiranga e Correção de Tratamento de Erros
 
-- **Aprimoramento da Automação Ipiranga:** A automação Ipiranga foi aprimorada.
+- **Aprimoramento da Automação Ipiranga:** A automacao Ipiranga foi aprimorada.
 - **Correção de Tratamento de Erros:** O tratamento de erros foi corrigido.
 
 ## 28/07/2025 - Integração de Upload de Documentos e Refatoração da Arquitetura de Automação
 
 - **Integração de Upload de Documentos:** Funcionalidade de upload de documentos foi integrada.
 - **Refatoração da Arquitetura de Automação:** A arquitetura de automação foi refatorada com a criação do novo app `automacao_ipiranga`.
+
+## 11/08/2025 - Ajustes de Qualidade de Código e Migrações
+
+- **Ajustes de Qualidade de Código:**
+    - Correção de problemas de docstrings e simplificação de `if` aninhados no arquivo `apps/automacao_ipiranga/management/commands/cleanup_media.py` conforme as diretrizes do `ruff`.
+- **Migrações:**
+    - Geração e aplicação da migração `0002_alter_certificadoveiculo_arquivo.py`.

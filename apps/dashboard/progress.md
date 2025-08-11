@@ -27,3 +27,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Criação do Projeto Orchestra:** Inicialização do projeto Django "Orchestra".
 - **Criação e Configuração do App `dashboard`:** Implementação da view `orchestra_view` e template `orchestra.html` para a página principal.
 - **Funcionalidade de Upload e Processamento (Inicial):** Adicionada a funcionalidade de exibir arquivos selecionados e um botão "Iniciar Processamento" em `orchestra.html`. Criado o endpoint `/process-documents/` e a view `process_documents_view` para receber os arquivos enviados pelo frontend.
+
+## 11/08/2025 - Atualização de Dependências
+
+- **Atualização de Dependências:**
+    - O arquivo `apps/dashboard/views.py` foi modificado devido à instalação de todas as dependências do projeto e ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) utilizando `uv pip install --group all`.
