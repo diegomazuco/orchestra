@@ -52,32 +52,28 @@ def run_automation_command(instance_id):
         logger.info(
             f"[SIGNAL] Iniciando subprocesso com Popen para o Certificado ID: {instance_id}"
         )
-        process = subprocess.Popen(
-            command,  # Use the original 'command' list
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            cwd=str(project_root),
-            env=env,
-        )
         logger.info(
-            f"[SIGNAL] Subprocesso com Popen iniciado para Certificado ID: {instance_id}. PID: {process.pid}"
+            "[SIGNAL] Redirecionando STDOUT e STDERR do subprocesso para logs/django.log"
         )
-
-        stdout, stderr = process.communicate()
-
-        logger.info(
-            f"[SIGNAL] Subprocesso para o Certificado ID: {instance_id} concluído."
-        )
-
-        if stdout:
+        with open(project_root / "logs" / "django.log", "a") as log_file:
+            process = subprocess.Popen(
+                command,  # Use the original 'command' list
+                stdout=log_file,
+                stderr=log_file,
+                text=True,
+                cwd=str(project_root),
+                env=env,
+            )
             logger.info(
-                f"[SIGNAL] STDOUT do subprocesso (ID: {instance_id}):\n{stdout}"
+                f"[SIGNAL] Subprocesso com Popen iniciado para Certificado ID: {instance_id}. PID: {process.pid}"
             )
-        if stderr:
-            logger.error(
-                f"[SIGNAL] STDERR do subprocesso (ID: {instance_id}):\n{stderr}"
-            )
+            # Do not call communicate() here, as stdout/stderr are redirected to file
+            # Wait for the process to complete if necessary, or let it run in background
+            # For now, we'll just let it run and log directly to the file.
+
+        logger.info(
+            f"[SIGNAL] Subprocesso para o Certificado ID: {instance_id} iniciado. Logs serão gravados em logs/django.log."
+        )
 
     except Exception as e:
         logger.critical(

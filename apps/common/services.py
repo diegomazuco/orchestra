@@ -10,7 +10,7 @@ import pytesseract  # type: ignore
 from decouple import config
 from PIL import Image
 from playwright.async_api import Page, expect
-from scipy.ndimage import interpolation as ndi
+from scipy.ndimage import interpolation, rotate  # type: ignore
 from skimage import exposure, filters
 
 
@@ -129,14 +129,19 @@ def extract_text_from_pdf_image(
                 logger.info("OCR: Imagem convertida para escala de cinza.")
 
             # Deskewing (requires scikit-image)
-            angle = determine_skew(img_np)
-            if angle is not None:
-                img_np = ndi.rotate(img_np, angle, reshape=False)
+            try:
+                logger.info("OCR: Iniciando correção de inclinação (deskewing)...")
+                angle = determine_skew(img_np)
+                img_np = rotate(img_np, angle, reshape=False)  # type: ignore[reportOptionalCall]
                 logger.info(
                     f"OCR: Imagem corrigida para inclinação (ângulo: {angle:.2f} graus)."
                 )
-            else:
-                logger.info("OCR: Nenhuma inclinação detectada ou corrigida.")
+            except Exception as deskew_error:
+                logger.error(
+                    f"OCR: Erro durante a correção de inclinação: {deskew_error}",
+                    exc_info=True,
+                )
+                raise  # Re-raise the exception to propagate it
 
             # Noise Reduction (Median Filter)
             img_np = filters.median(img_np, behavior="ndimage")
@@ -148,7 +153,9 @@ def extract_text_from_pdf_image(
             logger.info("OCR: Contraste da imagem aprimorado.")
 
             # Binarization (Otsu's method for adaptive thresholding)
-            thresh = filters.threshold_otsu(img_np)
+            if img_np is None:
+                raise ValueError("img_np should not be None at this point.")
+            thresh = filters.threshold_otsu(img_np)  # type: ignore
             img_np = (img_np > thresh).astype(np.uint8) * 255
             logger.info("OCR: Imagem binarizada.")
 
@@ -186,7 +193,7 @@ def determine_skew(image):
     angles = np.arange(-5, 5, 0.1)
     scores = []
     for angle in angles:
-        rotated = ndi.rotate(binary, angle, reshape=False)
+        rotated = rotate(binary, angle, reshape=False)
         scores.append(np.sum(rotated.astype(np.float64), axis=1).max())
     best_angle = angles[np.argmax(scores)]
     return best_angle
