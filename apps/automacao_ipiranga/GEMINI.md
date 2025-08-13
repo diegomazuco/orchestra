@@ -1,50 +1,54 @@
 # Diretrizes Específicas para o App: automacao_ipiranga
 
-**Contexto:** Este arquivo complementa o `GEMINI.md` principal da raiz do projeto "Orchestra" e o `GEMINI.md` do app `automacao_documentos`. As regras e o contexto aqui definidos têm **precedência** para qualquer tarefa relacionada a este app.
+**Contexto:** Este app é uma **implementação** do framework de automação definido em `apps/automacao_documentos`. As regras aqui complementam as diretrizes globais e do framework.
 
 ---
 
-### 0. Contexto do App
+### 1. Visão Geral e Objetivo
 
-Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `progress.md` localizado neste diretório (`apps/automacao_ipiranga/progress.md`) para carregar o histórico de ações e o contexto atual do app.
-
-### 1. Visão Geral do App
-
-*   **Objetivo do App:** Este app contém a implementação específica do robô (web scraper) que automatiza processos no portal Ipiranga, focando na atualização de certificados de veículos.
-
-### 2. Dependências e Restrições Específicas
-
-*   **Exceção Crítica de Pacotes:** A versão do pacote `playwright` deve ser fixada para garantir a estabilidade das automações. A versão atualmente em uso e testada é `1.54.0`. Garanta que o `pyproject.toml` contenha a linha `playwright==1.54.0`.
-*   **Fontes de Dados Adicionais:**
-    *   **Principal:** Portal Ipiranga.
+* **Objetivo do App:** Conter a lógica de negócio e o código do robô (web scraper) que automatiza processos especificamente no portal Ipiranga, com foco na atualização de certificados de veículos.
 
 ---
 
-### 3. Contexto Técnico do App
+### 2. Dependências e Configurações Específicas
 
-*   **Modelos Principais (Implementação Real):**
-    *   `VeiculoIpiranga(models.Model)`: Armazena a placa do veículo para manter um registro dos veículos já processados.
-    *   `CertificadoVeiculo(models.Model)`: O coração do processo. Este modelo atua como um **gatilho de automação temporário**. Ele armazena o tipo de certificado, o arquivo PDF enviado, um status (`pendente`, `processando`, `falha`, `sucesso`) e a `ForeignKey` para o `VeiculoIpiranga`.
-
-*   **Lógica de Negócio Chave (Fluxo por Sinal):**
-    1.  Um arquivo PDF é enviado pela view `process_documents_view` no app `dashboard`.
-    2.  A view extrai a placa e o tipo de certificado do nome do arquivo e cria um registro `CertificadoVeiculo` com status `pendente`.
-    3.  Um sinal `post_save` em `CertificadoVeiculo` (definido em `apps/automacao_ipiranga/signals.py`) é acionado pela nova criação.
-    4.  O handler do sinal executa o `custom command` `automacao_documentos_ipiranga`, passando o ID do `CertificadoVeiculo` recém-criado.
-    5.  O comando executa toda a lógica de automação (login, busca, upload) e, ao final, **deleta o registro `CertificadoVeiculo` e o arquivo PDF associado**, garantindo que nenhum lixo seja deixado para trás.
-
-*   **Comandos de Teste Específicos:**
-    *   Para rodar os testes apenas deste app com relatório de cobertura:
-        ```bash
-        pytest apps/automacao_ipiranga/ --cov=apps.automacao_ipiranga --cov-report=html
-        ```
+* **`playwright`:** A versão deve ser estritamente `1.54.0`, conforme definido no `pyproject.toml`.
+* **Credenciais:** As credenciais de acesso ao portal devem ser configuradas nas variáveis `PORTRAN_USER` e `PORTRAN_PASSWORD` no arquivo `.env`.
 
 ---
 
-### 4. Pontos de Atenção e Debug (Lições Aprendidas)
+### 3. Implementação do Padrão de Automação
 
-*   **Erro de OCR em PDFs:** A extração de texto de PDFs pode ser imprecisa. Ao buscar por textos específicos (ex: "CERTIFICADO DE INSPEÇÃO"), use expressões regulares flexíveis (ex: `r"(CERTIFICADO DE INSPE.*?)"`) para contornar falhas de reconhecimento de caracteres como "Ç" e "Ã".
-*   **Extração de Dados Específicos do PDF (Número e Data):** Além da busca por blocos de texto, a extração de informações como número do documento e datas de vencimento de PDFs via OCR pode ser imprecisa. Utilize expressões regulares flexíveis e teste-as exaustivamente com diferentes formatos de documentos para garantir a captura correta dos dados, considerando variações de formatação e possíveis erros de reconhecimento de caracteres. Ex: para datas, considere `r"(\d{2}/[A-Z]{3}/\d{2})"` e para números, `r"(\d{2}\.\d{3}\.\s*\d{3})"`.
-*   **Execução de Subprocesso (`signals.py`):** Ao disparar um `custom command` a partir de um sinal usando `subprocess.Popen`, é **mandatório** especificar o caminho absoluto para o executável do Python do ambiente virtual (`.venv/bin/python`). Não fazer isso fará com que o sistema use o Python global, resultando em erros de `ModuleNotFoundError` pois as dependências do projeto não estarão disponíveis.
-*   **Debug Visual com Playwright:** Para assistir a automação em tempo real, altere o parâmetro `headless` para `False` na chamada `p.chromium.launch()` no arquivo do `custom command`. Lembre-se de reverter para `True` em produção.
-*   **Falhas de Inicialização do Servidor:** Se o servidor Django não iniciar (`conexão recusada`), a causa mais provável é um erro de sintaxe ou importação em algum arquivo Python. Use o comando `python manage.py runserver --noreload` para obter o `Traceback` exato do erro no console.
+* **Modelo Gatilho:**
+    * `CertificadoVeiculo(models.Model)`: Atua como o **gatilho de automação temporário**. Ele armazena os dados necessários para o robô (tipo de certificado, arquivo PDF) e um status (`pendente`, `processando`, `falha`, `sucesso`).
+
+* **Lógica de Negócio (Fluxo por Sinal):**
+    1.  O upload de um PDF via `dashboard` cria um registro `CertificadoVeiculo` com status `pendente`.
+    2.  O sinal `post_save` em `signals.py` é acionado por esta criação.
+    3.  O handler do sinal executa o `custom command` `automacao_documentos_ipiranga` em um subprocesso, passando o ID do `CertificadoVeiculo`.
+    4.  O comando executa a automação (login, busca, extração de dados do PDF, upload).
+    5.  **Regra de Limpeza Crítica:** Ao final da execução, dentro de um bloco `finally`, o comando **deve obrigatoriamente deletar o registro `CertificadoVeiculo` e o arquivo PDF associado** para não deixar resíduos. Esta limpeza também deve ser garantida no nível do servidor (início, reinício, término) para a pasta `media/certificados_veiculos/`.
+
+### 3.1. Política de Limpeza de Arquivos Temporários
+
+*   A pasta `media/certificados_veiculos/` deve ser **sempre** limpa de arquivos temporários.
+*   Esta limpeza deve ocorrer:
+    *   Ao final de cada execução de automação (sucesso ou falha).
+    *   No início, reinício ou término do servidor Django.
+*   Utilize o `custom command` `python manage.py cleanup_media` para realizar esta operação.
+*   **Gerenciamento de Tempo Limite da Automação:** A automação agora inclui um tempo limite global (atualmente 30 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento.
+
+---
+
+### 4. Pontos de Atenção Específicos (Lições Aprendidas)
+
+* **Extração de Dados do PDF (OCR):**
+    * **Flexibilidade é chave:** Use regex flexíveis para contornar falhas de OCR.
+    * **Exemplos de Padrões Robustos:**
+        * Para textos: `r"(CERTIFICADO DE INSPE.*?)"`
+        * Para datas: `r"(\d{2}/[A-Z]{3}/\d{2})"`
+        * Para números de documento: `r"(\d{2}\.\d{3}\.\s*\d{3})"`
+* **Interação com o Portal Ipiranga:**
+    * **Instabilidade:** O portal pode apresentar um "Erro Inesperado". A função de login em `common/services.py` já implementa uma lógica de espera e recarregamento para lidar com isso.
+    * **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()` no `custom command`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** **Lembre-se de reverter para `True` antes de fazer o commit.**
+* **Correção de Execução de Subprocesso em `signals.py`:** Um `SyntaxError` anterior na construção do comando de subprocesso em `signals.py` impedia a execução correta da automação Playwright. A correção envolveu remover a injeção de código Python complexo via `python -c` e passar o comando `manage.py` diretamente ao subprocesso.

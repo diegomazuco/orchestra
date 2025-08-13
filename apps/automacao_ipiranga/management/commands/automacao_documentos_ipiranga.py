@@ -37,6 +37,292 @@ class Command(BaseCommand):
             f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
         )
 
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
+        # Global timeout for the automation process (30 seconds)
+        automation_timeout = 30
+
+        try:
+            await asyncio.wait_for(
+                self._run_automation_steps(certificado_id), timeout=automation_timeout
+            )
+        except TimeoutError:
+            logger.error(
+                f"AUTOMATION TIMEOUT: Automação para o certificado ID {certificado_id} excedeu o tempo limite de {automation_timeout} segundos."
+            )
+            raise CommandError(
+                f"Automação excedeu o tempo limite de {automation_timeout} segundos."
+            )
+        except Exception as e:
+            logger.error(
+                f"FALHA GERAL na automação para o certificado ID {certificado_id}: {e}",
+                exc_info=True,
+            )
+            raise CommandError(f"Erro geral na automação: {e}")
+
+    async def _run_automation_steps(self, certificado_id):
         certificado = None
         file_path_upload = None
         try:
@@ -124,36 +410,57 @@ class Command(BaseCommand):
                     (vencidos_url, "Vencidos"),
                     (a_vencer_url, "À vencer"),
                 ]:
+                    logger.info(f"Navegando para a página: {nome_pagina} ({url})")
                     await page.goto(url, timeout=60000)
                     await page.wait_for_load_state("networkidle", timeout=60000)
+                    logger.info(
+                        f"Página {nome_pagina} carregada. URL atual: {page.url}"
+                    )
 
+                    logger.info(
+                        f"Aguardando visibilidade da tabela 'table#tabela-veiculo' na página {nome_pagina}..."
+                    )
                     await page.locator("table#tabela-veiculo").wait_for(
                         state="visible", timeout=30000
+                    )
+                    logger.info(
+                        f"Tabela 'table#tabela-veiculo' visível na página {nome_pagina}."
                     )
 
                     rows = page.locator("table#tabela-veiculo tbody tr")
                     num_rows = await rows.count()
-                    logger.info(f"Número de linhas encontradas na tabela: {num_rows}")
+                    logger.info(
+                        f"Número de linhas encontradas na tabela: {num_rows} na página {nome_pagina}."
+                    )
 
                     for i in range(num_rows):
                         row = rows.nth(i)
                         placa_text = (
                             await row.locator("td:nth-child(2)").text_content() or ""
                         ).strip()
+                        logger.info(
+                            f"Verificando linha {i + 1}: Placa encontrada '{placa_text}' (Procurando por '{placa_alvo}')"
+                        )
                         if placa_alvo in placa_text:
                             logger.info(
-                                f"Placa '{placa_alvo}' encontrada na página {nome_pagina}!"
+                                f"Placa '{placa_alvo}' encontrada na página {nome_pagina}! Clicando em 'alterar-veiculo-js'."
                             )
                             await row.locator(
                                 "a.btn.btn--square.alterar-veiculo-js"
                             ).click()
                             await page.wait_for_load_state("networkidle", timeout=60000)
+                            logger.info(
+                                f"Redirecionado após clique. URL atual: {page.url}"
+                            )
                             placa_encontrada = True
                             break
                     if placa_encontrada:
                         break
 
                 if not placa_encontrada:
+                    logger.error(
+                        f"Placa '{placa_alvo}' NÃO encontrada nas URLs: {vencidos_url}, {a_vencer_url}"
+                    )
                     raise CommandError(
                         f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado."
                     )
@@ -263,16 +570,43 @@ class Command(BaseCommand):
                 raise CommandError(f"Erro na automação: {e}") from e
 
             finally:
+                logger.info("FINALLY BLOCK: Entering finally block.")
                 if browser:
                     await browser.close()
+                    logger.info("FINALLY BLOCK: Browser closed.")
                 # Cleanup: Delete certificate and associated file regardless of success or failure
                 if certificado and certificado.pk:
+                    logger.info(
+                        f"FINALLY BLOCK: Attempting to delete Certificado ID {certificado.id} from DB."
+                    )
                     await sync_to_async(certificado.delete)()
+                    logger.info(
+                        f"FINALLY BLOCK: Certificado ID {certificado.id} deleted from DB."
+                    )
                     if file_path_upload and os.path.exists(file_path_upload):
+                        logger.info(
+                            f"FINALLY BLOCK: Attempting to delete file {file_path_upload}."
+                        )
                         os.remove(file_path_upload)
+                        logger.info(f"FINALLY BLOCK: File {file_path_upload} deleted.")
+                    else:
+                        logger.info(
+                            f"FINALLY BLOCK: File {file_path_upload} not found or path not set. Skipping file deletion."
+                        )
                     logger.info(
                         f"Certificado ID {certificado.id} e arquivo associado removidos no cleanup final."
                     )
+                else:
+                    logger.info(
+                        "FINALLY BLOCK: No certificate or primary key found for specific cleanup."
+                    )
+
+                # Comprehensive cleanup of all automation-related data
+                logger.info("FINALLY BLOCK: Calling cleanup_automation_data.")
+                from django.core.management import call_command
+
+                call_command("cleanup_automation_data")
+                logger.info("FINALLY BLOCK: cleanup_automation_data called.")
 
     def handle(self, *args, **options):
         """Executa o comando de automação de forma síncrona."""

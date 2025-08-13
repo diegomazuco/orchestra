@@ -1,6 +1,60 @@
 # Histórico de Progresso do Projeto Orchestra
 
+## 12/08/2025 - Resumo do Dia de Trabalho e Próximos Passos
+
+- **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação, ficando presa no dashboard. O problema de limpeza de arquivos temporários na pasta `media/certificados_veiculos/` também persistiu, indicando que o arquivo é recriado rapidamente pela automação.
+- **Ações Realizadas:**
+    - Implementação de um tempo limite global de 30 segundos para a automação Playwright em `automacao_documentos_ipiranga.py` para evitar travamentos prolongados do navegador.
+    - Adição de logging mais granular na função `extract_text_from_pdf_image` em `apps/common/services.py` para depurar o processo de OCR.
+    - Refinamento da estratégia de limpeza de dados: a chamada para `cleanup_automation_data` foi removida do `AppConfig.ready()` e movida para o bloco `finally` em `automacao_documentos_ipiranga.py`, e a responsabilidade pela execução manual de `cleanup_automation_data` antes de cada início do servidor foi explicitamente atribuída a mim.
+    - Atualização dos arquivos `GEMINI.md` e `progress.md` relevantes para refletir as mudanças na estratégia de limpeza e a implementação do tempo limite.
+- **Próximos Passos (Foco Principal):**
+    - **Depuração da Navegação:** A prioridade é depurar a lógica de navegação após a autenticação. Isso incluirá a adição de esperas explícitas por elementos no dashboard e logging detalhado das URLs após cada `page.goto()`.
+    - **Revisão do OCR:** Com o logging granular, será possível identificar o ponto exato de falha na extração de texto do PDF, permitindo ajustes mais precisos.
+    - **Robustez da Limpeza:** Continuar monitorando a limpeza de arquivos temporários para garantir que a automação não deixe resíduos.
+
 Este arquivo registra as principais ações e configurações realizadas no projeto "Orchestra" como um todo, desde sua criação até o momento atual.
+
+## 12/08/2025 - Adição de Logging Agressivo no Bloco `finally`, Ajuste na Estratégia de Limpeza de Dados e Confirmação de Correção
+
+- **Adição de Logging Agressivo no Bloco `finally`:** Adicionado logging detalhado ao bloco `finally` em `automacao_documentos_ipiranga.py` para depurar a lógica de exclusão de arquivos e dados, e verificar se o bloco está sendo executado corretamente.
+- **Ajuste na Estratégia de Limpeza de Dados:** Removida a chamada de `cleanup_automation_data` do método `ready()` em `apps/automacao_ipiranga/apps.py` para evitar condições de corrida. A chamada para `cleanup_automation_data` foi movida para o bloco `finally` em `automacao_documentos_ipiranga.py` para garantir a limpeza após cada execução da automação.
+- **Melhoria na Extração de Dados OCR (DPI e PSM):** O arquivo `apps/common/services.py` foi atualizado para melhorar a robustez do OCR, aumentando o DPI da imagem para 600 e alterando o modo PSM (Page Segmentation Mode) do Tesseract para 3.
+- **Correção de Dependência `scipy`/`numpy`:** Identificado e corrigido `ModuleNotFoundError` para `scipy` e `numpy` que impedia a execução completa da automação. As dependências foram reinstaladas explicitamente.
+- **Adição de Logging Detalhado:** Adicionado logging detalhado em `automacao_documentos_ipiranga.py` para a seção de navegação e busca de placas, a fim de diagnosticar problemas de acesso às URLs "Vencidos" e "À vencer".
+- **Correção de Erro de Sintaxe em Subprocesso:** Corrigido `SyntaxError` em `apps/automacao_ipiranga/signals.py` que impedia a execução correta da automação Playwright, resultando na visibilidade do navegador Playwright durante os testes.
+- **Sucesso na Depuração Visual:** Confirmado que a automação Playwright agora exibe o navegador visualmente quando o servidor Django é executado em primeiro plano em um ambiente gráfico.
+- **Atualização de Diretrizes de Limpeza:** Os arquivos `GEMINI.md` (raiz, `automacao_documentos`, `automacao_ipiranga`) foram atualizados para incluir a política de limpeza obrigatória de arquivos temporários (especialmente na pasta `media/`) ao final das automações e durante o ciclo de vida do servidor (início, reinício, término).
+- **Atualização de Diretrizes de Depuração Playwright:** Os arquivos `GEMINI.Hmd` (raiz, `automacao_ipiranga`) foram atualizados para incluir instruções sobre como executar o servidor Django em primeiro plano para depuração visual de automações Playwright.
+- **Limpeza Completa do Ambiente:** Realizada a exclusão manual de arquivos temporários (`FJX1217_CIPP.pdf`) e a limpeza completa do banco de dados (`db.sqlite3`) para garantir um ambiente zerado para testes.
+- **Gerenciamento do Servidor Django:** Confirmado que eu (o agente) sou responsável por iniciar, reiniciar e gerenciar o servidor Django em segundo plano para os testes, e que a visibilidade do navegador Playwright requer a execução do servidor em primeiro plano pelo usuário.
+- **Reinício do Servidor Django:** O servidor Django foi reiniciado para aplicar as novas configurações e garantir um ambiente limpo para testes.
+- **Correção de Responsabilidade de Limpeza:** Esclarecido que eu (o agente) sou responsável por executar `python manage.py cleanup_automation_data` antes de cada início do servidor para garantir um ambiente limpo.
+- **Correção de Responsabilidade de Limpeza:** Esclarecido que eu (o agente) sou responsável por executar `python manage.py cleanup_automation_data` antes de cada início do servidor para garantir um ambiente limpo.
+
+- **Ajuste na Estratégia de Limpeza de Dados:** Removida a chamada de `cleanup_automation_data` do método `ready()` em `apps/automacao_ipiranga/apps.py` para evitar condições de corrida. A chamada para `cleanup_automation_data` foi movida para o bloco `finally` em `automacao_documentos_ipiranga.py` para garantir a limpeza após cada execução da automação.
+- **Melhoria na Extração de Dados OCR (DPI e PSM):** O arquivo `apps/common/services.py` foi atualizado para melhorar a robustez do OCR, aumentando o DPI da imagem para 600 e alterando o modo PSM (Page Segmentation Mode) do Tesseract para 3.
+- **Correção de Dependência `scipy`/`numpy`:** Identificado e corrigido `ModuleNotFoundError` para `scipy` e `numpy` que impedia a execução completa da automação. As dependências foram reinstaladas explicitamente.
+- **Adição de Logging Detalhado:** Adicionado logging detalhado em `automacao_documentos_ipiranga.py` para a seção de navegação e busca de placas, a fim de diagnosticar problemas de acesso às URLs "Vencidos" e "À vencer".
+- **Correção de Erro de Sintaxe em Subprocesso:** Corrigido `SyntaxError` em `apps/automacao_ipiranga/signals.py` que impedia a execução correta da automação Playwright, resultando na visibilidade do navegador Playwright durante os testes.
+- **Sucesso na Depuração Visual:** Confirmado que a automação Playwright agora exibe o navegador visualmente quando o servidor Django é executado em primeiro plano em um ambiente gráfico.
+- **Atualização de Diretrizes de Limpeza:** Os arquivos `GEMINI.md` (raiz, `automacao_documentos`, `automacao_ipiranga`) foram atualizados para incluir a política de limpeza obrigatória de arquivos temporários (especialmente na pasta `media/`) ao final das automações e durante o ciclo de vida do servidor (início, reinício, término).
+- **Atualização de Diretrizes de Depuração Playwright:** Os arquivos `GEMINI.Hmd` (raiz, `automacao_ipiranga`) foram atualizados para incluir instruções sobre como executar o servidor Django em primeiro plano para depuração visual de automações Playwright.
+- **Limpeza Completa do Ambiente:** Realizada a exclusão manual de arquivos temporários (`FJX1217_CIPP.pdf`) e a limpeza completa do banco de dados (`db.sqlite3`) para garantir um ambiente zerado para testes.
+- **Gerenciamento do Servidor Django:** Confirmado que eu (o agente) sou responsável por iniciar, reiniciar e gerenciar o servidor Django em segundo plano para os testes, e que a visibilidade do navegador Playwright requer a execução do servidor em primeiro plano pelo usuário.
+- **Reinício do Servidor Django:** O servidor Django foi reiniciado para aplicar as novas configurações e garantir um ambiente limpo para testes.
+
+## 11/08/2025 - Conclusão do Processo de Inicialização e Ajustes de Qualidade
+
+- **Processo de Inicialização (`init`) Concluído:**
+    - Análise completa de todos os arquivos `GEMINI.md` e `progress.md` do projeto.
+    - Sincronização do repositório local com `git pull`.
+    - Verificação e criação do ambiente virtual `.venv`.
+    - Instalação de todas as dependências do projeto e ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) utilizando `uv pip install --group all`.
+    - Aplicação das migrações de banco de dados (`makemigrations` e `migrate`).
+- **Ajustes de Qualidade de Código:**
+    - Execução de `ruff check .` e `pyright` para análise de qualidade de código e verificação de tipos.
+    - Correção de todos os problemas identificados pelo `ruff`, incluindo docstrings e simplificação de `if` aninhados no arquivo `apps/automacao_ipiranga/management/commands/cleanup_media.py`.
 
 ## 10/08/2025 - Análise e Refatoração de Documentação
 
@@ -58,15 +112,3 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Criação do Projeto Orchestra:** Inicialização do projeto Django "Orchestra".
 - **Criação e Configuração do App `dashboard`:** Implementação da view `orchestra_view` e template `orchestra.html` para a página principal.
 - **Funcionalidade de Upload e Processamento (Inicial):** Adição de funcionalidade de upload de arquivos e endpoint `/process-documents/` com a view `process_documents_view`.
-
-## 11/08/2025 - Conclusão do Processo de Inicialização e Ajustes de Qualidade
-
-- **Processo de Inicialização (`init`) Concluído:**
-    - Análise completa de todos os arquivos `GEMINI.md` e `progress.md` do projeto.
-    - Sincronização do repositório local com `git pull`.
-    - Verificação e criação do ambiente virtual `.venv`.
-    - Instalação de todas as dependências do projeto e ferramentas de desenvolvimento (`pytest`, `ruff`, `pyright`) utilizando `uv pip install --group all`.
-    - Aplicação das migrações de banco de dados (`makemigrations` e `migrate`).
-- **Ajustes de Qualidade de Código:**
-    - Execução de `ruff check .` e `pyright` para análise de qualidade de código e verificação de tipos.
-    - Correção de todos os problemas identificados pelo `ruff`, incluindo docstrings e simplificação de `if` aninhados no arquivo `apps/automacao_ipiranga/management/commands/cleanup_media.py`.

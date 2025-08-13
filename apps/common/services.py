@@ -107,49 +107,61 @@ def extract_text_from_pdf_image(
     """Extrai texto de imagens dentro de um arquivo PDF usando PyMuPDF e Tesseract OCR."""
     text = ""
     if not tesseract_config:
-        tesseract_config = "--psm 6"
+        tesseract_config = "--psm 3"  # Changed to PSM 3 (Automatic page segmentation)
 
     doc = None
     try:
         doc = fitz.open(pdf_path)
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
-            pix = page.get_pixmap(matrix=fitz.Matrix(300 / 72, 300 / 72))
+            # Increased DPI for potentially better OCR accuracy
+            pix = page.get_pixmap(matrix=fitz.Matrix(600 / 72, 600 / 72))
             img = Image.open(io.BytesIO(pix.tobytes()))
+            logger.info(f"OCR: Imagem da página {page_num + 1} carregada.")
 
             # Convert PIL Image to NumPy array for scikit-image processing
             img_np = np.array(img)
+            logger.info("OCR: Imagem convertida para array NumPy.")
 
             # Convert to grayscale if not already
             if img_np.ndim == 3:
                 img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
+                logger.info("OCR: Imagem convertida para escala de cinza.")
 
             # Deskewing (requires scikit-image)
-            # Calculate the skew angle
             angle = determine_skew(img_np)
             if angle is not None:
                 img_np = ndi.rotate(img_np, angle, reshape=False)
+                logger.info(
+                    f"OCR: Imagem corrigida para inclinação (ângulo: {angle:.2f} graus)."
+                )
+            else:
+                logger.info("OCR: Nenhuma inclinação detectada ou corrigida.")
 
             # Noise Reduction (Median Filter)
             img_np = filters.median(img_np, behavior="ndimage")
+            logger.info("OCR: Ruído da imagem reduzido.")
 
             # Contrast Enhancement (Adaptive Equalization)
             img_np = exposure.equalize_adapthist(img_np, clip_limit=0.03)
             img_np = (img_np * 255).astype(np.uint8)  # Convert back to uint8
+            logger.info("OCR: Contraste da imagem aprimorado.")
 
             # Binarization (Otsu's method for adaptive thresholding)
             thresh = filters.threshold_otsu(img_np)
             img_np = (img_np > thresh).astype(np.uint8) * 255
+            logger.info("OCR: Imagem binarizada.")
 
             # Convert back to PIL Image for Tesseract
             img = Image.fromarray(img_np)
+            logger.info("OCR: Imagem preparada para Tesseract.")
 
             page_text = pytesseract.image_to_string(
                 img, lang="por", config=tesseract_config
             )
             text += page_text
             logger.info(
-                f"Texto extraído da página {page_num + 1}:\n{page_text[:500]}..."
+                f"OCR: Texto extraído da página {page_num + 1}:\n{page_text[:500]}..."
             )
 
     except Exception as e:
@@ -184,9 +196,14 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
     """Extrai dados específicos (número do documento e vencimento) de um certificado CIPP."""
     logger.info("Iniciando extração de dados específicos para certificado CIPP...")
 
+    # Normalize the text to make regex more robust against OCR noise
+    normalized_pdf_text = normalize_text(pdf_text)
+
+    # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
+    # Allowing for common OCR errors like 'C' instead of 'Ç', 'A' instead of 'Ã', 'O' instead of 'Õ'
     match = re.search(
-        r"(CERTIFICADO DE INSPE.*?)(?=(CERTIFICADO DE INSPEÇÃO|$))",
-        pdf_text,
+        r"(CERTIFICADO DE INSPE[CÇ][AÃ]O.*?)(?=(CERTIFICADO DE INSPE[CÇ][AÃ]O|$))",
+        normalized_pdf_text,
         re.IGNORECASE | re.DOTALL,
     )
 

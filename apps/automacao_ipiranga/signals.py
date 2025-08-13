@@ -49,30 +49,11 @@ def run_automation_command(instance_id):
                 env["PYTHONPATH"] = str(site_packages_path)
         env["PLAYWRIGHT_BROWSERS_PATH"] = str(project_root / ".playwright-browsers")
 
-        # Add debug prints for subprocess environment
-        debug_script = (
-            "import os, sys; "
-            "print('SUBPROCESS_SYS_PATH:', sys.path); "
-            "print('SUBPROCESS_PATH:', os.environ.get('PATH')); "
-            "print('SUBPROCESS_PYTHONPATH:', os.environ.get('PYTHONPATH')); "
-            "print('SUBPROCESS_VIRTUAL_ENV:', os.environ.get('VIRTUAL_ENV')); "
-            "try: import scipy; print('scipy imported successfully')\nexcept ImportError as e: print('scipy import failed:', e); "
-            "try: import skimage; print('skimage imported successfully')\nexcept ImportError as e: print('skimage import failed:', e); "
-        )
-        command_with_debug = [
-            str(python_executable),
-            "-c",
-            debug_script
-            + "from django.core.management import execute_from_command_line; execute_from_command_line(['manage.py', 'automacao_documentos_ipiranga', str(instance_id)])",
-        ]
-
-        logger.info(f"[SIGNAL] Comando a ser executado: {' '.join(command_with_debug)}")
-
         logger.info(
             f"[SIGNAL] Iniciando subprocesso com Popen para o Certificado ID: {instance_id}"
         )
         process = subprocess.Popen(
-            command_with_debug,
+            command,  # Use the original 'command' list
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,

@@ -1,49 +1,34 @@
 # Diretrizes Específicas para o App: automacao_documentos
 
-**Contexto:** Este arquivo complementa o `GEMINI.md` principal da raiz do projeto "Orchestra". As regras e o contexto aqui definidos têm **precedência** para qualquer tarefa relacionada a este app.
+**Contexto:** Este arquivo especifica o **framework orquestrador** para todas as automações do projeto. As regras aqui são a base que outros apps de automação (como o `automacao_ipiranga`) devem implementar.
 
 ---
 
-### 0. Contexto do App
+### 1. Visão Geral e Responsabilidade
 
-Ao iniciar qualquer tarefa relacionada a este app, leia e analise o arquivo `progress.md` localizado neste diretório (`apps/automacao_documentos/progress.md`) para carregar o histórico de ações e o contexto atual do app.
-
-### 1. Visão Geral do App
-
-*   **Objetivo do App:** Este app serve como o **orquestrador central** para os processos de automação. Ele define os modelos de dados e a lógica de negócio **base** para o registro, disparo e monitoramento de robôs de automação. As implementações específicas de cada robô (ex: a interação com o portal Ipiranga) residem em seus próprios apps dedicados (ex: `apps/automacao_ipiranga`), que por sua vez utilizam a estrutura fornecida por este app.
-
-### 2. Dependências e Restrições Específicas
-
-*   **Exceção Crítica de Pacotes:** A versão do pacote `playwright` deve ser fixada para garantir a estabilidade das automações. A versão atualmente em uso e testada é `1.54.0`. Garanta que o `pyproject.toml` contenha a linha `playwright==1.54.0`.
-
-*   **Fontes de Dados Adicionais:**
-    *   **Principal:** Diversos portais externos (ex: Ipiranga, IBAMA, etc.).
-    *   **Secundária:** Possível consumo de APIs de dados abertos ou sistemas internos.
+* **Objetivo do App:** Servir como o **orquestrador central**. Ele define a arquitetura, os modelos de dados e o fluxo de negócio padrão para o registro, disparo e monitoramento de robôs de automação.
+* **Responsabilidade:** Este app é responsável pelo **"O QUÊ"** (a estrutura da automação), enquanto os apps implementadores são responsáveis pelo **"COMO"** (a lógica específica de cada robô).
 
 ---
 
-### 3. Contexto Técnico do App
+### 2. Dependências Críticas
 
-*   **Modelos Principais (Arquitetura Base):**
-    *   `Automacao(models.Model)`: Um modelo central para registrar cada tipo de automação disponível no sistema. Ex: "Ipiranga - Atualização de CIPP", "IBAMA - Consulta de Licenças".
-    *   `ExecucaoAutomacao(models.Model)`: Um registro para **cada vez** que uma automação é disparada. Contém o status (`pendente`, `processando`, `sucesso`, `falha`), um `ForeignKey` para o modelo `Automacao`, e um campo para armazenar o log detalhado da execução ou o caminho para o arquivo de log.
-
-*   **Lógica de Negócio Chave (Fluxo Padrão):**
-    1.  Um evento externo (como um upload de arquivo, um agendamento `cron`, ou uma ação manual do usuário) cria um registro de `ExecucaoAutomacao` com o status `pendente`.
-    2.  Um sinal `post_save` no modelo `ExecucaoAutomacao` detecta a nova entrada.
-    3.  O sinal dispara o `custom command` do Django correspondente à automação (ex: `automacao_documentos_ipiranga`), passando o ID da `ExecucaoAutomacao`.
-    4.  O `custom command` executa a lógica do robô, atualizando o status da `ExecucaoAutomacao` para `processando`, e depois para `sucesso` ou `falha`, preenchendo os logs ao final.
-
-*   **Comandos de Teste Específicos:**
-    *   Para rodar os testes apenas deste app com relatório de cobertura:
-        ```bash
-        pytest apps/automacao_documentos/ --cov=apps.automacao_documentos --cov-report=html
-        ```
+* **`playwright`:** A versão deve ser fixada para garantir a estabilidade das automações. A versão testada e aprovada é `1.54.0`. Garanta que `playwright==1.54.0` esteja no `pyproject.toml`.
 
 ---
 
-### 4. Exemplos de Prompts para este App
+### 3. Arquitetura do Framework
 
-> "Na aplicação `automacao_documentos`, crie o modelo `Automacao` com um campo `nome` e um campo `comando_django` para armazenar o nome do custom command a ser executado."
+Qualquer nova automação no projeto Orchestra deve se conformar a esta arquitetura:
 
-> "Crie o modelo `ExecucaoAutomacao` com os campos `automacao` (ForeignKey para `Automacao`), `status` (CharField com choices), `log` (TextField) e `data_inicio` / `data_fim` (DateTimeField)."
+* **Modelos Base (a serem definidos neste app):**
+    * `Automacao(models.Model)`: Modelo para registrar cada tipo de automação (Ex: "Ipiranga - Atualização de CIPP"). Deve conter campos como `nome` e `comando_django`.
+    * `ExecucaoAutomacao(models.Model)`: Registra cada disparo de uma automação, contendo status (`pendente`, `processando`, `sucesso`, `falha`), `ForeignKey` para `Automacao`, e um campo de log.
+
+* **Fluxo Padrão de Orquestração (a ser seguido pelos implementadores):**
+    1.  Um evento externo (ex: upload) cria um registro em um modelo "gatilho" no app implementador.
+    2.  Um sinal `post_save` nesse modelo gatilho detecta a nova entrada.
+    3.  O sinal dispara o `custom command` correspondente em um **subprocesso**, seguindo a regra de usar o caminho absoluto do python do `.venv`.
+    4.  O `custom command` executa a lógica do robô, atualiza o status (seja no modelo gatilho ou em um `ExecucaoAutomacao`) e garante a limpeza de recursos em um bloco `finally`.
+    5.  **Limpeza de Recursos Temporários:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários gerados durante a automação, tanto ao final da execução do robô quanto no ciclo de vida do servidor (início, reinício, término).
+    6.  **Gerenciamento de Tempo Limite:** O `custom command` deve implementar um mecanismo de tempo limite para evitar que a automação fique presa indefinidamente, garantindo o fechamento do navegador e a liberação de recursos.
