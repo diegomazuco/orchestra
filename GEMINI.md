@@ -96,9 +96,18 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 
 ### 4. Ferramentas e Comandos
 
+#### 4.1. Gerenciamento de Navegadores Playwright
+
+*   **Instalação:** Os navegadores Playwright são instalados com `playwright install`. É **mandatório** que este comando seja executado como parte do processo de inicialização (`init`) para garantir que os navegadores estejam presentes no ambiente.
+*   **Localização:** Os navegadores são instalados na pasta `.playwright-browsers/` na raiz do projeto. Esta pasta é ignorada pelo Git.
+*   **Prevenção de Exclusão Inadvertida:** A pasta `.playwright-browsers/` pode ser removida inadvertidamente por comandos como `git clean -fdx`. Este comando remove arquivos e diretórios não rastreados pelo Git, incluindo aqueles ignorados pelo `.gitignore`.
+    *   **Cuidado ao usar `git clean`:** Tenha extrema cautela ao usar `git clean`, especialmente com a flag `-x`. Entenda que ela removerá tudo que não está rastreado pelo Git, incluindo pastas ignoradas como `.playwright-browsers/`. Se precisar limpar o repositório, considere usar `git clean -fd` (que não remove arquivos ignorados) ou revise cuidadosamente o que será apagado.
+    *   **Reinstalação:** Caso a pasta `.playwright-browsers/` seja removida, basta executar `playwright install` novamente para reinstalar os navegadores.
+
 * **Gerenciador de Pacotes:** Use **apenas `uv`**. Para adicionar uma dependência: `uv add <pacote>`.
-* **Qualidade de Código:** `ruff check . --fix` e `ruff format .`.
+* **Qualidade de Código:** `ruff check . --fix` e `ruff format .`. **Sempre remova código comentado que não seja relevante para o entendimento futuro.**
 * **Verificação de Tipos:** `pyright`.
+* **Gerenciador de Pacotes (`uv`):** Se `uv` não for encontrado no caminho `./.venv/bin/uv`, tente executá-lo diretamente (`uv pip install --group all`), pois pode estar no PATH do sistema.
 * **Análise de Performance:**
     * **Visão Macro (`cProfile`):** `python -m cProfile -o logs/comando.prof manage.py <comando>`
     * **Visão Micro (`line_profiler`):** Adicione o decorador `@profile` à função e execute com `kernprof -l manage.py <comando>`. **Lembre-se de remover o decorador antes do commit.**

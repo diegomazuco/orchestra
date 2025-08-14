@@ -1,11 +1,17 @@
 # Histórico de Progresso do App: automacao_ipiranga
 
-## 14/08/2025 - Depuração da Visualização do Navegador Playwright
+## 14/08/2025 - Melhorias na Automação e Depuração Visual do Playwright
 
-- **Investigação e Correção:**
-    - O problema do navegador Playwright não aparecer durante a execução da automação foi investigado.
-    - A análise dos `GEMINI.md` e do código levou à conclusão de que a variável de ambiente `DISPLAY` não estava sendo corretamente propagada para o subprocesso.
-    - O arquivo `signals.py` foi modificado para garantir que a variável `DISPLAY` seja passada para o ambiente do subprocesso, permitindo que a interface gráfica do navegador seja exibida quando o servidor é executado em um ambiente gráfico.
+- **Melhorias na Automação (`automacao_documentos_ipiranga.py`):**
+    - Aumentado o tempo limite global da automação (`automation_timeout`) de 30 para 90 segundos para maior resiliência.
+    - A lógica de processamento de PDF (extração de texto e dados CIPP) foi realocada para ocorrer após o clique no botão "Atualizar", garantindo que a extração de dados seja feita no momento correto do fluxo.
+    - URLs de navegação (`vencidos_url`, `a_vencer_url`) foram atualizadas para `https://sites2.ipiranga.com.br` para refletir a URL correta do portal.
+    - Adicionados logs mais detalhados com prefixos (`[NAVEGACAO]`, `[TABELA]`, `[ERRO_NAVEGACAO]`, `[ERRO_TABELA]`, `[AUTOMACAO_IPIRANGA]`) para facilitar a depuração e o rastreamento do fluxo da automação.
+    - A chamada para `cleanup_automation_data` foi alterada para execução assíncrona (`await sync_to_async(call_command)`) para melhor integração com o ambiente assíncrono do Playwright.
+- **Depuração da Visualização do Navegador Playwright (`signals.py`):**
+    - O problema do navegador Playwright não aparecer durante a execução da automação foi investigado e corrigido.
+    - A variável de ambiente `DISPLAY` agora é explicitamente recuperada do ambiente atual e passada para o subprocesso, permitindo que a interface gráfica do navegador seja exibida quando o servidor é executado em um ambiente gráfico.
+    - Adicionado logging para indicar o uso da variável `DISPLAY` ou alertar se ela não estiver definida.
     - Corrigido um erro de sintaxe em `signals.py` que surgiu durante a implementação da correção.
 
 ## 13/08/2025 - Melhorias na Depuração e Correções de Código

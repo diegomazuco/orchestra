@@ -37,8 +37,8 @@ class Command(BaseCommand):
             f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
         )
 
-        # Global timeout for the automation process (30 seconds)
-        automation_timeout = 30
+        # Global timeout for the automation process (90 seconds)
+        automation_timeout = 90
 
         try:
             await asyncio.wait_for(
@@ -104,40 +104,8 @@ class Command(BaseCommand):
                         f"O arquivo do certificado não foi encontrado em: {file_path_upload}"
                     )
 
-                # --- Start of new PDF processing logic ---
-                logger.info("Iniciando extração de texto do PDF...")
-                pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
-                logger.info(
-                    "Texto do PDF extraído. Identificando tipo de certificado..."
-                )
-
-                numero_documento_valor = "N/A"
-                vencimento_valor_pdf = "N/A"
-
-                if "CIPP" in nome_certificado_alvo.upper():
-                    logger.info(
-                        "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
-                    )
-                    try:
-                        numero_documento_valor, vencimento_valor_pdf = (
-                            extract_cipp_data(pdf_text, logger)
-                        )
-                    except ValueError as ve:
-                        raise CommandError(
-                            f"Erro na extração de dados do PDF: {ve}"
-                        ) from ve
-                else:
-                    logger.warning(
-                        f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."
-                    )
-                    # For now, it will remain "N/A" if not CIPP
-
-                logger.info(f"Número do Documento Extraído: {numero_documento_valor}")
-                logger.info(f"Data de Vencimento Extraída: {vencimento_valor_pdf}")
-                # --- End of new PDF processing logic ---
-
-                vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
-                a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
+                vencidos_url = "https://sites2.ipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
+                a_vencer_url = "https://sites2.ipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
 
                 placa_encontrada = False
                 logger.info("Iniciando loop de navegação para páginas de veículos...")
@@ -147,38 +115,38 @@ class Command(BaseCommand):
                     (a_vencer_url, "À vencer"),
                 ]:
                     logger.info(
-                        f"Tentando navegar para a página: {nome_pagina} ({url})"
+                        f"[NAVEGACAO] Tentando navegar para a página: {nome_pagina} ({url})"
                     )
                     try:
                         await page.goto(url, timeout=60000)
                         logger.info(
-                            f"Navegação para {nome_pagina} iniciada. Aguardando carregamento da rede..."
+                            f"[NAVEGACAO] Navegação para {nome_pagina} iniciada. URL atual após goto: {page.url}. Aguardando carregamento da rede..."
                         )
                         await page.wait_for_load_state("networkidle", timeout=60000)
                         logger.info(
-                            f"Página {nome_pagina} carregada. URL atual: {page.url}"
+                            f"[NAVEGACAO] Página {nome_pagina} carregada. URL final após networkidle: {page.url}"
                         )
                     except Exception as nav_error:
                         logger.error(
-                            f"Erro ao navegar ou carregar a página {nome_pagina} ({url}): {nav_error}",
+                            f"[ERRO_NAVEGACAO] Erro ao navegar ou carregar a página {nome_pagina} ({url}). URL atual: {page.url}. Erro: {nav_error}",
                             exc_info=True,
                         )
                         # Continue to the next URL or re-raise if critical
                         continue  # Try the next URL if navigation fails
 
                     logger.info(
-                        f"Aguardando visibilidade da tabela 'table#tabela-veiculo' na página {nome_pagina}..."
+                        f"[TABELA] Aguardando visibilidade da tabela 'table#tabela-veiculo' na página {nome_pagina}..."
                     )
                     try:
                         await page.locator("table#tabela-veiculo").wait_for(
                             state="visible", timeout=30000
                         )
                         logger.info(
-                            f"Tabela 'table#tabela-veiculo' visível na página {nome_pagina}."
+                            f"[TABELA] Tabela 'table#tabela-veiculo' visível na página {nome_pagina}. URL atual: {page.url}"
                         )
                     except Exception as table_error:
                         logger.warning(
-                            f"Tabela 'table#tabela-veiculo' NÃO visível na página {nome_pagina} ({page.url}): {table_error}. Tentando próxima URL.",
+                            f"[ERRO_TABELA] Tabela 'table#tabela-veiculo' NÃO visível na página {nome_pagina} ({page.url}). Erro: {table_error}. Tentando próxima URL.",
                             exc_info=True,
                         )
                         continue  # Try the next URL if table is not visible
@@ -186,7 +154,7 @@ class Command(BaseCommand):
                     rows = page.locator("table#tabela-veiculo tbody tr")
                     num_rows = await rows.count()
                     logger.info(
-                        f"Número de linhas encontradas na tabela: {num_rows} na página {nome_pagina}."
+                        f"[TABELA] Número de linhas encontradas na tabela: {num_rows} na página {nome_pagina}. URL atual: {page.url}"
                     )
 
                     for i in range(num_rows):
@@ -252,8 +220,50 @@ class Command(BaseCommand):
                         logger.info(
                             f"Certificado '{nome_certificado_alvo}' (Vencido) encontrado."
                         )
+                        # Add robust wait for the "Atualizar" button to be visible
+                        logger.info("Aguardando botão 'Atualizar' ficar visível...")
+                        await fieldset.locator(
+                            "button.btn-atualizar-requisito"
+                        ).wait_for(state="visible", timeout=30000)
+                        logger.info("Botão 'Atualizar' visível. Clicando...")
                         await fieldset.locator("button.btn-atualizar-requisito").click()
                         await page.wait_for_load_state("networkidle")
+
+                        # --- Start of new PDF processing logic ---
+                        logger.info("Iniciando extração de texto do PDF...")
+                        pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
+                        logger.info(
+                            "Texto do PDF extraído. Identificando tipo de certificado..."
+                        )
+
+                        numero_documento_valor = "N/A"
+                        vencimento_valor_pdf = "N/A"
+
+                        if "CIPP" in nome_certificado_alvo.upper():
+                            logger.info(
+                                "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
+                            )
+                            try:
+                                numero_documento_valor, vencimento_valor_pdf = (
+                                    extract_cipp_data(pdf_text, logger)
+                                )
+                            except ValueError as ve:
+                                raise CommandError(
+                                    f"Erro na extração de dados do PDF: {ve}"
+                                ) from ve
+                        else:
+                            logger.warning(
+                                f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."
+                            )
+                            # For now, it will remain "N/A" if not CIPP
+
+                        logger.info(
+                            f"Número do Documento Extraído: {numero_documento_valor}"
+                        )
+                        logger.info(
+                            f"Data de Vencimento Extraída: {vencimento_valor_pdf}"
+                        )
+                        # --- End of new PDF processing logic ---
 
                         # Construct dynamic IDs based on sequential numbering
                         numero_id = f"#licenca-numero-{i + 1}"
@@ -361,7 +371,7 @@ class Command(BaseCommand):
                 logger.info("FINALLY BLOCK: Calling cleanup_automation_data.")
                 from django.core.management import call_command
 
-                call_command("cleanup_automation_data")
+                await sync_to_async(call_command)("cleanup_automation_data")
                 logger.info("FINALLY BLOCK: cleanup_automation_data called.")
 
     def handle(self, *args, **options):

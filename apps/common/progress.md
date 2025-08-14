@@ -1,5 +1,19 @@
 # Histórico de Progresso do App: Common
 
+## 14/08/2025 - Melhorias e Ajustes em Serviços Comuns
+
+- **Atualização de URLs de Login:** As URLs de login no `login_to_portran` foram atualizadas para `https://sites2.ipiranga.com.br` para refletir o endereço correto do portal.
+- **Aprimoramentos de OCR:**
+    - Adicionada a função `cv2.resize` para redimensionamento de imagem, melhorando a precisão do OCR.
+    - A função `determine_skew` foi atualizada para aceitar um logger e incluir logs mais detalhados.
+    - A expressão regular em `extract_cipp_data` foi aprimorada para maior flexibilidade na extração de dados.
+
+## 14/08/2025 - Ajustes de Qualidade de Código
+
+- **Remoção de Código Comentado:** Removido código comentado relacionado a "Deskewing" em `apps/common/services.py` para aderir às diretrizes de qualidade de código e evitar `ERA001` do `ruff`.
+
+
+
 ## 13/08/2025 - Melhorias no Logging de Automação
 
 - **Logging Detalhado:** Adicionado logging mais detalhado no arquivo `services.py` para melhorar a depuração e o rastreamento de problemas durante a execução da automação, especificamente nas funções de OCR e navegação.

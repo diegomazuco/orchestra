@@ -52,7 +52,7 @@ async def login_to_portran(page: Page, logger: logging.Logger):
             # Espera principal: redirecionamento para o dashboard
             logger.info("Aguardando redirecionamento para o dashboard...")
             await expect(page).to_have_url(
-                "https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index",
+                "https://sites2.ipiranga.com.br/WAPortranNew/dashboard/index",
                 timeout=15000,  # Timeout reduzido para falhar rápido
             )
         except Exception:
@@ -79,7 +79,7 @@ async def login_to_portran(page: Page, logger: logging.Logger):
                     "Aguardando redirecionamento para o dashboard após a atualização..."
                 )
                 await expect(page).to_have_url(
-                    "https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index",
+                    "https://sites2.ipiranga.com.br/WAPortranNew/dashboard/index",
                     timeout=60000,
                 )
             else:
@@ -128,20 +128,11 @@ def extract_text_from_pdf_image(
                 img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
                 logger.info("OCR: Imagem convertida para escala de cinza.")
 
-            # Deskewing (requires scikit-image)
-            try:
-                logger.info("OCR: Iniciando correção de inclinação (deskewing)...")
-                angle = determine_skew(img_np)
-                img_np = rotate(img_np, angle, reshape=False)  # type: ignore[reportOptionalCall]
-                logger.info(
-                    f"OCR: Imagem corrigida para inclinação (ângulo: {angle:.2f} graus)."
-                )
-            except Exception as deskew_error:
-                logger.error(
-                    f"OCR: Erro durante a correção de inclinação: {deskew_error}",
-                    exc_info=True,
-                )
-                raise  # Re-raise the exception to propagate it
+            # Resize image for better OCR accuracy
+            img_np = cv2.resize(img_np, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+            logger.info(
+                "OCR: Imagem redimensionada para 2x para melhor precisão do OCR."
+            )
 
             # Noise Reduction (Median Filter)
             img_np = filters.median(img_np, behavior="ndimage")
@@ -180,11 +171,13 @@ def extract_text_from_pdf_image(
     return text
 
 
-def determine_skew(image):
+def determine_skew(image, logger: logging.Logger):
     """Determina o ângulo de inclinação de uma imagem."""
+    logger.debug("OCR: determine_skew - Iniciando.")
     # Convert to binary
     thresh = filters.threshold_otsu(image)
     binary = (image > thresh).astype(float)
+    logger.debug("OCR: determine_skew - Imagem binarizada.")
 
     # Find the skew angle
     h, w = binary.shape
@@ -196,6 +189,9 @@ def determine_skew(image):
         rotated = rotate(binary, angle, reshape=False)
         scores.append(np.sum(rotated.astype(np.float64), axis=1).max())
     best_angle = angles[np.argmax(scores)]
+    logger.debug(
+        f"OCR: determine_skew - Melhor ângulo encontrado: {best_angle:.2f} graus."
+    )
     return best_angle
 
 
@@ -208,8 +204,10 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
 
     # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
     # Allowing for common OCR errors like 'C' instead of 'Ç', 'A' instead of 'Ã', 'O' instead of 'Õ'
+    # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
+    # Allowing for common OCR errors and variations in spacing/characters
     match = re.search(
-        r"(CERTIFICADO DE INSPE[CÇ][AÃ]O.*?)(?=(CERTIFICADO DE INSPE[CÇ][AÃ]O|$))",
+        r"(CERTIFICADO\s*(DE|D|E)?\s*INSPE[CÇ][AÃ]O.*?)(?=(CERTIFICADO\s*(DE|D|E)?\s*INSPE[CÇ][AÃ]O|$))",
         normalized_pdf_text,
         re.IGNORECASE | re.DOTALL,
     )
