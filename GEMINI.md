@@ -42,6 +42,7 @@ Este processo é **obrigatório** antes de cada commit para garantir a integrida
 1.  **Reanálise de Contexto:** Releia **todos** os `GEMINI.md` e `progress.md`.
 2.  **Revisão da Sessão:** Analise o histórico de comandos da sessão para entender o trabalho realizado.
 3.  **Sincronização da Documentação:** Atualize os arquivos `progress.md` relevantes com um resumo detalhado das tarefas concluídas. Se uma regra mudou, ajuste o `GEMINI.md` correspondente.
+4.  **Atualização Contínua das Diretrizes (`GEMINI.md`):** Após a execução de qualquer nova instrução ou procedimento, o agente deve analisar detalhadamente a ação realizada. Em seguida, deve revisar todos os arquivos `GEMINI.md` carregados na inicialização do projeto para determinar se a nova instrução deve ser inserida ou se uma instrução existente precisa ser ajustada. O objetivo é manter os arquivos `GEMINI.md` atualizados em tempo real com as diretrizes e padrões do projeto.
 4.  **Limpeza Pré-Commit:** Execute `git status`. Remova todos os arquivos de cache e temporários (`__pycache__`, `.ruff_cache`, etc.). **NUNCA REMOVA `db.sqlite3` ou `.env`**.
 5.  **Versionamento:**
     * `git add .`
