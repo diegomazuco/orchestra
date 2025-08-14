@@ -115,48 +115,89 @@ def extract_text_from_pdf_image(
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
             # Increased DPI for potentially better OCR accuracy
+            logger.debug("OCR: Iniciando get_pixmap.")
             pix = page.get_pixmap(matrix=fitz.Matrix(600 / 72, 600 / 72))
+            logger.debug("OCR: get_pixmap concluído.")
             img = Image.open(io.BytesIO(pix.tobytes()))
             logger.info(f"OCR: Imagem da página {page_num + 1} carregada.")
 
             # Convert PIL Image to NumPy array for scikit-image processing
+            logger.debug("OCR: Convertendo imagem para array NumPy.")
             img_np = np.array(img)
-            logger.info("OCR: Imagem convertida para array NumPy.")
+            logger.debug(
+                "OCR: Imagem convertida para array NumPy. Shape: %s, Dtype: %s",
+                img_np.shape,
+                img_np.dtype,
+            )
 
             # Convert to grayscale if not already
             if img_np.ndim == 3:
+                logger.debug("OCR: Convertendo imagem para escala de cinza.")
                 img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
-                logger.info("OCR: Imagem convertida para escala de cinza.")
+                logger.debug(
+                    "OCR: Imagem convertida para escala de cinza. Shape: %s, Dtype: %s",
+                    img_np.shape,
+                    img_np.dtype,
+                )
 
-            # Resize image for better OCR accuracy
-            img_np = cv2.resize(img_np, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-            logger.info(
-                "OCR: Imagem redimensionada para 2x para melhor precisão do OCR."
-            )
+            # Apply skew correction
+            logger.debug("OCR: Verificando e corrigindo inclinação da imagem.")
+            angle = determine_skew(img_np, logger)
+            if angle != 0:
+                img_np = rotate(img_np, angle, reshape=False, mode="constant", cval=255)
+                logger.info(
+                    f"OCR: Imagem rotacionada em {angle:.2f} graus para correção de inclinação. Shape: %s, Dtype: %s",
+                    img_np.shape,
+                    img_np.dtype,
+                )
+            else:
+                logger.info("OCR: Nenhuma inclinação significativa detectada.")
 
             # Noise Reduction (Median Filter)
+            logger.debug("OCR: Iniciando redução de ruído.")
             img_np = filters.median(img_np, behavior="ndimage")
-            logger.info("OCR: Ruído da imagem reduzido.")
+            logger.debug(
+                "OCR: Ruído da imagem reduzido. Shape: %s, Dtype: %s",
+                img_np.shape,
+                img_np.dtype,
+            )
 
             # Contrast Enhancement (Adaptive Equalization)
+            logger.debug("OCR: Iniciando aprimoramento de contraste.")
             img_np = exposure.equalize_adapthist(img_np, clip_limit=0.03)
             img_np = (img_np * 255).astype(np.uint8)  # Convert back to uint8
-            logger.info("OCR: Contraste da imagem aprimorado.")
+            logger.debug(
+                "OCR: Contraste da imagem aprimorado. Shape: %s, Dtype: %s",
+                img_np.shape,
+                img_np.dtype,
+            )
 
             # Binarization (Otsu's method for adaptive thresholding)
+            logger.debug("OCR: Iniciando binarização.")
             if img_np is None:
                 raise ValueError("img_np should not be None at this point.")
             thresh = filters.threshold_otsu(img_np)  # type: ignore
             img_np = (img_np > thresh).astype(np.uint8) * 255
-            logger.info("OCR: Imagem binarizada.")
+            logger.debug(
+                "OCR: Imagem binarizada. Shape: %s, Dtype: %s",
+                img_np.shape,
+                img_np.dtype,
+            )
 
             # Convert back to PIL Image for Tesseract
+            logger.debug("OCR: Preparando imagem para Tesseract.")
             img = Image.fromarray(img_np)
-            logger.info("OCR: Imagem preparada para Tesseract.")
+            logger.debug(
+                "OCR: Imagem preparada para Tesseract. Mode: %s, Size: %s",
+                img.mode,
+                img.size,
+            )
 
+            logger.debug("OCR: Iniciando extração de texto com Tesseract.")
             page_text = pytesseract.image_to_string(
                 img, lang="por", config=tesseract_config
             )
+            logger.debug("OCR: Extração de texto com Tesseract concluída.")
             text += page_text
             logger.info(
                 f"OCR: Texto extraído da página {page_num + 1}:\n{page_text[:500]}..."

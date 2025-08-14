@@ -3,13 +3,14 @@
 ## 14/08/2025 - Conclusão do Processo de Inicialização (init), Ajustes de Qualidade e Depuração da Automação Playwright
 
 - **Processo de Inicialização (`init`) Concluído:**
-    - Sincronização do repositório local com `git pull` (já estava atualizado).
-    - Verificação e criação do ambiente virtual `.venv` (já existia).
+    - Sincronização do repositório local com `git pull`.
+    - Verificação e criação do ambiente virtual `.venv`.
     - Instalação de todas as dependências do projeto e ferramentas de desenvolvimento (`uv pip install --group all`).
+    - Instalação dos navegadores Playwright (`playwright install`).
     - Aplicação das migrações de banco de dados (`python manage.py migrate`).
 - **Ajustes de Qualidade de Código:**
     - Execução de `ruff check . --fix` e `ruff format .` para análise e correção de qualidade de código.
-    - Identificação e remoção de código comentado (`ERA001`) em `apps/common/services.py` que o `ruff` não corrigiu automaticamente.
+    - Correção de docstrings ausentes na classe `Command` e no método `handle` em `apps/automacao_ipiranga/management/commands/test_ocr_extraction.py`.
     - Execução de `pyright` para validação da tipagem estática (sem erros).
 - **Depuração da Automação Playwright:**
     - Investigado o problema do navegador Playwright não abrir durante a depuração visual.
@@ -145,3 +146,12 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Criação do Projeto Orchestra:** Inicialização do projeto Django "Orchestra".
 - **Criação e Configuração do App `dashboard`:** Implementação da view `orchestra_view` e template `orchestra.html` para a página principal.
 - **Funcionalidade de Upload e Processamento (Inicial):** Adição de funcionalidade de upload de arquivos e endpoint `/process-documents/` com a view `process_documents_view`.
+
+## 14/08/2025 - Melhorias na Extração de Dados OCR e Robustez da Automação
+
+- **Melhorias na Extração de Dados OCR (`apps/common/services.py`):**
+    - Integrada a correção de inclinação (`determine_skew`) para melhorar a precisão do OCR em documentos inclinados.
+    - Removido o redimensionamento redundante (`cv2.resize`) após o `get_pixmap` para evitar super-escalonamento e potenciais problemas de performance.
+- **Melhorias na Robustez da Automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`):**
+    - Adicionado logging mais detalhado na função `extract_cipp_data` para incluir o texto do PDF quando ocorre um `ValueError`, facilitando a depuração de falhas na extração de dados.
+    - Adicionado logging específico antes e depois do preenchimento dos campos de número do documento e vencimento, para confirmar os valores utilizados e o sucesso da operação.

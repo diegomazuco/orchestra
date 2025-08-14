@@ -248,6 +248,9 @@ class Command(BaseCommand):
                                     extract_cipp_data(pdf_text, logger)
                                 )
                             except ValueError as ve:
+                                logger.error(
+                                    f"Erro na extração de dados do PDF: {ve}. Texto do PDF: {pdf_text[:1000]}..."
+                                )  # Log first 1000 chars of PDF text
                                 raise CommandError(
                                     f"Erro na extração de dados do PDF: {ve}"
                                 ) from ve
@@ -269,10 +272,16 @@ class Command(BaseCommand):
                         numero_id = f"#licenca-numero-{i + 1}"
                         vencimento_id = f"#licenca-vencimento-{i + 1}"
 
+                        logger.info(
+                            f"Preenchendo campo de número do documento: {numero_id} com valor {numero_documento_valor}"
+                        )
                         await page.wait_for_selector(numero_id, timeout=30000)
                         await page.fill(numero_id, numero_documento_valor)
                         vencimento_formatado = convert_date_format(
                             vencimento_valor_pdf, logger
+                        )
+                        logger.info(
+                            f"Preenchendo campo de vencimento: {vencimento_id} com valor {vencimento_formatado}"
                         )
                         logger.info(
                             f"[AUTOMACAO_IPIRANGA] Vencimento formatado para preenchimento: {vencimento_formatado}"

@@ -8,6 +8,8 @@
     - URLs de navegação (`vencidos_url`, `a_vencer_url`) foram atualizadas para `https://sites2.ipiranga.com.br` para refletir a URL correta do portal.
     - Adicionados logs mais detalhados com prefixos (`[NAVEGACAO]`, `[TABELA]`, `[ERRO_NAVEGACAO]`, `[ERRO_TABELA]`, `[AUTOMACAO_IPIRANGA]`) para facilitar a depuração e o rastreamento do fluxo da automação.
     - A chamada para `cleanup_automation_data` foi alterada para execução assíncrona (`await sync_to_async(call_command)`) para melhor integração com o ambiente assíncrono do Playwright.
+    - Implementado tratamento de erro mais robusto com captura de screenshot em caso de falha.
+    - Garantida a limpeza abrangente de dados de automação (`cleanup_automation_data`) no bloco `finally`.
 - **Depuração da Visualização do Navegador Playwright (`signals.py`):**
     - O problema do navegador Playwright não aparecer durante a execução da automação foi investigado e corrigido.
     - A variável de ambiente `DISPLAY` agora é explicitamente recuperada do ambiente atual e passada para o subprocesso, permitindo que a interface gráfica do navegador seja exibida quando o servidor é executado em um ambiente gráfico.
@@ -65,7 +67,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Análise Rigorosa do Projeto:** Contribuição para a análise detalhada de toda a estrutura do projeto Orchestra.
 - **Refatoração de `GEMINI.md`:** O arquivo `GEMINI.md` deste app foi lido em todas as suas versões históricas, analisado e refatorado para conter as melhores e mais robustas instruções. A versão refatorada foi substituída no seu devido local.
-- **Refatoração de `progress.md`:** Este arquivo `progress.md` foi lido em todas as suas versões históricas, analisado e refatorado para consolidar e refinar o histórico de desenvolvimento do app. A versão refatorada será substituída no seu devido local.
+- **Refatoração de `progress.md`:** Este arquivo `progress.2md` foi lido em todas as suas versões históricas, analisado e refatorado para consolidar e refinar o histórico de desenvolvimento do app. A versão refatorada será substituída no seu devido local.
 
 ## 08/08/2025 - Correção do Gatilho de Automação e Ajuste na Extração de Dados do PDF
 
@@ -97,3 +99,12 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Integração de Upload de Documentos:** Funcionalidade de upload de documentos foi integrada.
 - **Refatoração da Arquitetura de Automação:** A arquitetura de automação foi refatorada com a criação do novo app `automacao_ipiranga`.
+
+## 14/08/2025 - Melhorias na Extração de Dados OCR e Robustez da Automação
+
+- **Melhorias na Extração de Dados OCR (`apps/common/services.py`):**
+    - Integrada a correção de inclinação (`determine_skew`) para melhorar a precisão do OCR em documentos inclinados.
+    - Removido o redimensionamento redundante (`cv2.resize`) após o `get_pixmap` para evitar super-escalonamento e potenciais problemas de performance.
+- **Melhorias na Robustez da Automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`):**
+    - Adicionado logging mais detalhado na função `extract_cipp_data` para incluir o texto do PDF quando ocorre um `ValueError`, facilitando a depuração de falhas na extração de dados.
+    - Adicionado logging específico antes e depois do preenchimento dos campos de número do documento e vencimento, para confirmar os valores utilizados e o sucesso da operação.

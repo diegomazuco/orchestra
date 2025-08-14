@@ -28,6 +28,7 @@ Siga **rigorosamente** esta sequência para preparar o ambiente:
 3.  **Configuração do Ambiente Python:**
     * **Ambiente Virtual:** Confirme que `./.venv` existe. Se não, crie-o com `uv venv`.
     * **Instalação de Dependências:** Instale **todas** as dependências (projeto e desenvolvimento) com `uv pip install --group all`.
+    * **Instalação de Navegadores Playwright:** Execute `playwright install` para garantir que os navegadores necessários para as automações estejam disponíveis.
 4.  **Configuração do Banco de Dados:**
     * Execute `python manage.py migrate` para sincronizar o schema do banco de dados.
 5.  **Análise de Qualidade:**
@@ -119,4 +120,14 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
     * `python manage.py makemigrations [app]`
     * `python manage.py migrate`
     * `python manage.py cleanup_media` (Limpa arquivos temporários da pasta `media`)
-    * `python manage.py cleanup_automation_data` (Limpa todos os registros de dados da automação no banco de dados. **Eu sou responsável por executar este comando antes de iniciar o servidor para garantir um ambiente limpo.**)
+    * `python manage.py cleanup_automation_data` (Limpa todos os registros de dados da automação no banco de dados.)
+
+#### 4.2. Gerenciamento do Servidor Django
+
+Para garantir um ambiente limpo e funcional, siga este procedimento ao iniciar ou reiniciar o servidor Django:
+
+1.  **Liberar a Porta 8000:** Antes de iniciar o servidor, certifique-se de que a porta 8000 esteja livre. Encerre qualquer processo que a esteja utilizando (ex: `lsof -i :8000` para identificar o PID, seguido por `kill -9 <PID>`).
+2.  **Limpar Dados de Automação (Banco de Dados):** Execute `python manage.py cleanup_automation_data` para limpar todos os registros de dados da automação no banco de dados.
+3.  **Limpar Arquivos Temporários (Media):** Execute `python manage.py cleanup_media` para remover todos os arquivos temporários da pasta `media/certificados_veiculos/`.
+4.  **Limpar Logs:** Remova os arquivos de log relevantes (ex: `logs/orchestra.log`, `logs/automation.log`) para garantir um rastreamento limpo.
+5.  **Iniciar Servidor:** Inicie o servidor Django (ex: `python manage.py runserver 0.0.0.0:8000 --noreload &` para execução em segundo plano).

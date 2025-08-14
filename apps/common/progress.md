@@ -69,3 +69,12 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Criação e Configuração do App:** Criado o app Django `common` e registrado em `INSTALLED_APPS`.
 - **Centralização de Serviços:** Criado o arquivo `apps/common/services.py` e implementada a função assíncrona `login_to_portran(page, logger)` para encapsular a lógica de login.
 - **Refatoração de Comandos Existentes:** Comandos como `login_portran.py`, `upload_licenca.py` e `automacao_documentos_ipiranga.py` foram modificados para remover a lógica de login duplicada e chamar a função `login_to_portran` do serviço `common`.
+
+## 14/08/2025 - Melhorias na Extração de Dados OCR e Robustez da Automação
+
+- **Melhorias na Extração de Dados OCR (`apps/common/services.py`):**
+    - Integrada a correção de inclinação (`determine_skew`) para melhorar a precisão do OCR em documentos inclinados.
+    - Removido o redimensionamento redundante (`cv2.resize`) após o `get_pixmap` para evitar super-escalonamento e potenciais problemas de performance.
+- **Melhorias na Robustez da Automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`):**
+    - Adicionado logging mais detalhado na função `extract_cipp_data` para incluir o texto do PDF quando ocorre um `ValueError`, facilitando a depuração de falhas na extração de dados.
+    - Adicionado logging específico antes e depois do preenchimento dos campos de número do documento e vencimento, para confirmar os valores utilizados e o sucesso da operação.

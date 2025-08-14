@@ -36,7 +36,8 @@
     *   Ao final de cada execução de automação (sucesso ou falha).
     *   No início, reinício ou término do servidor Django.
 *   Utilize o `custom command` `python manage.py cleanup_media` para realizar esta operação.
-*   **Gerenciamento de Tempo Limite da Automação:** A automação agora inclui um tempo limite global (atualmente 30 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento.
+*   **Gerenciamento de Tempo Limite da Automação:** A automação agora inclui um tempo limite global (atualmente 90 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento.
+*   **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()` no `custom command`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** **Lembre-se de reverter para `True` antes de fazer o commit.**
 
 ---
 
