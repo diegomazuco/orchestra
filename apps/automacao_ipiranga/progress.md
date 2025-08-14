@@ -1,5 +1,20 @@
 # Histórico de Progresso do App: automacao_ipiranga
 
+## 14/08/2025 - Depuração da Visualização do Navegador Playwright
+
+- **Investigação e Correção:**
+    - O problema do navegador Playwright não aparecer durante a execução da automação foi investigado.
+    - A análise dos `GEMINI.md` e do código levou à conclusão de que a variável de ambiente `DISPLAY` não estava sendo corretamente propagada para o subprocesso.
+    - O arquivo `signals.py` foi modificado para garantir que a variável `DISPLAY` seja passada para o ambiente do subprocesso, permitindo que a interface gráfica do navegador seja exibida quando o servidor é executado em um ambiente gráfico.
+    - Corrigido um erro de sintaxe em `signals.py` que surgiu durante a implementação da correção.
+
+## 13/08/2025 - Melhorias na Depuração e Correções de Código
+
+- **Melhorias na Depuração:**
+    - O `signals.py` foi modificado para redirecionar o `stdout` e `stderr` do subprocesso Playwright para o arquivo de log `logs/django.log`, facilitando a análise de erros e o comportamento da automação.
+- **Correções de Código:**
+    - Realizada uma tentativa de correção de erros B904 (relacionados a `try-except-raise`) e eliminação de funções duplicadas no comando `automacao_documentos_ipiranga.py`.
+
 ## 12/08/2025 - Resumo do Dia de Trabalho e Próximos Passos
 
 - **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação, ficando presa no dashboard. O problema de limpeza de arquivos temporários na pasta `media/certificados_veiculos/` também persistiu, indicando que o arquivo é recriado rapidamente pela automação.

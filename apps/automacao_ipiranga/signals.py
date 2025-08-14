@@ -49,6 +49,14 @@ def run_automation_command(instance_id):
                 env["PYTHONPATH"] = str(site_packages_path)
         env["PLAYWRIGHT_BROWSERS_PATH"] = str(project_root / ".playwright-browsers")
 
+        # Ensure DISPLAY is set for GUI applications
+        if "DISPLAY" not in env:
+            logger.warning(
+                "[SIGNAL] A variável de ambiente DISPLAY não está definida. A automação pode falhar ao tentar abrir uma interface gráfica."
+            )
+        else:
+            logger.info(f"[SIGNAL] Usando DISPLAY: {env['DISPLAY']}")
+
         logger.info(
             f"[SIGNAL] Iniciando subprocesso com Popen para o Certificado ID: {instance_id}"
         )

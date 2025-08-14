@@ -1,5 +1,9 @@
 # Histórico de Progresso do App: Common
 
+## 13/08/2025 - Melhorias no Logging de Automação
+
+- **Logging Detalhado:** Adicionado logging mais detalhado no arquivo `services.py` para melhorar a depuração e o rastreamento de problemas durante a execução da automação, especificamente nas funções de OCR e navegação.
+
 ## 12/08/2025 - Resumo do Dia de Trabalho e Próximos Passos
 
 - **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação, ficando presa no dashboard. O problema de limpeza de arquivos temporários na pasta `media/certificados_veiculos/` também persistiu, indicando que o arquivo é recriado rapidamente pela automação.

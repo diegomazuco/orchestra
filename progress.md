@@ -1,5 +1,30 @@
 # Histórico de Progresso do Projeto Orchestra
 
+## 14/08/2025 - Correção do Processo de Commit e Depuração da Automação Playwright
+
+- **Correção do Fluxo de Trabalho de Commit:**
+    - Identificado e corrigido um desvio no processo de commit, onde os arquivos `progress.md` não estavam sendo atualizados antes do commit, conforme exigido pelas diretrizes do projeto.
+    - O fluxo de trabalho foi ajustado para garantir que todos os `GEMINI.md` e `progress.md` sejam lidos e que os `progress.md` sejam atualizados com as atividades do dia *antes* de cada commit.
+- **Depuração da Automação Playwright:**
+    - Investigado o problema do navegador Playwright não abrir durante a depuração visual.
+    - A análise dos arquivos de diretrizes (`GEMINI.md`) e do código (`signals.py`) levou à hipótese de que a variável de ambiente `DISPLAY` não estava sendo passada para o subprocesso da automação.
+    - Modificado o arquivo `apps/automacao_ipiranga/signals.py` para incluir a variável `DISPLAY` e garantir que a interface gráfica possa ser aberta.
+    - Corrigido um erro de sintaxe (`f-string` não terminada) em `signals.py` que foi introduzido durante a modificação.
+- **Gerenciamento de Processos do Servidor:**
+    - Resolvido um problema de múltiplos processos do servidor Django rodando simultaneamente, o que estava causando conflitos e impedindo a aplicação de iniciar corretamente. Todos os processos zumbis foram identificados e terminados.
+
+## 13/08/2025 - Melhorias na Depuração e Conclusão da Inicialização
+
+- **Melhorias na Depuração da Automação:**
+    - Adicionado logging detalhado em `services.py` para aprimorar o rastreamento de OCR e navegação.
+    - Redirecionado o stdout/stderr do subprocesso Playwright para `logs/django.log` em `signals.py`, permitindo uma análise de log mais completa.
+    - Esclarecido o ciclo de vida dos IDs de `Certificado` e o conceito de ambiente "zerado" para cada automação.
+- **Conclusão do Processo de Inicialização:**
+    - Finalizado o processo de `init` do ambiente de desenvolvimento, incluindo sincronização do repositório, instalação de dependências com `uv` e aplicação de migrações.
+    - Realizada uma tentativa de correção de erros B904 e remoção de código duplicado em `automacao_documentos_ipiranga.py`.
+    - Diagnosticada a performance do `ruff`, concluindo que a ferramenta é eficiente.
+- **Observação:** Os hooks de pre-commit falharam devido a erros remanescentes do `ruff` (B904) e `pyright`, que serão tratados em commits futuros.
+
 ## 12/08/2025 - Resumo do Dia de Trabalho e Próximos Passos
 
 - **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação, ficando presa no dashboard. O problema de limpeza de arquivos temporários na pasta `media/certificados_veiculos/` também persistiu, indicando que o arquivo é recriado rapidamente pela automação.
