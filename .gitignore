@@ -29,3 +29,6 @@ Thumbs.db
 
 # Logs
 logs/
+
+# Screenshots
+login_error_screenshot.png

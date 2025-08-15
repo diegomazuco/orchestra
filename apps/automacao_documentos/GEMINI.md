@@ -1,3 +1,5 @@
+**Instrução:** Por favor, responda sempre em português.
+
 # Diretrizes Específicas para o App: automacao_documentos
 
 **Contexto:** Este arquivo especifica o **framework orquestrador** para todas as automações do projeto. As regras aqui são a base que outros apps de automação (como o `automacao_ipiranga`) devem implementar.

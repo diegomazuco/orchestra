@@ -1,5 +1,12 @@
 # Histórico de Progresso do App: Common
 
+## 15/08/2025 - Consolidação de Melhorias Pós-Travamento
+
+- **Análise e Consolidação de Alterações:** Após um travamento e reinicialização do ambiente WSL, todas as modificações de arquivo não commitadas foram analisadas.
+- **Melhorias em Serviços Comuns:**
+    - A URL de login no portal Ipiranga foi atualizada em `login_to_portran`.
+    - O processo de OCR foi aprimorado com a adição de correção de inclinação da imagem e a remoção de um redimensionamento de imagem redundante, otimizando a performance e a precisão.
+
 ## 14/08/2025 - Melhorias e Ajustes em Serviços Comuns
 
 - **Atualização de URLs de Login:** As URLs de login no `login_to_portran` foram atualizadas para `https://sites2.ipiranga.com.br` para refletir o endereço correto do portal.

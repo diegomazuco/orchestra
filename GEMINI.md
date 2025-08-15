@@ -1,3 +1,5 @@
+**Instrução:** Por favor, responda sempre em português.
+
 # Diretrizes Globais para o Gemini no Projeto Orchestra
 
 **Versão Consolidada a partir do Histórico Completo do Projeto**
@@ -89,7 +91,7 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
     *   Ao final de cada execução de automação (sucesso ou falha).
     *   No início, reinício ou término do servidor Django.
 *   Utilize os `custom commands` de limpeza apropriados (ex: `python manage.py cleanup_media`).
-*   **Gerenciamento de Tempo Limite da Automação:** As automações Playwright agora incluem um tempo limite global (atualmente 30 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento.
+*   **Gerenciamento de Tempo Limite da Automação:** As automações Playwright agora incluem um tempo limite global (atualmente 90 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento.
 
 ---
 

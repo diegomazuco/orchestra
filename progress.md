@@ -1,5 +1,21 @@
 # Histórico de Progresso do Projeto Orchestra
 
+## 15/08/2025 - Consolidação de Melhorias e Documentação Pós-Travamento
+
+- **Análise e Consolidação de Alterações:** Após um travamento e reinicialização do ambiente WSL, todas as modificações de arquivo não commitadas foram analisadas.
+- **Atualização da Documentação:**
+    - Os arquivos `progress.md` de `orchestra`, `automacao_ipiranga` e `common` foram atualizados para refletir as melhorias recentes na automação e no processo de OCR.
+    - Os arquivos `GEMINI.md` foram revisados para garantir que as diretrizes estivessem alinhadas com as últimas alterações de código, incluindo o aumento do tempo limite da automação e as novas URLs.
+- **Ajustes de Código:**
+    - Adicionado `login_error_screenshot.png` ao `.gitignore`.
+    - Refatorado o comando `cleanup_media.py` para maior clareza.
+    - Removida uma importação não utilizada em `test_ocr_extraction.py`.
+- **Melhorias de Automação e OCR (consolidadas):**
+    - Aumento do tempo limite da automação para 90 segundos.
+    - Atualização das URLs no robô e na função de login.
+    - Melhoria da robustez do OCR com correção de inclinação e logging aprimorado.
+    - Implementação de captura de tela em caso de erro na automação.
+
 ## 14/08/2025 - Conclusão do Processo de Inicialização (init), Ajustes de Qualidade e Depuração da Automação Playwright
 
 - **Processo de Inicialização (`init`) Concluído:**

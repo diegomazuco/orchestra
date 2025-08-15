@@ -1,5 +1,19 @@
 # Histórico de Progresso do App: automacao_ipiranga
 
+## 15/08/2025 - Consolidação de Melhorias Pós-Travamento
+
+- **Análise e Consolidação de Alterações:** Após um travamento e reinicialização do ambiente WSL, todas as modificações de arquivo não commitadas foram analisadas.
+- **Melhorias na Automação (`automacao_documentos_ipiranga.py`):**
+    - O tempo limite da automação foi aumentado para 90 segundos para maior resiliência.
+    - As URLs de navegação foram atualizadas para a nova URL do portal Ipiranga.
+    - A lógica de extração de dados do PDF foi movida para um momento mais apropriado no fluxo da automação.
+    - O logging foi aprimorado com mais detalhes e prefixos para facilitar a depuração.
+    - A chamada para `cleanup_automation_data` foi tornada assíncrona.
+    - Implementada a captura de tela em caso de erro para facilitar a análise de falhas.
+- **Ajustes de Qualidade de Código:**
+    - O comando `cleanup_media.py` foi refatorado para maior clareza e eficiência.
+    - Removida uma importação não utilizada do comando `test_ocr_extraction.py`.
+
 ## 14/08/2025 - Melhorias na Automação e Depuração Visual do Playwright
 
 - **Melhorias na Automação (`automacao_documentos_ipiranga.py`):**

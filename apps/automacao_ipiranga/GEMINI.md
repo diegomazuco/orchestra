@@ -1,3 +1,5 @@
+**Instrução:** Por favor, responda sempre em português.
+
 # Diretrizes Específicas para o App: automacao_ipiranga
 
 **Contexto:** Este app é uma **implementação** do framework de automação definido em `apps/automacao_documentos`. As regras aqui complementam as diretrizes globais e do framework.

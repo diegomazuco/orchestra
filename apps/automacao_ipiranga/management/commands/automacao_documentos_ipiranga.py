@@ -104,8 +104,8 @@ class Command(BaseCommand):
                         f"O arquivo do certificado não foi encontrado em: {file_path_upload}"
                     )
 
-                vencidos_url = "https://sites2.ipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
-                a_vencer_url = "https://sites2.ipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
+                vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
+                a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
 
                 placa_encontrada = False
                 logger.info("Iniciando loop de navegação para páginas de veículos...")

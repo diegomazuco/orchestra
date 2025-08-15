@@ -28,10 +28,11 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(f"Arquivo {certificado.arquivo.path} deletado.")
                 )
+            certificado_id = certificado.id
             certificado.delete()
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Registro de certificado {certificado.id} deletado."
+                    f"Registro de certificado {certificado_id} deletado."
                 )
             )
 
