@@ -1,6 +1,7 @@
+import asyncio
 import logging
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from apps.common.services import extract_text_from_pdf_image
 
@@ -19,20 +20,27 @@ class Command(BaseCommand):
             type=str,
             help="O caminho completo para o arquivo PDF a ser testado.",
         )
+        parser.add_argument(
+            "--timeout",
+            type=int,
+            default=60,  # Default timeout of 60 seconds
+            help="Tempo limite em segundos para a execução do OCR.",
+        )
 
-    def handle(self, *args, **options):
-        """Lida com a execução do comando."""
+    async def handle_async(self, *args, **options):
+        """Executa o comando de forma assíncrona para testar a extração de OCR."""
         pdf_path = options["pdf_path"]
+        timeout = options["timeout"]
         self.stdout.write(
-            self.style.SUCCESS(f"Iniciando teste de OCR para: {pdf_path}")
+            self.style.SUCCESS(
+                f"Iniciando teste de OCR para: {pdf_path} com timeout de {timeout} segundos."
+            )
         )
 
         try:
-            # Tesseract config: PSM 6 assumes a single uniform block of text.
-            # OEM 3 is the default engine, but we specify it for clarity.
-            tesseract_config = "--oem 3 --psm 6"
-            extracted_text = extract_text_from_pdf_image(
-                pdf_path, logger, tesseract_config=tesseract_config
+            extracted_text = await asyncio.wait_for(
+                asyncio.to_thread(extract_text_from_pdf_image, pdf_path, logger),
+                timeout=timeout,
             )
 
             self.stdout.write(self.style.SUCCESS("\n--- Texto Extraído ---"))
@@ -78,5 +86,17 @@ class Command(BaseCommand):
                     )
                 )
 
+        except TimeoutError:
+            self.stderr.write(
+                self.style.ERROR(f"O OCR excedeu o tempo limite de {timeout} segundos.")
+            )
+            raise CommandError(
+                f"O OCR excedeu o tempo limite de {timeout} segundos."
+            ) from None
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Ocorreu um erro durante o teste: {e}"))
+            raise CommandError(f"Erro durante o teste de OCR: {e}") from e
+
+    def handle(self, *args, **options):
+        """Executa o comando de forma síncrona, chamando a versão assíncrona."""
+        asyncio.run(self.handle_async(*args, **options))

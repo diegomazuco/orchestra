@@ -7,7 +7,7 @@
     - Os arquivos `progress.md` de `orchestra`, `automacao_ipiranga` e `common` foram atualizados para refletir as melhorias recentes na automação e no processo de OCR.
     - Os arquivos `GEMINI.md` foram revisados para garantir que as diretrizes estivessem alinhadas com as últimas alterações de código, incluindo o aumento do tempo limite da automação e as novas URLs.
 - **Ajustes de Código:**
-    - Adicionado `login_error_screenshot.png` ao `.gitignore`.
+    - Adicionado `login_error_screenshot.png` ao `.gitignore`
     - Refatorado o comando `cleanup_media.py` para maior clareza.
     - Removida uma importação não utilizada em `test_ocr_extraction.py`.
 - **Melhorias de Automação e OCR (consolidadas):**
@@ -145,7 +145,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Refatoração da Automação Ipiranga:** A automação Ipiranga foi refatorada para usar DB, Signals e login centralizado.
 - **Correção de Falhas em Testes:** Falhas em testes foram corrigidas (antes da remoção completa dos testes).
 - **Atualização de Diretrizes de Testes e Análise de Performance:** As diretrizes foram atualizadas para refletir as mudanças nas estratégias de teste e análise de performance.
-- **Configuração de Variáveis de Ambiente:** Variáveis de ambiente foram configuradas no `settings.py`.
+- **Configuração de Variáveis de Ambiente:** Variáveis de ambiente foram configuradas no `settings.py`
 - **Aprimoramento da Automação Ipiranga e Correção de Tratamento de Erros:** A automação Ipiranga foi aprimorada e o tratamento de erros foi corrigido.
 - **Integração de Upload de Documentos e Aprimoramento da Automação Ipiranga:** Funcionalidade de upload de documentos foi integrada e a automação Ipiranga foi aprimorada.
 - **Implementação de Modelos de Automação e Correção de Configuração do Dashboard:** Modelos de automação foram implementados e a configuração do dashboard foi corrigida.
@@ -171,3 +171,25 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Melhorias na Robustez da Automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`):**
     - Adicionado logging mais detalhado na função `extract_cipp_data` para incluir o texto do PDF quando ocorre um `ValueError`, facilitando a depuração de falhas na extração de dados.
     - Adicionado logging específico antes e depois do preenchimento dos campos de número do documento e vencimento, para confirmar os valores utilizados e o sucesso da operação.
+
+## 15/08/2025 - Conclusão do Processo de Inicialização (init), Correção de Erro de Tipagem e Refatoração do Processo de OCR
+
+- **Processo de Inicialização (`init`) Concluído:**
+    - Sincronização do repositório local com `git pull`.
+    - Verificação e criação do ambiente virtual `.venv`.
+    - Instalação de todas as dependências do projeto e ferramentas de desenvolvimento (`uv pip install --group all`).
+    - Instalação dos navegadores Playwright (`playwright install`).
+    - Aplicação das migrações de banco de dados (`python manage.py migrate`).
+- **Ajustes de Qualidade de Código:**
+    - Execução de `ruff check . --fix` e `ruff format .` para análise e correção de qualidade de código.
+    - Correção de docstrings ausentes e código comentado.
+    - Execução de `pyright` para validação da tipagem estática.
+    - Correção de erro de tipagem em `apps/common/services.py` relacionado à binarização de imagem, substituindo `Image.point` por uma abordagem baseada em `numpy` para maior robustez e compatibilidade com `pyright`.
+- **Refatoração do Processo de OCR e Execução Assíncrona:**
+    - Em `apps/common/services.py`:
+        - Removidas dependências e lógicas de correção de inclinação, redução de ruído e aprimoramento de contraste para simplificar o processo de OCR.
+        - A lógica de extração de texto de PDF foi refatorada para utilizar `extract_text_from_roi`, focando na extração de texto de regiões de interesse específicas.
+        - A binarização de imagem foi alterada para usar `numpy` para maior precisão e compatibilidade.
+    - Em `apps/automacao_ipiranga/management/commands/test_ocr_extraction.py`:
+        - O comando foi atualizado para suportar execução assíncrona (`handle_async`) e incluir um parâmetro `--timeout` para controlar o tempo limite da operação de OCR.
+        - Implementado tratamento de `TimeoutError` para operações de OCR.

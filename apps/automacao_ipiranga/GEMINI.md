@@ -38,7 +38,7 @@
     *   Ao final de cada execução de automação (sucesso ou falha).
     *   No início, reinício ou término do servidor Django.
 *   Utilize o `custom command` `python manage.py cleanup_media` para realizar esta operação.
-*   **Gerenciamento de Tempo Limite da Automação:** A automação agora inclui um tempo limite global (atualmente 90 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento.
+*   **Gerenciamento de Tempo Limite da Automação:** A automação agora inclui um tempo limite global (atualmente 90 segundos) para evitar que o navegador permaneça aberto indefinidamente em caso de travamento. Para comandos assíncronos (ex: `test_ocr_extraction`), o `asyncio.wait_for` é utilizado para impor este tempo limite.
 *   **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()` no `custom command`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** **Lembre-se de reverter para `True` antes de fazer o commit.**
 
 ---
@@ -46,7 +46,8 @@
 ### 4. Pontos de Atenção Específicos (Lições Aprendidas)
 
 * **Extração de Dados do PDF (OCR):**
-    * **Flexibilidade é chave:** Use regex flexíveis para contornar falhas de OCR.
+    * **Abordagem Simplificada e Baseada em ROI:** O processo de OCR foi simplificado, removendo etapas complexas como correção de inclinação, redução de ruído e aprimoramento de contraste. A extração de texto agora foca em Regiões de Interesse (ROI) específicas dentro do PDF, utilizando a função `extract_text_from_roi` em `common/services.py`.
+    * **Flexibilidade é chave:** Continue usando regex flexíveis para contornar falhas de OCR.
     * **Exemplos de Padrões Robustos:**
         * Para textos: `r"(CERTIFICADO DE INSPE.*?)"`
         * Para datas: `r"(\d{2}/[A-Z]{3}/\d{2})"`
