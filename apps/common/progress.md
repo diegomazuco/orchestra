@@ -85,3 +85,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Melhorias na Robustez da Automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`):**
     - Adicionado logging mais detalhado na função `extract_cipp_data` para incluir o texto do PDF quando ocorre um `ValueError`, facilitando a depuração de falhas na extração de dados.
     - Adicionado logging específico antes e depois do preenchimento dos campos de número do documento e vencimento, para confirmar os valores utilizados e o sucesso da operação.
+
+## 15/08/2025 - Correção de Erro de Tipagem em `services.py`
+
+- **Correção de Erro de Tipagem:** Corrigido um erro de tipagem na função `extract_cipp_data` em `apps/common/services.py`. O erro ocorria porque a variável `numero_documento_valor` poderia ser `None`, enquanto a assinatura da função esperava um `str`. A correção implementada garante que um `ValueError` seja levantado caso `numero_documento_valor` seja `None`, assegurando que o tipo de retorno `tuple[str, str]` seja sempre respeitado.

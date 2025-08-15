@@ -46,13 +46,14 @@
 ### 4. Pontos de Atenção Específicos (Lições Aprendidas)
 
 * **Extração de Dados do PDF (OCR):**
-    * **Abordagem Simplificada e Baseada em ROI:** O processo de OCR foi simplificado, removendo etapas complexas como correção de inclinação, redução de ruído e aprimoramento de contraste. A extração de texto agora foca em Regiões de Interesse (ROI) específicas dentro do PDF, utilizando a função `extract_text_from_roi` em `common/services.py`.
+    * **Desafios e Calibração:** A extração de dados como "Número do Certificado" e "Data de Vencimento" de PDFs via OCR é um processo complexo devido a variações de layout e erros de reconhecimento de caracteres (ex: '6' lido como 'T'). A calibração envolve uma abordagem iterativa, ajustando as configurações do Tesseract (ex: `--psm 3`) e refinando as expressões regulares e a lógica de limpeza em `common/services.py` para lidar com essas inconsistências.
     * **Flexibilidade é chave:** Continue usando regex flexíveis para contornar falhas de OCR.
     * **Exemplos de Padrões Robustos:**
         * Para textos: `r"(CERTIFICADO DE INSPE.*?)"`
-        * Para datas: `r"(\d{2}/[A-Z]{3}/\d{2})"`
-        * Para números de documento: `r"(\d{2}\.\d{3}\.\s*\d{3})"`
+        * Para datas: `r"(\d{1,2}/[A-Z]{3}/\d{2,4})"` (ajustado para incluir ano completo e barras)
+        * Para números de documento: `r"([A-Z][0-9T]{6})"` (ajustado para permitir 'T' no lugar de dígitos)
 * **Interação com o Portal Ipiranga:**
     * **Instabilidade:** O portal pode apresentar um "Erro Inesperado". A função de login em `common/services.py` já implementa uma lógica de espera e recarregamento para lidar com isso.
+    * **IDs Dinâmicos de Campos:** Os campos de formulário no portal (ex: "Número do Documento", "Vencimento") podem ter IDs dinâmicos (ex: `licenca-numero-X`, `licenca-vencimento-X`). A automação deve extrair o número `X` do elemento do certificado (`fieldset.certificado-box`) para construir os seletores corretos.
     * **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()` no `custom command`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** **Lembre-se de reverter para `True` antes de fazer o commit.**
 * **Correção de Execução de Subprocesso em `signals.py`:** Um `SyntaxError` anterior na construção do comando de subprocesso em `signals.py` impedia a execução correta da automação Playwright. A correção envolveu remover a injeção de código Python complexo via `python -c` e passar o comando `manage.py` diretamente ao subprocesso.

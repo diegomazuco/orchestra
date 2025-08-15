@@ -170,6 +170,9 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
 
     # Normalize the text to make regex more robust against OCR noise
     normalized_pdf_text = normalize_text(pdf_text)
+    logger.info(
+        f"OCR: Normalized PDF text (first 500 chars): {normalized_pdf_text[:500]}..."
+    )
 
     # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
     # Allowing for common OCR errors like 'C' instead of 'Ç', 'A' instead of 'Ã', 'O' instead of 'Õ'
@@ -191,14 +194,28 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
     logger.info(f"Bloco de certificado CIPP encontrado: {first_block[:500]}...")
 
     match_numero = re.search(
-        r"CIPP.*?([A-Z]?\d{6,})", first_block, re.IGNORECASE | re.DOTALL
+        r"SP\s*([A-Z][0-9T]{6})", first_block, re.IGNORECASE | re.DOTALL
     )
-    numero_documento_valor = (
-        re.sub(r"\D", "", match_numero.group(1)) if match_numero else None
-    )
-    if numero_documento_valor is None:
+    if match_numero:
+        extracted_raw = match_numero.group(1)
+        logger.info(f"OCR: Extracted raw numero: {extracted_raw}")
+        # Apply a more targeted cleaning for the document number
+        # Replace common OCR misreads for digits, specifically 'T' for '6' or '7'
+        cleaned_num = extracted_raw.replace("T", "6")  # Prioritize 'T' as '6'
+        cleaned_num = (
+            cleaned_num.replace("I", "1")
+            .replace("O", "0")
+            .replace("S", "5")
+            .replace("Z", "2")
+        )
+        cleaned_num = re.sub(
+            r"[^A-Z0-9]", "", cleaned_num
+        ).upper()  # Remove non-alphanumeric
+        numero_documento_valor = cleaned_num
+        logger.info(f"OCR: Final numero_documento_valor: {numero_documento_valor}")
+    else:
+        logger.warning("Número do documento CIPP não encontrado.")
         raise ValueError("Número do documento CIPP não encontrado.")
-    logger.info(f"Número do documento CIPP extraído: {numero_documento_valor}")
 
     all_dates = re.findall(
         r"(\d{1,2}|[OISZ]{1,2})\s*/\s*([A-Z]{3})\s*/\s*(\d{2,4})",
@@ -214,8 +231,9 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
 
 
 def normalize_text(text: str) -> str:
-    """Normaliza o texto removendo caracteres não alfanuméricos e espaços extras."""
-    normalized_text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    """Normaliza o texto removendo caracteres que não são alfanuméricos, espaços ou barras (/), e espaços extras."""
+    # Permite letras, números, espaços e barras (para datas)
+    normalized_text = re.sub(r"[^a-zA-Z0-9\s/ R]", "", text)
     normalized_text = re.sub(r"\s+", " ", normalized_text).strip()
     return normalized_text
 

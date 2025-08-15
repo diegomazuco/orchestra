@@ -184,7 +184,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Execução de `ruff check . --fix` e `ruff format .` para análise e correção de qualidade de código.
     - Correção de docstrings ausentes e código comentado.
     - Execução de `pyright` para validação da tipagem estática.
-    - Correção de erro de tipagem em `apps/common/services.py` relacionado à binarização de imagem, substituindo `Image.point` por uma abordagem baseada em `numpy` para maior robustez e compatibilidade com `pyright`.
+    - Correção de erro de tipagem em `apps/common/services.py` na função `extract_cipp_data`, garantindo que `numero_documento_valor` seja sempre uma string ou que um `ValueError` seja levantado, alinhando com o tipo de retorno `tuple[str, str]`.
 - **Refatoração do Processo de OCR e Execução Assíncrona:**
     - Em `apps/common/services.py`:
         - Removidas dependências e lógicas de correção de inclinação, redução de ruído e aprimoramento de contraste para simplificar o processo de OCR.

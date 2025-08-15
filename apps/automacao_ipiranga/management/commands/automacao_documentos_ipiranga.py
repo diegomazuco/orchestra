@@ -247,6 +247,10 @@ class Command(BaseCommand):
                                 numero_documento_valor, vencimento_valor_pdf = (
                                     extract_cipp_data(pdf_text, logger)
                                 )
+                                # NEW: Ensure numero_documento_valor contains only digits
+                                numero_documento_valor = re.sub(
+                                    r"\D", "", numero_documento_valor
+                                )
                             except ValueError as ve:
                                 logger.error(
                                     f"Erro na extração de dados do PDF: {ve}. Texto do PDF: {pdf_text[:1000]}..."
@@ -269,14 +273,52 @@ class Command(BaseCommand):
                         # --- End of new PDF processing logic ---
 
                         # Construct dynamic IDs based on sequential numbering
-                        numero_id = f"#licenca-numero-{i + 1}"
-                        vencimento_id = f"#licenca-vencimento-{i + 1}"
+                        # NEW: Extract the dynamic ID number from the input field within the current fieldset
+                        # Find the input field for "Número do Documento" within the current fieldset
+                        numero_input_locator = fieldset.locator(
+                            "input[name^='licenca-numero-']"
+                        )
+                        logger.info(
+                            f"DEBUG: numero_input_locator found: {await numero_input_locator.count() > 0}"
+                        )
+
+                        numero_input_id = await numero_input_locator.get_attribute("id")
+                        logger.info(f"DEBUG: numero_input_id: {numero_input_id}")
+
+                        # Extract the number from the ID (e.g., "licenca-numero-2" -> "2")
+                        match_id_number = re.search(
+                            r"licenca-numero-(\d+)", numero_input_id or ""
+                        )
+                        if not match_id_number:
+                            logger.error(
+                                f"ERRO: Não foi possível extrair o número do ID para o campo 'Número do Documento' no certificado {nome_certificado_alvo}. numero_input_id: {numero_input_id}"
+                            )
+                            raise CommandError(
+                                f"Não foi possível extrair o número do ID para o campo 'Número do Documento' no certificado {nome_certificado_alvo}."
+                            )
+                        dynamic_id_number = match_id_number.group(1)
+                        logger.info(f"DEBUG: dynamic_id_number: {dynamic_id_number}")
+
+                        # Construct dynamic IDs using the extracted number
+                        numero_id = f"#licenca-numero-{dynamic_id_number}"
+                        vencimento_id = f"#licenca-vencimento-{dynamic_id_number}"
+                        logger.info(f"DEBUG: Constructed numero_id: {numero_id}")
+                        logger.info(
+                            f"DEBUG: Constructed vencimento_id: {vencimento_id}"
+                        )
 
                         logger.info(
                             f"Preenchendo campo de número do documento: {numero_id} com valor {numero_documento_valor}"
                         )
                         await page.wait_for_selector(numero_id, timeout=30000)
                         await page.fill(numero_id, numero_documento_valor)
+                        logger.info(
+                            f"Campo de número do documento preenchido. Valor: {numero_documento_valor}"
+                        )
+                        await page.screenshot(
+                            path=f"logs/screenshot_after_numero_fill_{certificado.id}.png"
+                        )
+
                         vencimento_formatado = convert_date_format(
                             vencimento_valor_pdf, logger
                         )
@@ -288,6 +330,12 @@ class Command(BaseCommand):
                         )
                         await page.wait_for_selector(vencimento_id, timeout=30000)
                         await page.fill(vencimento_id, vencimento_formatado)
+                        logger.info(
+                            f"Campo de vencimento preenchido. Valor: {vencimento_formatado}"
+                        )
+                        await page.screenshot(
+                            path=f"logs/screenshot_after_vencimento_fill_{certificado.id}.png"
+                        )
                         await fieldset.locator(
                             'input[type="file"]:visible'
                         ).set_input_files(file_path_upload)
