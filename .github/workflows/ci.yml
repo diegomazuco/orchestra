@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' # Adjust to your project's Python version
+
+    - name: Install uv and dependencies
+      run: |
+        pip install uv
+        uv pip install --group all
+
+    - name: Install Playwright browsers
+      run: playwright install --with-deps
+
+    - name: Run Ruff checks
+      run: |
+        uv run ruff check .
+        uv run ruff format . --check
+
+    - name: Run Pyright checks
+      run: uv run pyright
+
+    # - name: Run Pytest (if tests are reintroduced)
+    #   run: uv run pytest
+    #   continue-on-error: true # Set to false if tests are mandatory
