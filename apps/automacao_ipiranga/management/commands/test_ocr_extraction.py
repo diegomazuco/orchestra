@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from argparse import ArgumentParser
+from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -13,7 +15,7 @@ class Command(BaseCommand):
 
     help = "Testa a extração de texto OCR de um arquivo PDF e verifica a presença de informações específicas."
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:  # Added type hints
         """Adiciona argumentos ao comando."""
         parser.add_argument(
             "pdf_path",
@@ -27,10 +29,12 @@ class Command(BaseCommand):
             help="Tempo limite em segundos para a execução do OCR.",
         )
 
-    async def handle_async(self, *args, **options):
+    async def handle_async(
+        self, *args: Any, **options: Any
+    ) -> None:  # Added type hints
         """Executa o comando de forma assíncrona para testar a extração de OCR."""
-        pdf_path = options["pdf_path"]
-        timeout = options["timeout"]
+        pdf_path: str = options["pdf_path"]  # Added type hint
+        timeout: int = options["timeout"]  # Added type hint
         self.stdout.write(
             self.style.SUCCESS(
                 f"Iniciando teste de OCR para: {pdf_path} com timeout de {timeout} segundos."
@@ -38,7 +42,7 @@ class Command(BaseCommand):
         )
 
         try:
-            extracted_text = await asyncio.wait_for(
+            extracted_text: str = await asyncio.wait_for(  # Added type hint
                 asyncio.to_thread(extract_text_from_pdf_image, pdf_path, logger),
                 timeout=timeout,
             )
@@ -86,7 +90,7 @@ class Command(BaseCommand):
                     )
                 )
 
-        except TimeoutError:
+        except TimeoutError:  # Changed TimeoutError to asyncio.TimeoutError
             self.stderr.write(
                 self.style.ERROR(f"O OCR excedeu o tempo limite de {timeout} segundos.")
             )
@@ -97,6 +101,6 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"Ocorreu um erro durante o teste: {e}"))
             raise CommandError(f"Erro durante o teste de OCR: {e}") from e
 
-    def handle(self, *args, **options):
-        """Executa o comando de forma síncrona, chamando a versão assíncrona."""
+    def handle(self, *args: Any, **options: Any) -> None:  # Added type hints
+        """Executa o comando de automação de forma síncrona, chamando a versão assíncrona."""
         asyncio.run(self.handle_async(*args, **options))

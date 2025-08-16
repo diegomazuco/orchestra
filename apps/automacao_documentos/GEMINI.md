@@ -24,13 +24,13 @@
 Qualquer nova automação no projeto Orchestra deve se conformar a esta arquitetura:
 
 * **Modelos Base (a serem definidos neste app):**
-    * `Automacao(models.Model)`: Modelo para registrar cada tipo de automação (Ex: "Ipiranga - Atualização de CIPP"). Deve conter campos como `nome` e `comando_django`.
-    * `ExecucaoAutomacao(models.Model)`: Registra cada disparo de uma automação, contendo status (`pendente`, `processando`, `sucesso`, `falha`), `ForeignKey` para `Automacao`, e um campo de log.
+    * `Automacao(models.Model)`: Registra cada tipo de automação (Ex: "Ipiranga - Atualização de CIPP").
+    * `ExecucaoAutomacao(models.Model)`: Registra cada disparo de uma automação, contendo status, `ForeignKey` para `Automacao`, e log.
 
 * **Fluxo Padrão de Orquestração (a ser seguido pelos implementadores):**
-    1.  Um evento externo (ex: upload) cria um registro em um modelo "gatilho" no app implementador.
+    1.  Um evento externo cria um registro em um modelo "gatilho" no app implementador.
     2.  Um sinal `post_save` nesse modelo gatilho detecta a nova entrada.
     3.  O sinal dispara o `custom command` correspondente em um **subprocesso**, seguindo a regra de usar o caminho absoluto do python do `.venv`.
-    4.  O `custom command` executa a lógica do robô, atualiza o status (seja no modelo gatilho ou em um `ExecucaoAutomacao`) e garante a limpeza de recursos em um bloco `finally`.
-    5.  **Limpeza de Recursos Temporários:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários gerados durante a automação, tanto ao final da execução do robô quanto no ciclo de vida do servidor (início, reinício, término).
-    6.  **Gerenciamento de Tempo Limite e Execução Assíncrona:** Para `custom commands` que realizam operações de longa duração (ex: OCR, automação web), é **mandatório** que sejam implementados de forma assíncrona (utilizando `asyncio`) e que incluam mecanismos de tempo limite (ex: `asyncio.wait_for`) para evitar que a automação fique presa indefinidamente, garantindo o fechamento do navegador e a liberação de recursos.
+    4.  O `custom command` executa a lógica do robô, atualiza o status e garante a limpeza de recursos em um bloco `finally`.
+    5.  **Limpeza de Recursos:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários.
+    6.  **Gerenciamento de Tempo Limite e Execução Assíncrona:** Para `custom commands` de longa duração (OCR, web scraping), é **mandatório** que sejam implementados de forma assíncrona (`asyncio`) e incluam mecanismos de tempo limite (ex: `asyncio.wait_for`) para evitar que fiquem presos indefinidamente.

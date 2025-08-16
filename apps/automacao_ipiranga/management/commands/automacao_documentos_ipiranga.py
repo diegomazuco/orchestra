@@ -2,12 +2,16 @@ import asyncio
 import logging
 import os
 import re
+from argparse import ArgumentParser
+from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.core.management.base import BaseCommand, CommandError
-from playwright.async_api import async_playwright, expect
+from playwright.async_api import Page, async_playwright, expect
 
-from apps.automacao_ipiranga.models import CertificadoVeiculo
+from apps.automacao_ipiranga.models import (
+    CertificadoVeiculo,
+)
 from apps.common.services import (
     convert_date_format,
     extract_cipp_data,
@@ -23,7 +27,7 @@ class Command(BaseCommand):
 
     help = "Automatiza o processo de atualização de um único certificado no portal Ipiranga."
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         """Adiciona argumentos ao comando."""
         parser.add_argument(
             "certificado_id",
@@ -31,7 +35,9 @@ class Command(BaseCommand):
             help="O ID do CertificadoVeiculo a ser processado.",
         )
 
-    async def handle_async(self, certificado_id, *args, **options):
+    async def handle_async(
+        self, certificado_id: int, *args: Any, **options: Any
+    ) -> None:
         """Lógica assíncrona principal do comando de automação."""
         logger.info(
             f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
@@ -58,13 +64,14 @@ class Command(BaseCommand):
             )
             raise CommandError(f"Erro geral na automação: {e}") from e
 
-    async def _run_automation_steps(self, certificado_id):
-        certificado = None
-        file_path_upload = None
+    async def _run_automation_steps(self, certificado_id: int) -> None:
+        certificado: CertificadoVeiculo | None = None
+        file_path_upload: str | None = None
         try:
             certificado = await sync_to_async(
                 CertificadoVeiculo.objects.select_related("veiculo").get
             )(pk=certificado_id)
+            assert certificado is not None
             file_path_upload = certificado.arquivo.path
             logger.info(
                 f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id} encontrado."
@@ -75,25 +82,29 @@ class Command(BaseCommand):
                 f"Certificado com ID {certificado_id} não encontrado."
             ) from err
 
+        if file_path_upload is None:
+            raise CommandError(
+                "Caminho do arquivo de upload não encontrado para o certificado."
+            )
+
         async with async_playwright() as p:
-            browser = None
-            page = None
+            browser: Any = None
+            page: Page | None = None
             try:
-                browser = await p.chromium.launch(
-                    headless=False
-                )  # Keep headless=False for debugging
+                browser = await p.chromium.launch(headless=False)
                 page = await browser.new_page()
+                assert page is not None  # Ensure page is not None
                 page.set_default_timeout(60000)
                 logger.info("[AUTOMACAO_IPIRANGA] Página criada. Iniciando login...")
 
                 await login_to_portran(page, logger)
                 logger.info("Login realizado com sucesso.")
 
-                placa_alvo = certificado.veiculo.placa
-                nome_certificado_alvo = certificado.nome
+                placa_alvo: str = certificado.veiculo.placa  # type: ignore[reportUnknownMemberType]
+                nome_certificado_alvo: str = certificado.nome  # type: ignore[reportUnknownMemberType]
 
                 logger.info(
-                    f"--- INÍCIO DA AUTOMAÇÃO PARA O CERTIFICADO ID: {certificado.id} ---"
+                    f"--- INÍCIO DA AUTOMAÇÃO PARA O CERTIFICADO ID: {certificado.id} ---"  # type: ignore[reportUnknownMemberType]
                 )
                 logger.info(f"Veículo Placa: {placa_alvo}")
                 logger.info(f"Certificado: {nome_certificado_alvo}")
@@ -131,8 +142,7 @@ class Command(BaseCommand):
                             f"[ERRO_NAVEGACAO] Erro ao navegar ou carregar a página {nome_pagina} ({url}). URL atual: {page.url}. Erro: {nav_error}",
                             exc_info=True,
                         )
-                        # Continue to the next URL or re-raise if critical
-                        continue  # Try the next URL if navigation fails
+                        continue
 
                     logger.info(
                         f"[TABELA] Aguardando visibilidade da tabela 'table#tabela-veiculo' na página {nome_pagina}..."
@@ -149,18 +159,19 @@ class Command(BaseCommand):
                             f"[ERRO_TABELA] Tabela 'table#tabela-veiculo' NÃO visível na página {nome_pagina} ({page.url}). Erro: {table_error}. Tentando próxima URL.",
                             exc_info=True,
                         )
-                        continue  # Try the next URL if table is not visible
+                        continue
 
-                    rows = page.locator("table#tabela-veiculo tbody tr")
-                    num_rows = await rows.count()
+                    rows_locator = page.locator("table#tabela-veiculo tbody tr")
+                    num_rows = await rows_locator.count()
                     logger.info(
                         f"[TABELA] Número de linhas encontradas na tabela: {num_rows} na página {nome_pagina}. URL atual: {page.url}"
                     )
 
                     for i in range(num_rows):
-                        row = rows.nth(i)
+                        row_locator = rows_locator.nth(i)
                         placa_text = (
-                            await row.locator("td:nth-child(2)").text_content() or ""
+                            await row_locator.locator("td:nth-child(2)").text_content()
+                            or ""
                         ).strip()
                         logger.info(
                             f"Verificando linha {i + 1}: Placa encontrada '{placa_text}' (Procurando por '{placa_alvo}')"
@@ -169,7 +180,7 @@ class Command(BaseCommand):
                             logger.info(
                                 f"Placa '{placa_alvo}' encontrada na página {nome_pagina}! Clicando em 'alterar-veiculo-js'."
                             )
-                            await row.locator(
+                            await row_locator.locator(
                                 "a.btn.btn--square.alterar-veiculo-js"
                             ).click()
                             await page.wait_for_load_state("networkidle", timeout=60000)
@@ -186,7 +197,7 @@ class Command(BaseCommand):
                         f"Placa '{placa_alvo}' NÃO encontrada nas URLs: {vencidos_url}, {a_vencer_url}"
                     )
                     raise CommandError(
-                        f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado."
+                        f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado."  # type: ignore[reportUnknownMemberType]
                     )
 
                 logger.info("Clicando na aba 'Certificados'...")
@@ -214,7 +225,7 @@ class Command(BaseCommand):
                     )
 
                     if (
-                        nome_certificado_alvo.upper() in current_name.upper()
+                        str(nome_certificado_alvo).upper() in str(current_name).upper()  # type: ignore[reportUnknownArgumentType, reportUnknownMemberType]
                         and is_vencido
                     ):
                         logger.info(
@@ -236,10 +247,10 @@ class Command(BaseCommand):
                             "Texto do PDF extraído. Identificando tipo de certificado..."
                         )
 
-                        numero_documento_valor = "N/A"
-                        vencimento_valor_pdf = "N/A"
+                        numero_documento_valor: str = "N/A"
+                        vencimento_valor_pdf: str = "N/A"
 
-                        if "CIPP" in nome_certificado_alvo.upper():
+                        if "CIPP" in str(nome_certificado_alvo).upper():  # type: ignore[reportUnknownMemberType]
                             logger.info(
                                 "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
                             )
@@ -248,27 +259,26 @@ class Command(BaseCommand):
                                     extract_cipp_data(pdf_text, logger)
                                 )
                                 # NEW: Ensure numero_documento_valor contains only digits
-                                numero_documento_valor = re.sub(
-                                    r"\D", "", numero_documento_valor
-                                )
+                                numero_documento_valor = str(
+                                    re.sub(r"\D", "", numero_documento_valor)
+                                )  # type: ignore[reportUnknownMemberType]
                             except ValueError as ve:
                                 logger.error(
                                     f"Erro na extração de dados do PDF: {ve}. Texto do PDF: {pdf_text[:1000]}..."
-                                )  # Log first 1000 chars of PDF text
+                                )
                                 raise CommandError(
                                     f"Erro na extração de dados do PDF: {ve}"
                                 ) from ve
                         else:
                             logger.warning(
-                                f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."
+                                f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."  # type: ignore[reportUnknownMemberType]
                             )
-                            # For now, it will remain "N/A" if not CIPP
 
                         logger.info(
-                            f"Número do Documento Extraído: {numero_documento_valor}"
+                            f"Número do Documento Extraído: {numero_documento_valor}"  # type: ignore[reportUnknownMemberType]
                         )
                         logger.info(
-                            f"Data de Vencimento Extraída: {vencimento_valor_pdf}"
+                            f"Data de Vencimento Extraída: {vencimento_valor_pdf}"  # type: ignore[reportUnknownMemberType]
                         )
                         # --- End of new PDF processing logic ---
 
@@ -282,7 +292,9 @@ class Command(BaseCommand):
                             f"DEBUG: numero_input_locator found: {await numero_input_locator.count() > 0}"
                         )
 
-                        numero_input_id = await numero_input_locator.get_attribute("id")
+                        numero_input_id: (
+                            str | None
+                        ) = await numero_input_locator.get_attribute("id")
                         logger.info(f"DEBUG: numero_input_id: {numero_input_id}")
 
                         # Extract the number from the ID (e.g., "licenca-numero-2" -> "2")
@@ -291,50 +303,47 @@ class Command(BaseCommand):
                         )
                         if not match_id_number:
                             logger.error(
-                                f"ERRO: Não foi possível extrair o número do ID para o campo 'Número do Documento' no certificado {nome_certificado_alvo}. numero_input_id: {numero_input_id}"
+                                f"ERRO: Não foi possível extrair o número do ID para o campo 'Número do Documento' no certificado {nome_certificado_alvo}. numero_input_id: {numero_input_id}"  # type: ignore[reportUnknownMemberType]
                             )
                             raise CommandError(
-                                f"Não foi possível extrair o número do ID para o campo 'Número do Documento' no certificado {nome_certificado_alvo}."
+                                f"Não foi possível extrair o número do ID para o campo 'Número do Documento' no certificado {nome_certificado_alvo}."  # type: ignore[reportUnknownMemberType]
                             )
-                        dynamic_id_number = match_id_number.group(1)
+                        dynamic_id_number: str = str(match_id_number.group(1))
                         logger.info(f"DEBUG: dynamic_id_number: {dynamic_id_number}")
 
                         # Construct dynamic IDs using the extracted number
-                        numero_id = f"#licenca-numero-{dynamic_id_number}"
-                        vencimento_id = f"#licenca-vencimento-{dynamic_id_number}"
+                        numero_id: str = f"#licenca-numero-{dynamic_id_number}"
+                        vencimento_id: str = f"#licenca-vencimento-{dynamic_id_number}"
                         logger.info(f"DEBUG: Constructed numero_id: {numero_id}")
                         logger.info(
                             f"DEBUG: Constructed vencimento_id: {vencimento_id}"
                         )
 
                         logger.info(
-                            f"Preenchendo campo de número do documento: {numero_id} com valor {numero_documento_valor}"
+                            f"Preenchendo campo de número do documento: {numero_id} com valor {numero_documento_valor}"  # type: ignore[reportUnknownMemberType]
                         )
                         await page.wait_for_selector(numero_id, timeout=30000)
                         await page.fill(numero_id, numero_documento_valor)
                         logger.info(
-                            f"Campo de número do documento preenchido. Valor: {numero_documento_valor}"
+                            f"Campo de número do documento preenchido. Valor: {numero_documento_valor}"  # type: ignore[reportUnknownMemberType]
                         )
                         await page.screenshot(
-                            path=f"logs/screenshot_after_numero_fill_{certificado.id}.png"
+                            path=f"logs/screenshot_after_numero_fill_{certificado.id}.png"  # type: ignore[reportUnknownMemberType]
                         )
 
-                        vencimento_formatado = convert_date_format(
+                        vencimento_formatado: str = convert_date_format(
                             vencimento_valor_pdf, logger
                         )
                         logger.info(
-                            f"Preenchendo campo de vencimento: {vencimento_id} com valor {vencimento_formatado}"
+                            f"Preenchendo campo de vencimento: {vencimento_id} com valor {vencimento_formatado}"  # type: ignore[reportUnknownMemberType]
                         )
                         logger.info(
-                            f"[AUTOMACAO_IPIRANGA] Vencimento formatado para preenchimento: {vencimento_formatado}"
+                            f"[AUTOMACAO_IPIRANGA] Vencimento formatado para preenchimento: {vencimento_formatado}"  # type: ignore[reportUnknownMemberType]
                         )
                         await page.wait_for_selector(vencimento_id, timeout=30000)
                         await page.fill(vencimento_id, vencimento_formatado)
-                        logger.info(
-                            f"Campo de vencimento preenchido. Valor: {vencimento_formatado}"
-                        )
                         await page.screenshot(
-                            path=f"logs/screenshot_after_vencimento_fill_{certificado.id}.png"
+                            path=f"logs/screenshot_after_vencimento_fill_{certificado.id}.png"  # type: ignore[reportUnknownMemberType]
                         )
                         await fieldset.locator(
                             'input[type="file"]:visible'
@@ -358,12 +367,10 @@ class Command(BaseCommand):
 
                 logger.info("Clicando no botão 'Atualizar'...")
                 await page.locator("a#botaoAtualizar").click()
-                await page.wait_for_load_state(
-                    "networkidle", timeout=60000
-                )  # Added this
+                await page.wait_for_load_state("networkidle", timeout=60000)
                 await expect(page).to_have_url(
                     re.compile(r".*/veiculo/index"), timeout=60000
-                )
+                )  # type: ignore[reportCallIssue]
                 logger.info("Operação salva com sucesso.")
 
                 logger.info("Clicando no botão 'Salvar'...")
@@ -383,7 +390,8 @@ class Command(BaseCommand):
                 if page:
                     try:
                         screenshot_path = os.path.join(
-                            "logs", f"error_screenshot_cert_{certificado_id}.png"
+                            "logs",
+                            f"error_screenshot_cert_{certificado_id}.png",  # type: ignore[reportUnknownMemberType]
                         )
                         await page.screenshot(path=screenshot_path)
                         logger.info(f"Screenshot de erro salvo em: {screenshot_path}")
@@ -400,11 +408,11 @@ class Command(BaseCommand):
                 # Cleanup: Delete certificate and associated file regardless of success or failure
                 if certificado and certificado.pk:
                     logger.info(
-                        f"FINALLY BLOCK: Attempting to delete Certificado ID {certificado.id} from DB."
+                        f"FINALLY BLOCK: Attempting to delete Certificado ID {certificado.id} from DB."  # type: ignore[reportUnknownMemberType]
                     )
                     await sync_to_async(certificado.delete)()
                     logger.info(
-                        f"FINALLY BLOCK: Certificado ID {certificado.id} deleted from DB."
+                        f"FINALLY BLOCK: Certificado ID {certificado.id} deleted from DB."  # type: ignore[reportUnknownMemberType]
                     )
                     if file_path_upload and os.path.exists(file_path_upload):
                         logger.info(
@@ -417,7 +425,7 @@ class Command(BaseCommand):
                             f"FINALLY BLOCK: File {file_path_upload} not found or path not set. Skipping file deletion."
                         )
                     logger.info(
-                        f"Certificado ID {certificado.id} e arquivo associado removidos no cleanup final."
+                        f"Certificado ID {certificado.id} e arquivo associado removidos no cleanup final."  # type: ignore[reportUnknownMemberType]
                     )
                 else:
                     logger.info(
@@ -431,9 +439,9 @@ class Command(BaseCommand):
                 await sync_to_async(call_command)("cleanup_automation_data")
                 logger.info("FINALLY BLOCK: cleanup_automation_data called.")
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         """Executa o comando de automação de forma síncrona."""
         try:
-            asyncio.run(self.handle_async(*args, **options))
+            asyncio.run(self.handle_async(options["certificado_id"], *args, **options))
         except CommandError as e:
             self.stderr.write(self.style.ERROR(f"Erro no comando: {e}"))

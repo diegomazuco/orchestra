@@ -26,7 +26,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())  # type: ignore
 
 
 # Application definition
@@ -63,7 +63,7 @@ INTERNAL_IPS = [
 
 ROOT_URLCONF = "core.urls"
 
-TEMPLATES = [
+TEMPLATES = [  # type: ignore # Added type: ignore
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],

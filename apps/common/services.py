@@ -3,7 +3,7 @@ import io
 import logging
 import re
 
-import fitz  # PyMuPDF # type: ignore
+import fitz  # type: ignore # PyMuPDF
 import numpy as np
 import pytesseract  # type: ignore
 from decouple import config
@@ -106,20 +106,20 @@ def extract_text_from_pdf_image(
     if not tesseract_config:
         tesseract_config = "--psm 6"  # Assume a single uniform block of text.
 
-    doc = None
+    doc: fitz.Document | None = None
     try:
         doc = fitz.open(pdf_path)
         for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
+            page: fitz.Page = doc.load_page(page_num)
 
             numero_documento_roi = (100, 500, 400, 600)  # Example coordinates
             data_vencimento_roi = (400, 500, 700, 600)  # Example coordinates
 
             # Extract text from each ROI
-            numero_documento_text = extract_text_from_roi(
+            numero_documento_text: str = extract_text_from_roi(
                 page, numero_documento_roi, logger, tesseract_config
             )
-            data_vencimento_text = extract_text_from_roi(
+            data_vencimento_text: str = extract_text_from_roi(
                 page, data_vencimento_roi, logger, tesseract_config
             )
 
@@ -134,12 +134,19 @@ def extract_text_from_pdf_image(
     return text
 
 
-def extract_text_from_roi(page, roi, logger, tesseract_config):
+def extract_text_from_roi(
+    page: fitz.Page,
+    roi: tuple[int, int, int, int],
+    logger: logging.Logger,
+    tesseract_config: str,
+) -> str:
     """Extracts text from a specific region of interest on a page."""
     try:
         logger.debug(f"OCR: Extraindo texto do ROI: {roi}")
-        pix = page.get_pixmap(matrix=fitz.Matrix(600 / 72, 600 / 72), clip=roi)
-        img = Image.open(io.BytesIO(pix.tobytes()))
+        pix: fitz.Pixmap = page.get_pixmap(
+            matrix=fitz.Matrix(600 / 72, 600 / 72), clip=roi
+        )
+        img: Image.Image = Image.open(io.BytesIO(pix.tobytes()))  # type: ignore[reportUnknownArgumentType]
         logger.info("OCR: Imagem do ROI carregada.")
 
         # Convert to grayscale using Pillow
@@ -149,14 +156,18 @@ def extract_text_from_roi(page, roi, logger, tesseract_config):
         # Binarization using NumPy
         logger.debug("OCR: Iniciando binarização com NumPy.")
 
-        img_np = np.array(img)
+        img_np: np.ndarray = np.array(img)
         img_np = np.where(img_np < 128, 0, 255).astype(np.uint8)
         img = Image.fromarray(img_np)
 
         logger.debug("OCR: Iniciando extração de texto com Tesseract.")
-        page_text = pytesseract.image_to_string(
-            img, lang="por", config=tesseract_config
-        )
+        from pytesseract import Output
+
+        # ... (rest of the file)
+
+        page_text: str = pytesseract.image_to_string(
+            img, lang="por", config=tesseract_config, output_type=Output.STRING
+        )  # type: ignore[reportAssignmentType]
         logger.debug("OCR: Extração de texto com Tesseract concluída.")
         return page_text.strip()
     except Exception as e:
@@ -169,7 +180,7 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
     logger.info("Iniciando extração de dados específicos para certificado CIPP...")
 
     # Normalize the text to make regex more robust against OCR noise
-    normalized_pdf_text = normalize_text(pdf_text)
+    normalized_pdf_text: str = normalize_text(pdf_text)
     logger.info(
         f"OCR: Normalized PDF text (first 500 chars): {normalized_pdf_text[:500]}..."
     )
@@ -178,7 +189,7 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
     # Allowing for common OCR errors like 'C' instead of 'Ç', 'A' instead of 'Ã', 'O' instead of 'Õ'
     # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
     # Allowing for common OCR errors and variations in spacing/characters
-    match = re.search(
+    match: re.Match[str] | None = re.search(
         r"(CERTIFICADO\s*(DE|D|E)?\s*INSPE[CÇ][AÃ]O.*?)(?=(CERTIFICADO\s*(DE|D|E)?\s*INSPE[CÇ][AÃ]O|$))",
         normalized_pdf_text,
         re.IGNORECASE | re.DOTALL,
@@ -190,18 +201,18 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
         )
         raise ValueError("Bloco de certificado CIPP não encontrado.")
 
-    first_block = match.group(1)
+    first_block: str = match.group(1)
     logger.info(f"Bloco de certificado CIPP encontrado: {first_block[:500]}...")
 
-    match_numero = re.search(
+    match_numero: re.Match[str] | None = re.search(
         r"SP\s*([A-Z][0-9T]{6})", first_block, re.IGNORECASE | re.DOTALL
     )
     if match_numero:
-        extracted_raw = match_numero.group(1)
+        extracted_raw: str = match_numero.group(1)
         logger.info(f"OCR: Extracted raw numero: {extracted_raw}")
         # Apply a more targeted cleaning for the document number
         # Replace common OCR misreads for digits, specifically 'T' for '6' or '7'
-        cleaned_num = extracted_raw.replace("T", "6")  # Prioritize 'T' as '6'
+        cleaned_num: str = extracted_raw.replace("T", "6")  # Prioritize 'T' as '6'
         cleaned_num = (
             cleaned_num.replace("I", "1")
             .replace("O", "0")
@@ -211,18 +222,18 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
         cleaned_num = re.sub(
             r"[^A-Z0-9]", "", cleaned_num
         ).upper()  # Remove non-alphanumeric
-        numero_documento_valor = cleaned_num
+        numero_documento_valor: str = cleaned_num
         logger.info(f"OCR: Final numero_documento_valor: {numero_documento_valor}")
     else:
         logger.warning("Número do documento CIPP não encontrado.")
         raise ValueError("Número do documento CIPP não encontrado.")
 
-    all_dates = re.findall(
+    all_dates: list[tuple[str, str, str]] = re.findall(
         r"(\d{1,2}|[OISZ]{1,2})\s*/\s*([A-Z]{3})\s*/\s*(\d{2,4})",
         first_block,
         re.IGNORECASE,
     )
-    vencimento_valor_pdf = "/".join(all_dates[-1]) if all_dates else None
+    vencimento_valor_pdf: str | None = "/".join(all_dates[-1]) if all_dates else None
     if vencimento_valor_pdf is None:
         raise ValueError("Data de vencimento CIPP não encontrada.")
     logger.info(f"Data de vencimento CIPP extraída: {vencimento_valor_pdf}")
@@ -233,14 +244,14 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
 def normalize_text(text: str) -> str:
     """Normaliza o texto removendo caracteres que não são alfanuméricos, espaços ou barras (/), e espaços extras."""
     # Permite letras, números, espaços e barras (para datas)
-    normalized_text = re.sub(r"[^a-zA-Z0-9\s/ R]", "", text)
+    normalized_text: str = re.sub(r"[^a-zA-Z0-9\s/ R]", "", text)
     normalized_text = re.sub(r"\s+", " ", normalized_text).strip()
     return normalized_text
 
 
 def convert_date_format(date_str: str, logger: logging.Logger) -> str:
     """Converte uma string de data do formato 'DD/MON/YY' para 'DD/MM/YYYY'."""
-    month_map = {
+    month_map: dict[str, str] = {
         "JAN": "01",
         "FEV": "02",
         "MAR": "03",
@@ -257,12 +268,15 @@ def convert_date_format(date_str: str, logger: logging.Logger) -> str:
         "FES": "02",
     }
     try:
+        day: str
+        month_abbr: str
+        year: str
         day, month_abbr, year = date_str.upper().split("/")
-        day_cleaned = (
+        day_cleaned: str = (
             day.replace("O", "0").replace("I", "1").replace("S", "5").replace("Z", "2")
         )
-        month = month_map.get(month_abbr, "00")
-        year_full = f"20{year}" if len(year) == 2 else year
+        month: str = month_map.get(month_abbr, "00")
+        year_full: str = f"20{year}" if len(year) == 2 else year
         return f"{day_cleaned}/{month}/{year_full}"
     except Exception as e:
         logger.error(f"Erro ao converter data '{date_str}': {e}")

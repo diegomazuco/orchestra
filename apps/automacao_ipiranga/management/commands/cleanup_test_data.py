@@ -1,4 +1,5 @@
 import os
+from typing import Any  # Added Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -11,7 +12,7 @@ class Command(BaseCommand):
 
     help = "Limpa todos os CertificadoVeiculo e seus arquivos associados."
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:  # Added type hints
         """Lógica principal para limpar dados de teste."""
         self.stdout.write(self.style.SUCCESS("Iniciando limpeza de dados de teste..."))
 
@@ -42,6 +43,11 @@ class Command(BaseCommand):
         certificados_dir = os.path.join(media_root, "certificados_veiculos")
 
         if os.path.exists(certificados_dir):
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Iniciando a limpeza de arquivos órfãos em {certificados_dir}..."
+                )
+            )
             for filename in os.listdir(certificados_dir):
                 file_path = os.path.join(certificados_dir, filename)
                 try:

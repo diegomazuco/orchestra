@@ -11,7 +11,9 @@ class Command(BaseCommand):
 
     help = "Cleans up all automation-related data from the database."
 
-    def handle(self, *args, **options):
+    from typing import Any
+
+    def handle(self, *args: Any, **options: Any) -> None:
         """Handles the command execution to clean up automation data."""
         self.stdout.write(
             self.style.SUCCESS("Iniciando limpeza de dados da automação...")

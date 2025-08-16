@@ -1,5 +1,7 @@
 # Histórico de Progresso do App: Dashboard
 
+Este arquivo registra as principais ações e configurações realizadas especificamente no app "Dashboard".
+
 ## 12/08/2025 - Resumo do Dia de Trabalho e Próximos Passos
 
 - **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação, ficando presa no dashboard. O problema de limpeza de arquivos temporários na pasta `media/certificados_veiculos/` também persistiu, indicando que o arquivo é recriado rapidamente pela automação.
@@ -12,8 +14,6 @@
     - **Depuração da Navegação:** A prioridade é depurar a lógica de navegação após a autenticação. Isso incluirá a adição de esperas explícitas por elementos no dashboard e logging detalhado das URLs após cada `page.goto()`.
     - **Revisão do OCR:** Com o logging granular, será possível identificar o ponto exato de falha na extração de texto do PDF, permitindo ajustes mais precisos.
     - **Robustez da Limpeza:** Continuar monitorando a limpeza de arquivos temporários para garantir que a automação não deixe resíduos.
-
-Este arquivo registra as principais ações e configurações realizadas especificamente no app "Dashboard".
 
 ## 11/08/2025 - Atualização de Dependências
 

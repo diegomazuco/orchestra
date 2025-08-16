@@ -1,16 +1,16 @@
 import json
 
 from django.core.management import call_command
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse  # Added HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 
 
 @csrf_exempt
-def iniciar_automacao(request):
+def iniciar_automacao(request: HttpRequest) -> JsonResponse:  # Added type hints
     """Inicia o processo de automação para um certificado específico."""
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body)  # type: ignore # Added type: ignore for request.body
             certificado_id = data.get("certificado_id")
 
             if certificado_id is None:

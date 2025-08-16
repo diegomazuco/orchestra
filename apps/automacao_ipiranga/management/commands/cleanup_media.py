@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -11,7 +12,7 @@ class Command(BaseCommand):
 
     help = "Deleta todos os arquivos da pasta media/certificados_veiculos e os registros de CertificadoVeiculo no banco de dados."
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         """Handles the command execution to clean up media files and database records."""
         # Deletar registros do banco de dados e arquivos associados
         self.stdout.write(
@@ -21,14 +22,12 @@ class Command(BaseCommand):
         )
         certificados = CertificadoVeiculo.objects.all()
         for certificado in certificados:
-            if certificado.arquivo and os.path.isfile(
-                certificado.arquivo.path
-            ):  # Combined if statement
+            if certificado.arquivo and os.path.isfile(certificado.arquivo.path):
                 os.remove(certificado.arquivo.path)
                 self.stdout.write(
                     self.style.SUCCESS(f"Arquivo {certificado.arquivo.path} deletado.")
                 )
-            certificado_id = certificado.id
+            certificado_id: Any = certificado.id  # type: ignore
             certificado.delete()
             self.stdout.write(
                 self.style.SUCCESS(

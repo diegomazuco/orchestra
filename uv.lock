@@ -754,7 +754,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "django" },
     { name = "filelock" },
-    { name = "line-profiler" },
     { name = "mysqlclient" },
     { name = "numpy" },
     { name = "opencv-python" },
@@ -821,7 +820,6 @@ dev = [
 requires-dist = [
     { name = "django", specifier = ">=5.2.4" },
     { name = "filelock", specifier = ">=3.16.1" },
-    { name = "line-profiler", specifier = "==5.0.0" },
     { name = "mysqlclient", specifier = ">=2.2.7" },
     { name = "numpy" },
     { name = "opencv-python" },

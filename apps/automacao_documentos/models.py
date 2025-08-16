@@ -1,6 +1,9 @@
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from django.db import models
+
+if TYPE_CHECKING:
+    from django.db.models.manager import Manager
 
 
 class Portal(models.Model):
@@ -10,13 +13,15 @@ class Portal(models.Model):
     url_base = models.URLField(max_length=2000)
     # Adicionar campos para credenciais ou configurações específicas do portal, se necessário
 
+    objects: "Manager[Portal]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
+
     class Meta:
         """Meta options for Portal."""
 
         verbose_name = "Portal"
         verbose_name_plural = "Portais"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nome
 
 
@@ -42,19 +47,23 @@ class Documento(models.Model):
         upload_to="documentos_automatizados/", null=True, blank=True
     )
     dados_extraidos = models.JSONField(
-        null=True, blank=True, help_text="Dados extraídos do documento em formato JSON."
+        null=True,
+        blank=True,
+        help_text="Dados extraídos do documento em formato JSON.",
     )
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_atualizacao = models.DateTimeField(auto_now=True)
+
+    objects: "Manager[Documento]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
 
     class Meta:
         """Meta options for Documento."""
 
         verbose_name = "Documento"
-        verbose_name_plural = "Documentos"
+        verbose_plural = "Documentos"
         unique_together = ("portal", "tipo", "numero")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.tipo} - {self.numero} ({self.portal.nome})"
 
 
@@ -74,13 +83,15 @@ class Automacao(models.Model):
         default=60, help_text="Intervalo em minutos entre as execuções."
     )
 
+    objects: "Manager[Automacao]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
+
     class Meta:
         """Meta options for Automacao."""
 
         verbose_name = "Automação"
         verbose_name_plural = "Automações"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nome
 
 
@@ -105,6 +116,8 @@ class LogExecucaoAutomacao(models.Model):
         null=True, blank=True, help_text="Detalhes adicionais da execução em JSON."
     )
 
+    objects: "Manager[LogExecucaoAutomacao]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
+
     class Meta:
         """Meta options for LogExecucaoAutomacao."""
 
@@ -112,5 +125,5 @@ class LogExecucaoAutomacao(models.Model):
         verbose_name_plural = "Logs de Execução de Automações"
         ordering: ClassVar[list[str]] = ["-data_inicio"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Log {self.id} - {self.automacao.nome} ({self.status})"

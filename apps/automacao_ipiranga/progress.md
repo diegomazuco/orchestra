@@ -1,5 +1,7 @@
 # Histórico de Progresso do App: automacao_ipiranga
 
+Este arquivo registra as principais ações e configurações realizadas especificamente no app "automacao_ipiranga".
+
 ## 15/08/2025 - Consolidação de Melhorias Pós-Travamento
 
 - **Análise e Consolidação de Alterações:** Após um travamento e reinicialização do ambiente WSL, todas as modificações de arquivo não commitadas foram analisadas.
@@ -17,76 +19,53 @@
 ## 14/08/2025 - Melhorias na Automação e Depuração Visual do Playwright
 
 - **Melhorias na Automação (`automacao_documentos_ipiranga.py`):**
-    - Aumentado o tempo limite global da automação (`automation_timeout`) de 30 para 90 segundos para maior resiliência.
-    - A lógica de processamento de PDF (extração de texto e dados CIPP) foi realocada para ocorrer após o clique no botão "Atualizar", garantindo que a extração de dados seja feita no momento correto do fluxo.
-    - URLs de navegação (`vencidos_url`, `a_vencer_url`) foram atualizadas para `https://sites2.ipiranga.com.br` para refletir a URL correta do portal.
-    - Adicionados logs mais detalhados com prefixos (`[NAVEGACAO]`, `[TABELA]`, `[ERRO_NAVEGACAO]`, `[ERRO_TABELA]`, `[AUTOMACAO_IPIRANGA]`) para facilitar a depuração e o rastreamento do fluxo da automação.
-    - A chamada para `cleanup_automation_data` foi alterada para execução assíncrona (`await sync_to_async(call_command)`) para melhor integração com o ambiente assíncrono do Playwright.
+    - Aumentado o tempo limite global da automação (`automation_timeout`) de 30 para 90 segundos.
+    - A lógica de processamento de PDF foi realocada para ocorrer após o clique no botão "Atualizar".
+    - URLs de navegação foram atualizadas para `https://sites2.ipiranga.com.br`.
+    - Adicionados logs mais detalhados com prefixos para facilitar a depuração.
+    - A chamada para `cleanup_automation_data` foi alterada para execução assíncrona.
     - Implementado tratamento de erro mais robusto com captura de screenshot em caso de falha.
     - Garantida a limpeza abrangente de dados de automação (`cleanup_automation_data`) no bloco `finally`.
 - **Depuração da Visualização do Navegador Playwright (`signals.py`):**
-    - O problema do navegador Playwright não aparecer durante a execução da automação foi investigado e corrigido.
-    - A variável de ambiente `DISPLAY` agora é explicitamente recuperada do ambiente atual e passada para o subprocesso, permitindo que a interface gráfica do navegador seja exibida quando o servidor é executado em um ambiente gráfico.
-    - Adicionado logging para indicar o uso da variável `DISPLAY` ou alertar se ela não estiver definida.
-    - Corrigido um erro de sintaxe em `signals.py` que surgiu durante a implementação da correção.
+    - O problema do navegador Playwright não aparecer durante a execução da automação foi corrigido.
+    - A variável de ambiente `DISPLAY` agora é explicitamente passada para o subprocesso, permitindo que a interface gráfica do navegador seja exibida.
+    - Adicionado logging para indicar o uso da variável `DISPLAY`.
 
 ## 13/08/2025 - Melhorias na Depuração e Correções de Código
 
 - **Melhorias na Depuração:**
-    - O `signals.py` foi modificado para redirecionar o `stdout` e `stderr` do subprocesso Playwright para o arquivo de log `logs/django.log`, facilitando a análise de erros e o comportamento da automação.
+    - O `signals.py` foi modificado para redirecionar o `stdout` e `stderr` do subprocesso Playwright para o arquivo de log `logs/django.log`.
 - **Correções de Código:**
     - Realizada uma tentativa de correção de erros B904 (relacionados a `try-except-raise`) e eliminação de funções duplicadas no comando `automacao_documentos_ipiranga.py`.
 
 ## 12/08/2025 - Resumo do Dia de Trabalho e Próximos Passos
 
-- **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação, ficando presa no dashboard. O problema de limpeza de arquivos temporários na pasta `media/certificados_veiculos/` também persistiu, indicando que o arquivo é recriado rapidamente pela automação.
+- **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação. O problema de limpeza de arquivos temporários também persistiu.
 - **Ações Realizadas:**
-    - Implementação de um tempo limite global de 30 segundos para a automação Playwright em `automacao_documentos_ipiranga.py` para evitar travamentos prolongados do navegador.
-    - Adição de logging mais granular na função `extract_text_from_pdf_image` em `apps/common/services.py` para depurar o processo de OCR.
-    - Refinamento da estratégia de limpeza de dados: a chamada para `cleanup_automation_data` foi removida do `AppConfig.ready()` e movida para o bloco `finally` em `automacao_documentos_ipiranga.py`, e a responsabilidade pela execução manual de `cleanup_automation_data` antes de cada início do servidor foi explicitamente atribuída a mim.
-    - Atualização dos arquivos `GEMINI.md` e `progress.md` relevantes para refletir as mudanças na estratégia de limpeza e a implementação do tempo limite.
+    - Implementação de um tempo limite global de 30 segundos para a automação.
+    - Adição de logging mais granular na função de OCR.
+    - Refinamento da estratégia de limpeza de dados, movendo-a para o bloco `finally` da automação.
 - **Próximos Passos (Foco Principal):**
-    - **Depuração da Navegação:** A prioridade é depurar a lógica de navegação após a autenticação. Isso incluirá a adição de esperas explícitas por elementos no dashboard e logging detalhado das URLs após cada `page.goto()`.
-    - **Revisão do OCR:** Com o logging granular, será possível identificar o ponto exato de falha na extração de texto do PDF, permitindo ajustes mais precisos.
-    - **Robustez da Limpeza:** Continuar monitorando a limpeza de arquivos temporários para garantir que a automação não deixe resíduos.
-
-Este arquivo registra as principais ações e configurações realizadas especificamente no app "automacao_ipiranga".
-
-## 12/08/2025 - Adição de Logging Agressivo no Bloco `finally`
-
-- **Logging Agressivo Adicionado:** Adicionado logging detalhado ao bloco `finally` em `automacao_documentos_ipiranga.py` para depurar a lógica de exclusão de arquivos e dados, e verificar se o bloco está sendo executado corretamente.
-
-## 12/08/2025 - Ajuste na Estratégia de Limpeza de Dados
-
-- **Ajuste na Estratégia de Limpeza:** Removida a chamada de `cleanup_automation_data` do método `ready()` em `apps/automacao_ipiranga/apps.py` para evitar condições de corrida. A chamada para `cleanup_automation_data` foi movida para o bloco `finally` em `automacao_documentos_ipiranga.py` para garantir a limpeza após cada execução da automação.
-
-## 12/08/2025 - Adição de Logging Detalhado para Navegação e Busca
-
-- **Logging Detalhado Adicionado:** Adicionado logging detalhado em `automacao_documentos_ipiranga.py` para a seção de navegação e busca de placas, a fim de diagnosticar problemas de acesso às URLs "Vencidos" e "À vencer".
-
-## 12/08/2025 - Sucesso na Depuração Visual e Correção de Erro de Subprocesso
-
-- **Depuração Visual Confirmada:** A automação Playwright agora exibe o navegador visualmente, confirmando a correção do problema de execução do subprocesso.
-- **Correção de `signals.py`:** Corrigido `SyntaxError` na construção do comando de subprocesso em `apps/automacao_ipiranga/signals.py`, que impedia a execução correta da automação Playwright.
-- **Atualização de Diretrizes:** O arquivo `apps/automacao_ipiranga/GEMINI.md` foi atualizado para incluir a política de limpeza obrigatória da pasta `media/certificados_veiculos/` ao final das automações e durante o ciclo de vida do servidor (início, reinício, término), e também para adicionar instruções sobre como executar o servidor Django em primeiro plano para depuração visual de automações Playwright.
+    - Depuração da navegação pós-autenticação.
+    - Revisão do processo de OCR.
+    - Monitoramento da limpeza de arquivos temporários.
 
 ## 11/08/2025 - Ajustes de Qualidade de Código e Migrações
 
 - **Ajustes de Qualidade de Código:**
-    - Correção de problemas de docstrings e simplificação de `if` aninhados no arquivo `apps/automacao_ipiranga/management/commands/cleanup_media.py` conforme as diretrizes do `ruff`.
+    - Correção de problemas de docstrings e simplificação de `if` aninhados no `cleanup_media.py`.
 - **Migrações:**
     - Geração e aplicação da migração `0002_alter_certificadoveiculo_arquivo.py`.
 
 ## 10/08/2025 - Análise e Refatoração de Documentação
 
-- **Análise Rigorosa do Projeto:** Contribuição para a análise detalhada de toda a estrutura do projeto Orchestra.
-- **Refatoração de `GEMINI.md`:** O arquivo `GEMINI.md` deste app foi lido em todas as suas versões históricas, analisado e refatorado para conter as melhores e mais robustas instruções. A versão refatorada foi substituída no seu devido local.
-- **Refatoração de `progress.md`:** Este arquivo `progress.2md` foi lido em todas as suas versões históricas, analisado e refatorado para consolidar e refinar o histórico de desenvolvimento do app. A versão refatorada será substituída no seu devido local.
+- **Análise Rigorosa do Projeto:** Contribuição para a análise detalhada de toda a estrutura do projeto.
+- **Refatoração de `GEMINI.md` e `progress.md`:** Os arquivos de documentação e progresso foram lidos, analisados e refatorados para consolidar as melhores instruções e histórico.
 
 ## 08/08/2025 - Correção do Gatilho de Automação e Ajuste na Extração de Dados do PDF
 
-- **Correção do Gatilho de Automação:** Solucionado problema onde subprocessos disparados por sinal não utilizavam o ambiente virtual (`.venv`), causando falhas por falta de dependências. O `signals.py` foi modificado para usar o caminho absoluto para `.venv/bin/python`.
-- **Ajuste na Extração de Dados do PDF:** Expressões regulares em `automacao_documentos_ipiranga.py` foram ajustadas para melhorar a precisão da extração de número do certificado e data de vencimento via OCR.
+- **Correção do Gatilho de Automação:** Solucionado problema onde subprocessos disparados por sinal não utilizavam o ambiente virtual (`.venv`).
+- **Ajuste na Extração de Dados do PDF:** Expressões regulares foram ajustadas para melhorar a precisão da extração de dados via OCR.
 
 ## 04/08/2025 - Melhorias na Depuração e Correção de Migrações
 
@@ -95,30 +74,17 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 01/08/2025 - Configuração de Automação Web e Ajustes de Testes
 
-- **Configuração de Automação Web:** Configurada a automação web para o app `automacao_ipiranga`, permitindo a visualização do navegador durante a execução.
-- **Ajustes de Testes:** Refatorados os testes para usar mocks centralizados no `setUp` e removidos decoradores `@patch` redundantes, melhorando a robustez e manutenibilidade dos testes (antes da remoção completa dos testes).
+- **Configuração de Automação Web:** Configurada a automação web, permitindo a visualização do navegador durante a execução.
+- **Ajustes de Testes:** Refatoração de testes para melhorar robustez e manutenibilidade (antes da remoção completa dos testes).
 
 ## 30/07/2025 - Refatoração da Automação Ipiranga com DB, Signals e Login Centralizado
 
-- **Refatoração da Automação Ipiranga:** A automacao Ipiranga foi refatorada para usar DB, Signals e login centralizado.
-- **Implementação de Preenchimento de Vencimento e Armazenamento de Arquivo Original:** Funcionalidades para preenchimento de dados e armazenamento de arquivos originais foram implementadas.
-- **Melhoria na Depuração de Sinal:** A depuração de sinais foi aprimorada.
+- A automação Ipiranga foi refatorada para usar banco de dados, sinais e login centralizado, e funcionalidades de preenchimento de dados e armazenamento de arquivos foram implementadas.
 
 ## 29/07/2025 - Aprimoramento da Automação Ipiranga e Correção de Tratamento de Erros
 
-- **Aprimoramento da Automação Ipiranga:** A automacao Ipiranga foi aprimorada.
-- **Correção de Tratamento de Erros:** O tratamento de erros foi corrigido.
+- A automação Ipiranga foi aprimorada e o tratamento de erros foi corrigido.
 
 ## 28/07/2025 - Integração de Upload de Documentos e Refatoração da Arquitetura de Automação
 
-- **Integração de Upload de Documentos:** Funcionalidade de upload de documentos foi integrada.
-- **Refatoração da Arquitetura de Automação:** A arquitetura de automação foi refatorada com a criação do novo app `automacao_ipiranga`.
-
-## 14/08/2025 - Melhorias na Extração de Dados OCR e Robustez da Automação
-
-- **Melhorias na Extração de Dados OCR (`apps/common/services.py`):**
-    - Integrada a correção de inclinação (`determine_skew`) para melhorar a precisão do OCR em documentos inclinados.
-    - Removido o redimensionamento redundante (`cv2.resize`) após o `get_pixmap` para evitar super-escalonamento e potenciais problemas de performance.
-- **Melhorias na Robustez da Automação (`apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`):**
-    - Adicionado logging mais detalhado na função `extract_cipp_data` para incluir o texto do PDF quando ocorre um `ValueError`, facilitando a depuração de falhas na extração de dados.
-    - Adicionado logging específico antes e depois do preenchimento dos campos de número do documento e vencimento, para confirmar os valores utilizados e o sucesso da operação.
+- Funcionalidade de upload de documentos foi integrada e a arquitetura de automação foi refatorada com a criação deste app.

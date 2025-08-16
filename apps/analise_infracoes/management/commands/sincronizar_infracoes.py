@@ -1,6 +1,7 @@
 import logging
 import random
 from datetime import datetime, timedelta
+from typing import Any, TypedDict
 
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
@@ -10,23 +11,49 @@ from apps.analise_infracoes.models import Infracao
 logger = logging.getLogger(__name__)
 
 
+class InfracaoRow(TypedDict):
+    """Representa uma linha de infração com tipagem estática."""
+
+    placa: str
+    data_hora: datetime
+    local: str
+    tipo: str
+    valor: float
+    pontos: int
+    status: str
+    dados_origem: dict[str, Any]
+
+
 class Command(BaseCommand):
     """Comando para sincronizar infrações entre bancos de dados."""
 
     help = "Sincroniza infrações do banco de dados MySQL de origem para o PostgreSQL de destino."
 
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         """Lida com a execução do comando de sincronização."""
         logger.info("Iniciando a sincronização de infrações...")
 
-        rows = []
+        rows: list[InfracaoRow] = []
         try:
             # Tenta conectar ao banco de dados real
             with connections["mysql_source"].cursor() as cursor:
                 cursor.execute(
                     "SELECT placa, data_hora, local, tipo, valor, pontos, status, dados_origem FROM tbl_infracoes_exemplo"
                 )
-                rows = cursor.fetchall()
+                fetched_rows = cursor.fetchall()
+                rows = [
+                    InfracaoRow(
+                        placa=row[0],
+                        data_hora=row[1],
+                        local=row[2],
+                        tipo=row[3],
+                        valor=row[4],
+                        pontos=row[5],
+                        status=row[6],
+                        dados_origem=row[7],
+                    )
+                    for row in fetched_rows
+                ]
                 logger.info(
                     f"{len(rows)} infrações encontradas no banco de dados de origem."
                 )
@@ -37,15 +64,16 @@ class Command(BaseCommand):
             # Gera 10.000 infrações de exemplo se a conexão falhar
             for i in range(10000):
                 rows.append(
-                    (
-                        f"ABC{random.randint(1000, 9999)}",
-                        datetime.now() - timedelta(days=random.randint(1, 365)),
-                        f"Local {i}",
-                        f"Tipo {random.choice(['leve', 'media', 'grave', 'gravissima'])}",
-                        random.uniform(50.0, 500.0),
-                        random.randint(3, 7),
-                        "nova",
-                        {"origem": "teste"},
+                    InfracaoRow(
+                        placa=f"ABC{random.randint(1000, 9999)}",
+                        data_hora=datetime.now()
+                        - timedelta(days=random.randint(1, 365)),
+                        local=f"Local {i}",
+                        tipo=random.choice(["leve", "media", "grave", "gravissima"]),
+                        valor=random.uniform(50.0, 500.0),
+                        pontos=random.randint(3, 7),
+                        status="nova",
+                        dados_origem={"origem": "teste"},
                     )
                 )
 
@@ -64,7 +92,7 @@ class Command(BaseCommand):
                 )
                 Infracao.objects.using(db_alias).all().delete()
 
-            infracoes_para_criar = []
+            infracoes_para_criar: list[Infracao] = []
             batch_size = 2000
 
             logger.info(
@@ -74,14 +102,14 @@ class Command(BaseCommand):
             for i, row in enumerate(rows):
                 infracoes_para_criar.append(
                     Infracao(
-                        placa_veiculo=row[0],
-                        data_hora=row[1],
-                        local=row[2],
-                        tipo_infracao=row[3],
-                        valor=row[4],
-                        pontos_carteira=row[5],
-                        status=row[6],
-                        dados_origem=row[7],
+                        placa_veiculo=row["placa"],
+                        data_hora=row["data_hora"],
+                        local=row["local"],
+                        tipo_infracao=row["tipo"],
+                        valor=row["valor"],
+                        pontos_carteira=row["pontos"],
+                        status=row["status"],
+                        dados_origem=row["dados_origem"],
                     )
                 )
                 # Quando o lote estiver cheio, insere no banco
