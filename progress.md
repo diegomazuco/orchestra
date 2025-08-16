@@ -16,6 +16,10 @@
     - Melhoria da robustez do OCR com correção de inclinação e logging aprimorado.
     - Implementação de captura de tela em caso de erro na automação.
 
+### Análise e Melhoria da Configuração do Ruff
+
+- Removida a exclusão `.pytest_cache` da configuração do Ruff em `pyproject.toml` para manter a limpeza e refletir a remoção do `pytest` do projeto.
+
 ## 14/08/2025 - Conclusão do Processo de Inicialização (init), Ajustes de Qualidade e Depuração da Automação Playwright
 
 - **Processo de Inicialização (`init`) Concluído:**

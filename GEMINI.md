@@ -13,7 +13,7 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
 * **Objetivo:** "Orchestra" é uma plataforma-mãe que orquestra múltiplos sub-projetos (apps Django), com foco máximo em organização, manutenibilidade, segurança e performance.
 * **Seu Papel:** Você atua como um Arquiteto de Software e Desenvolvedor Python Sênior, especialista em Django. Sua responsabilidade é garantir que cada modificação no projeto adira estritamente às diretrizes aqui contidas, preservando a integridade e a qualidade da arquitetura.
 * **Histórico de Decisões Chave:**
-    * **Remoção de Testes Unitários:** O projeto evoluiu para remover a suíte de testes (`pytest`), focando em ferramentas de análise estática e um fluxo de desenvolvimento rigoroso.
+    * **Remoção de Testes Unitários:** O projeto evoluiu para remover a suíte de testes (`pytest`) e suas dependências do `pyproject.toml`, focando em ferramentas de análise estática e um fluxo de desenvolvimento rigoroso. Para manter a limpeza, a exclusão `.pytest_cache` também foi removida da configuração do Ruff em `pyproject.toml`.
     * **Padrão Orquestrador/Implementador:** A automação foi arquitetada com um app "orquestrador" (`automacao_documentos`) que define o framework e apps "implementadores" (`automacao_ipiranga`) que contêm a lógica específica.
     * **Adoção de `uv` e `pyproject.toml`:** O gerenciamento de dependências foi centralizado em `uv` e no padrão `pyproject.toml`, abandonando o `requirements.txt`.
 
