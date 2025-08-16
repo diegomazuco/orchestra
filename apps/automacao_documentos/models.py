@@ -9,8 +9,8 @@ if TYPE_CHECKING:
 class Portal(models.Model):
     """Modelo para registrar os portais externos com os quais o sistema interage."""
 
-    nome = models.CharField(max_length=255, unique=True)
-    url_base = models.URLField(max_length=2000)
+    nome = models.CharField(max_length=255, unique=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    url_base = models.URLField(max_length=2000)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     # Adicionar campos para credenciais ou configurações específicas do portal, se necessário
 
     objects: "Manager[Portal]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
@@ -37,22 +37,22 @@ class Documento(models.Model):
 
     portal = models.ForeignKey(
         Portal, on_delete=models.CASCADE, related_name="documentos"
-    )
-    tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)
-    numero = models.CharField(max_length=255, unique=True)
-    status = models.CharField(max_length=50, default="ativo")
-    data_emissao = models.DateField(null=True, blank=True)
-    data_validade = models.DateField(null=True, blank=True)
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    numero = models.CharField(max_length=255, unique=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    status = models.CharField(max_length=50, default="ativo")  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    data_emissao = models.DateField(null=True, blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    data_validade = models.DateField(null=True, blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     arquivo_pdf = models.FileField(
         upload_to="documentos_automatizados/", null=True, blank=True
-    )
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     dados_extraidos = models.JSONField(
         null=True,
         blank=True,
         help_text="Dados extraídos do documento em formato JSON.",
-    )
-    data_criacao = models.DateTimeField(auto_now_add=True)
-    data_atualizacao = models.DateTimeField(auto_now=True)
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    data_criacao = models.DateTimeField(auto_now_add=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    data_atualizacao = models.DateTimeField(auto_now=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
 
     objects: "Manager[Documento]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
 
@@ -70,18 +70,18 @@ class Documento(models.Model):
 class Automacao(models.Model):
     """Modelo para agendar e registrar a execução de rotinas automáticas."""
 
-    nome = models.CharField(max_length=255, unique=True)
-    descricao = models.TextField(blank=True)
+    nome = models.CharField(max_length=255, unique=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    descricao = models.TextField(blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     comando_django = models.CharField(
         max_length=255,
         help_text="Nome do comando Django customizado a ser executado (ex: 'automacao_documentos_ibama').",
-    )
-    ativa = models.BooleanField(default=True)
-    ultima_execucao = models.DateTimeField(null=True, blank=True)
-    proxima_execucao = models.DateTimeField(null=True, blank=True)
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    ativa = models.BooleanField(default=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    ultima_execucao = models.DateTimeField(null=True, blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    proxima_execucao = models.DateTimeField(null=True, blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     intervalo_execucao_minutos = models.IntegerField(
         default=60, help_text="Intervalo em minutos entre as execuções."
-    )
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
 
     objects: "Manager[Automacao]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
 
@@ -107,14 +107,14 @@ class LogExecucaoAutomacao(models.Model):
 
     automacao = models.ForeignKey(
         Automacao, on_delete=models.CASCADE, related_name="logs"
-    )
-    data_inicio = models.DateTimeField(auto_now_add=True)
-    data_fim = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES)
-    mensagem = models.TextField(blank=True)
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    data_inicio = models.DateTimeField(auto_now_add=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    data_fim = models.DateTimeField(null=True, blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
+    mensagem = models.TextField(blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     detalhes_json = models.JSONField(
         null=True, blank=True, help_text="Detalhes adicionais da execução em JSON."
-    )
+    )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
 
     objects: "Manager[LogExecucaoAutomacao]" = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
 
@@ -126,4 +126,4 @@ class LogExecucaoAutomacao(models.Model):
         ordering: ClassVar[list[str]] = ["-data_inicio"]
 
     def __str__(self) -> str:
-        return f"Log {self.id} - {self.automacao.nome} ({self.status})"
+        return f"Log {self.id} - {self.automacao.nome} ({self.status})"  # type: ignore[reportAttributeAccessIssue]

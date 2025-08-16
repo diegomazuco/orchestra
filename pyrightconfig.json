@@ -22,6 +22,7 @@
     "reportUnknownVariableType": "none",
     "reportIncompatibleVariableOverride": "none",
     "reportUnknownMemberType": "none",
+    "reportUnknownArgumentType": "none",
     "venvPath": "/home/diegomazuco/dev/orchestra",
     "venv": ".venv"
 }

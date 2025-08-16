@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 class VeiculoIpiranga(models.Model):
     """Modelo para armazenar informações de veículos Ipiranga."""
 
-    placa: models.CharField = models.CharField(max_length=10, unique=True)  # type: ignore[reportUnknownVariableType, reportUnknownArgumentType]
+    placa: models.CharField = models.CharField(max_length=10, unique=True)  # type: ignore[reportUnknownVariableType, reportUnknownArgumentType, reportMissingTypeArgument, reportCallIssue]
     status_documentos: models.CharField = models.CharField(
         max_length=255, blank=True, default=""
-    )  # type: ignore[reportUnknownVariableType]
+    )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
     data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
 
     objects: "Manager[VeiculoIpiranga]"  # type: ignore[reportIncompatibleVariableOverride]
@@ -39,14 +39,14 @@ class CertificadoVeiculo(models.Model):
 
     veiculo: models.ForeignKey = models.ForeignKey(
         VeiculoIpiranga, on_delete=models.CASCADE, related_name="certificados"
-    )  # type: ignore[reportUnknownVariableType]
-    nome: models.CharField = models.CharField(max_length=255)  # type: ignore[reportUnknownVariableType]
+    )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
+    nome: models.CharField = models.CharField(max_length=255)  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
     arquivo: models.FileField = models.FileField(
         upload_to="certificados_veiculos/", storage=OriginalFilenameStorage()
     )  # type: ignore[reportUnknownVariableType]
     status: models.CharField = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="pendente"
-    )  # type: ignore[reportUnknownVariableType]
+    )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
     data_criacao: models.DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore[reportUnknownVariableType]
     data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
 
