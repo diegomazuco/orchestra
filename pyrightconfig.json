@@ -11,13 +11,13 @@
     ],
     "pythonVersion": "3.12",
     "pythonPlatform": "Linux",
-    "typeCheckingMode": "basic",
+    "typeCheckingMode": "strict",
     "reportMissingImports": true,
-    "reportMissingTypeStubs": "none",
+    "reportMissingTypeStubs": "warning",
     "reportUndefinedVariable": true,
     "reportUnusedImport": true,
-    "reportAttributeAccessIssue": "none",
-    "reportPrivateImportUsage": "none",
+    "reportAttributeAccessIssue": "warning",
+    "reportPrivateImportUsage": "warning",
     "venvPath": "/home/diegomazuco/dev/orchestra",
     "venv": ".venv"
 }

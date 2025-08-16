@@ -16,6 +16,14 @@
     - Melhoria da robustez do OCR com correção de inclinação e logging aprimorado.
     - Implementação de captura de tela em caso de erro na automação.
 
+### Análise e Melhoria da Configuração do Ruff
+
+- Removida a exclusão `.pytest_cache` da configuração do Ruff em `pyproject.toml` para manter a limpeza e refletir a remoção do `pytest` do projeto.
+
+### Análise e Melhoria da Configuração do Pyright
+
+- Configurado o Pyright para um modo de verificação de tipo mais rigoroso (`strict`), com relatórios de avisos para stubs ausentes, problemas de acesso a atributos e uso de importações privadas, garantindo uma análise de tipo mais robusta.
+
 ## 14/08/2025 - Conclusão do Processo de Inicialização (init), Ajustes de Qualidade e Depuração da Automação Playwright
 
 - **Processo de Inicialização (`init`) Concluído:**
@@ -83,7 +91,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Correção de Responsabilidade de Limpeza:** Esclarecido que eu (o agente) sou responsável por executar `python manage.py cleanup_automation_data` antes de cada início do servidor para garantir um ambiente limpo.
 
 - **Ajuste na Estratégia de Limpeza de Dados:** Removida a chamada de `cleanup_automation_data` do método `ready()` em `apps/automacao_ipiranga/apps.py` para evitar condições de corrida. A chamada para `cleanup_automation_data` foi movida para o bloco `finally` em `automacao_documentos_ipiranga.py` para garantir a limpeza após cada execução da automação.
-- **Melhoria na Extração de Dados OCR (DPI e PSM):** O arquivo `apps/common/services.py` foi atualizado para melhorar a robustez do OCR, aumentando o DPI da imagem para 600 e alterando o modo PSM (Page Segmentation Mode) do Tesseract para 3.
+- **Melhoria na Extração de Dados OCR (DPI e PSM):** O arquivo `apps/common/services.py` foi atualizado para melhorar o robustez do OCR, aumentando o DPI da imagem para 600 e alterando o modo PSM (Page Segmentation Mode) do Tesseract para 3.
 - **Correção de Dependência `scipy`/`numpy`:** Identificado e corrigido `ModuleNotFoundError` para `scipy` e `numpy` que impedia a execução completa da automação. As dependências foram reinstaladas explicitamente.
 - **Adição de Logging Detalhado:** Adicionado logging detalhado em `automacao_documentos_ipiranga.py` para a seção de navegação e busca de placas, a fim de diagnosticar problemas de acesso às URLs "Vencidos" e "À vencer".
 - **Correção de Erro de Sintaxe em Subprocesso:** Corrigido `SyntaxError` em `apps/automacao_ipiranga/signals.py` que impedia a execução correta da automação Playwright, resultando na visibilidade do navegador Playwright durante os testes.

@@ -43,7 +43,6 @@ exclude = [
     ".git",
     ".git-rewrite",
     ".mypy_cache",
-    ".pytest_cache",
     ".ruff_cache",
     "venv",
     "env",
