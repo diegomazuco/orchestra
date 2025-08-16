@@ -111,7 +111,12 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
     *   **Cuidado ao usar `git clean`:** Tenha extrema cautela ao usar `git clean`, especialmente com a flag `-x`. Entenda que ela removerá tudo que não está rastreado pelo Git, incluindo pastas ignoradas como `.playwright-browsers/`. Se precisar limpar o repositório, considere usar `git clean -fd` (que não remove arquivos ignorados) ou revise cuidadosamente o que será apagado.
     *   **Reinstalação:** Caso a pasta `.playwright-browsers/` seja removida, basta executar `playwright install` novamente para reinstalar os navegadores.
 
-* **Gerenciador de Pacotes:** Use **apenas `uv`**. Para adicionar uma dependência: `uv add <pacote>`.
+* **Gerenciador de Pacotes:** Use **apenas `uv`**.
+    * Para adicionar uma dependência: `uv add <pacote>`.
+    * Para remover pacotes: `uv remove <pacote>`.
+    * Para sincronizar o ambiente virtual do projeto Orchestra com as dependências listadas no `pyproject.toml`: `uv sync`. Isso garante que as versões instaladas correspondam exatamente às que estão no arquivo de configuração.
+    * Para resolver e instalar as versões mais recentes de todos os pacotes definidos no `pyproject.toml`, respeitando as restrições de versão: `uv sync --upgrade`.
+    * Para executar um comando ou script dentro do ambiente virtual do projeto, sem precisar ativá-lo manualmente: `uv run <comando>`. Por exemplo, `uv run python meu_script.py` executa o arquivo `meu_script.py` usando o Python do ambiente virtual.
 * **Qualidade de Código:** `ruff check . --fix` e `ruff format .`. **Sempre remova código comentado que não seja relevante para o entendimento futuro.**
 * **Verificação de Tipos:** `pyright`.
 * **Gerenciador de Pacotes (`uv`):** Se `uv` não for encontrado no caminho `./.venv/bin/uv`, tente executá-lo diretamente (`uv pip install --group all`), pois pode estar no PATH do sistema.
