@@ -89,3 +89,13 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 15/08/2025 - Correção de Erro de Tipagem em `services.py`
 
 - **Correção de Erro de Tipagem:** Corrigido um erro de tipagem na função `extract_cipp_data` em `apps/common/services.py`. O erro ocorria porque a variável `numero_documento_valor` poderia ser `None`, enquanto a assinatura da função esperava um `str`. A correção implementada garante que um `ValueError` seja levantado caso `numero_documento_valor` seja `None`, assegurando que o tipo de retorno `tuple[str, str]` seja sempre respeitado.
+
+## 15/08/2025 - Verificação e Tentativa de Atualização de Pacotes Python
+
+- **Verificação de Pacotes Desatualizados:**
+    - Executado `uv pip list --outdated` para identificar pacotes Python com versões mais recentes disponíveis.
+    - Identificados os seguintes pacotes desatualizados: `filelock`, `opencv-python`, `psutil`, `pydantic`, `pydantic-core`.
+- **Tentativa de Atualização de Pacotes:**
+    - Tentado atualizar os pacotes utilizando `uv sync --upgrade`.
+    - Tentado atualizar os pacotes individualmente utilizando `uv add <pacote>`.
+    - Observado que os pacotes permaneceram desatualizados após as tentativas de atualização, indicando possíveis restrições de versão no `pyproject.toml` ou dependências que impedem a atualização para as versões mais recentes.

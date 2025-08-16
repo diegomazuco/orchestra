@@ -193,3 +193,12 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Em `apps/automacao_ipiranga/management/commands/test_ocr_extraction.py`:
         - O comando foi atualizado para suportar execução assíncrona (`handle_async`) e incluir um parâmetro `--timeout` para controlar o tempo limite da operação de OCR.
         - Implementado tratamento de `TimeoutError` para operações de OCR.
+## 15/08/2025 - Verificação e Tentativa de Atualização de Pacotes Python
+
+- **Verificação de Pacotes Desatualizados:**
+    - Executado `uv pip list --outdated` para identificar pacotes Python com versões mais recentes disponíveis.
+    - Identificados os seguintes pacotes desatualizados: `filelock`, `opencv-python`, `psutil`, `pydantic`, `pydantic-core`.
+- **Tentativa de Atualização de Pacotes:**
+    - Tentado atualizar os pacotes utilizando `uv sync --upgrade`.
+    - Tentado atualizar os pacotes individualmente utilizando `uv add <pacote>`.
+    - Observado que os pacotes permaneceram desatualizados após as tentativas de atualização, indicando possíveis restrições de versão no `pyproject.toml` ou dependências que impedem a atualização para as versões mais recentes.

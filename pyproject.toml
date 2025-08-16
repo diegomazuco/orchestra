@@ -23,6 +23,10 @@ dependencies = [
     "opencv-python",
     "scipy",
     "scikit-image",
+    "filelock>=3.16.1",
+    "psutil>=6.1.1",
+    "pydantic>=2.9.2",
+    "pydantic-core>=2.23.4",
 ]
 
 [tool.ruff]
