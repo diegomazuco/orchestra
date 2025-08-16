@@ -70,3 +70,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Criação e Configuração do App:** Criado o app Django `common` e registrado em `INSTALLED_APPS`.
 - **Centralização de Serviços:** Criado `apps/common/services.py` com a função assíncrona `login_to_portran(page, logger)` para encapsular a lógica de login.
 - **Refatoração de Comandos Existentes:** Comandos de automação foram modificados para remover a lógica de login duplicada e chamar a função centralizada.
+
+## 16/08/2025 - Correção de Erro de Sintaxe e Ajustes de Tipagem
+
+- **Correção de Erro de Sintaxe:** Identificado e corrigido um `SyntaxError` em `apps/common/services.py` relacionado à atribuição de variáveis e indentação.
+- **Ajustes de Tipagem:** Adicionado um comentário `type: ignore` em `apps/common/services.py` para resolver um erro de tipagem do Pyright relacionado à conversão de imagem (`Image.open(io.BytesIO(pix.tobytes()))`).

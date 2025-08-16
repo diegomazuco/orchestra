@@ -49,3 +49,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Criação do App:** O app `automacao_ibama` foi renomeado para `automacao_documentos` e a página Orchestra foi criada.
 - **Inicialização Completa:** Contribuição para a inicialização completa do projeto Orchestra e do app Automação Ibama.
+
+## 16/08/2025 - Atualização de Diretrizes do Framework de Automação
+
+- **Refinamento de Diretrizes:** O arquivo `GEMINI.md` deste app foi atualizado para enfatizar a necessidade de tratamento de erros robusto e logging detalhado dentro dos `custom commands` para capturar e registrar falhas inesperadas, como `SyntaxError`, durante a execução da automação.

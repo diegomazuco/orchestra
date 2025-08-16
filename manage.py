@@ -4,16 +4,17 @@
 import os
 import sys
 
+from django.core.management import execute_from_command_line
 from dotenv import load_dotenv
 
 
-def main():
+def main() -> None:
     """Ponto de entrada principal para tarefas administrativas do Django."""
     load_dotenv()
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
     try:
-        from django.core.management import execute_from_command_line
+        pass
     except ImportError as exc:
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "

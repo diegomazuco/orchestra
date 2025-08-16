@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     help = "Testa a extração de texto OCR de um arquivo PDF e verifica a presença de informações específicas."
 
-    def add_arguments(self, parser: ArgumentParser) -> None:  # Added type hints
+    def add_arguments(self, parser: ArgumentParser) -> None:
         """Adiciona argumentos ao comando."""
         parser.add_argument(
             "pdf_path",

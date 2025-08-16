@@ -1,8 +1,10 @@
 import os
-from typing import Any  # Added Any
+import shutil
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import connection
 
 from apps.automacao_ipiranga.models import CertificadoVeiculo
 
@@ -12,7 +14,7 @@ class Command(BaseCommand):
 
     help = "Limpa todos os CertificadoVeiculo e seus arquivos associados."
 
-    def handle(self, *args: Any, **options: Any) -> None:  # Added type hints
+    def handle(self, *args: Any, **options: Any) -> None:
         """Lógica principal para limpar dados de teste."""
         self.stdout.write(self.style.SUCCESS("Iniciando limpeza de dados de teste..."))
 
@@ -26,8 +28,6 @@ class Command(BaseCommand):
         )
 
         # Resetar a sequência auto-incremental para CertificadoVeiculo (apenas para SQLite)
-        from django.db import connection
-
         with connection.cursor() as cursor:
             cursor.execute(
                 "UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='automacao_ipiranga_certificadoveiculo';"
@@ -57,8 +57,6 @@ class Command(BaseCommand):
                             self.style.SUCCESS(f"Deletado arquivo: {filename}")
                         )
                     elif os.path.isdir(file_path):
-                        import shutil
-
                         shutil.rmtree(file_path)
                         self.stdout.write(
                             self.style.SUCCESS(f"Deletado diretório: {filename}")

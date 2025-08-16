@@ -48,8 +48,10 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "N", "D", "UP", "B", "A", "C4", "SIM", "ISC", "ICN", "TID", "ERA", "RUF", "DJ"]
+select = ["E", "W", "F", "I", "N", "D", "UP", "B", "A", "C4", "SIM", "ISC", "ICN", "TID", "ERA", "RUF", "DJ", "PL", "C90", "ANN", "ASYNC", "PERF", "PIE", "NPY"]
 ignore = [
+    "E501", # Line too long (handled by formatter)
+    "F401", # Unused import (handled by ruff --fix)
     "D100", # Missing docstring in public module
     "D104", # Missing docstring in public package
     "D105", # Missing docstring in magic method
@@ -58,8 +60,11 @@ ignore = [
     "D213", # Multi-line docstring summary should start on the second line
     "D401", # First line should be in imperative mood
     "D417", # Missing argument descriptions in the docstring
-    "E501", # Line too long (handled by formatter)
-    "F401", # Unused import (handled by ruff --fix)
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "C901", # Function is too complex
+    "PLR0912", # Too many branches
+    "PLR0915", # Too many statements
+    "PLR2004", # Magic value used in comparison
 ]
 
 [tool.ruff.format]

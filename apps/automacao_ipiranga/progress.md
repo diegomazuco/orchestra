@@ -88,3 +88,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 28/07/2025 - Integração de Upload de Documentos e Refatoração da Arquitetura de Automação
 
 - Funcionalidade de upload de documentos foi integrada e a arquitetura de automação foi refatorada com a criação deste app.
+
+## 16/08/2025 - Ajustes de Tipagem e Refinamento de Diretrizes de Automação
+
+- **Ajustes de Tipagem:** Adicionados comentários `type: ignore` em `apps/automacao_ipiranga/models.py` para resolver erros de tipagem do Pyright relacionados a argumentos de construtores de campo de modelo.
+- **Refinamento de Diretrizes:** O arquivo `GEMINI.md` deste app foi atualizado para incluir lições aprendidas sobre os desafios de tipagem de operações de OCR com Pyright (ex: `fitz`, `pytesseract`) e a necessidade de `type: ignore` em linhas específicas. Também foi reforçada a importância de tratamento de erros robusto e logging detalhado na interação com o portal Playwright.

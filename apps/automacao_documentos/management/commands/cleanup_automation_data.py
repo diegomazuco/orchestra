@@ -1,7 +1,11 @@
 import logging
+from typing import Any
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+
+from apps.automacao_documentos.models import Documento, LogExecucaoAutomacao
+from apps.automacao_ipiranga.models import CertificadoVeiculo, VeiculoIpiranga
 
 logger = logging.getLogger(__name__)
 
@@ -11,16 +15,11 @@ class Command(BaseCommand):
 
     help = "Cleans up all automation-related data from the database."
 
-    from typing import Any
-
     def handle(self, *args: Any, **options: Any) -> None:
         """Handles the command execution to clean up automation data."""
         self.stdout.write(
             self.style.SUCCESS("Iniciando limpeza de dados da automação...")
         )
-
-        from apps.automacao_documentos.models import Documento, LogExecucaoAutomacao
-        from apps.automacao_ipiranga.models import CertificadoVeiculo, VeiculoIpiranga
 
         with transaction.atomic():
             # Clear CertificadoVeiculo records

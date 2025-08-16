@@ -9,9 +9,10 @@ import pytesseract  # type: ignore
 from decouple import config
 from PIL import Image
 from playwright.async_api import Page, expect
+from pytesseract import Output  # Moved to top
 
 
-async def login_to_portran(page: Page, logger: logging.Logger):
+async def login_to_portran(page: Page, logger: logging.Logger) -> None:
     """Realiza o login no portal Portran/Ipiranga de forma centralizada e robusta."""
     logger.info("--- Iniciando etapa de login centralizada ---")
 
@@ -161,9 +162,6 @@ def extract_text_from_roi(
         img = Image.fromarray(img_np)
 
         logger.debug("OCR: Iniciando extração de texto com Tesseract.")
-        from pytesseract import Output
-
-        # ... (rest of the file)
 
         page_text: str = pytesseract.image_to_string(
             img, lang="por", config=tesseract_config, output_type=Output.STRING

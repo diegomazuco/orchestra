@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from asgiref.sync import sync_to_async
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import Page, async_playwright, expect
 
@@ -38,7 +39,7 @@ class Command(BaseCommand):
     async def handle_async(
         self, certificado_id: int, *args: Any, **options: Any
     ) -> None:
-        """Lógica assíncrona principal do comando de automação."""
+        """Lógica assínrona principal do comando de automação."""
         logger.info(
             f"[AUTOMACAO_IPIRANGA] handle_async iniciado para certificado ID: {certificado_id}"
         )
@@ -193,9 +194,6 @@ class Command(BaseCommand):
                         break
 
                 if not placa_encontrada:
-                    logger.error(
-                        f"Placa '{placa_alvo}' NÃO encontrada nas URLs: {vencidos_url}, {a_vencer_url}"
-                    )
                     raise CommandError(
                         f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado."  # type: ignore[reportUnknownMemberType]
                     )
@@ -432,9 +430,7 @@ class Command(BaseCommand):
                         "FINALLY BLOCK: No certificate or primary key found for specific cleanup."
                     )
 
-                # Comprehensive cleanup of all automation-related data
                 logger.info("FINALLY BLOCK: Calling cleanup_automation_data.")
-                from django.core.management import call_command
 
                 await sync_to_async(call_command)("cleanup_automation_data")
                 logger.info("FINALLY BLOCK: cleanup_automation_data called.")

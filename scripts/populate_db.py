@@ -1,6 +1,7 @@
 # Este script é usado para gerar dados de teste.
 # Recomenda-se movê-lo para um diretório 'scripts/' ou 'utils/' para melhor organização.
 
+"""Script para popular o banco de dados com dados de teste."""
 
 import os
 import sys
@@ -26,4 +27,3 @@ if LineProfiler:
     # Decorar a função run com o profiler
     # Isso será feito manualmente no uso, pois o decorador não pode ser adicionado via script facilmente
     # @profiler
-    pass

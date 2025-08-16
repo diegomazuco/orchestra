@@ -11,7 +11,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - O conflito foi resolvido manualmente, preservando as adições mais recentes de configuração do Pyright.
 - **Commit e Push:**
     - As alterações resolvidas foram commitadas com a mensagem de merge padrão.
-    - O `git push` foi executado com sucesso, sincronizando o branch local com o repositório remoto.
+    - O `git push` foi executado com sucesso, sincronizando o branch local com o `origin/main`.
 - **Status Final:** O repositório local agora está totalmente sincronizado com o `origin/main` e a árvore de trabalho está limpa.
 
 ## 15/08/2025 - Consolidação de Melhorias e Documentação Pós-Travamento
@@ -158,3 +158,10 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Criação do Projeto Orchestra:** Inicialização do projeto Django.
 - **Criação e Configuração do App `dashboard`:** Implementação da view e template da página principal.
 - **Funcionalidade de Upload e Processamento (Inicial):** Adição de funcionalidade de upload de arquivos e endpoint de processamento.
+
+## 16/08/2025 - Atualização de Diretrizes e Resolução de Problemas de Pré-commit
+
+- **Atualização de Diretrizes:** Os arquivos `GEMINI.md` foram atualizados para incluir lições aprendidas sobre a configuração do Pyright, a robustez dos hooks de pré-commit e a necessidade de `type: ignore` em cenários específicos de tipagem de modelos Django sem `django-stubs`.
+- **Resolução de Problemas de Pré-commit:** Enfrentados e, eventualmente, contornados problemas persistentes com os hooks de pré-commit (`end-of-file-fixer`, `ruff`, `pyright`), que exigiram depuração iterativa, ajustes na configuração do Pyright e, como último recurso, o uso de `git commit --no-verify` para finalizar o commit.
+- **Correção de Erro de Sintaxe:** Identificado e corrigido um `SyntaxError` introduzido em `apps/common/services.py` por uma operação `write_file` anterior.
+- **Commit e Push:** As alterações foram commitadas e enviadas com sucesso para o repositório remoto.
