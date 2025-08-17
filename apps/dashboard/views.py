@@ -45,9 +45,7 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
 
             if match:
                 placa = match.group(1).upper()
-                assert placa is not None
                 nome_certificado = match.group(2).replace("_", " ").title()
-                assert nome_certificado is not None
                 logger.info(
                     f"[POST] Placa extraída: {placa}, Certificado extraído: {nome_certificado}"
                 )

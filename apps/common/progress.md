@@ -80,3 +80,15 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Análise Detalhada do Código**: Realizada uma revisão aprofundada dos arquivos `services.py` e `storage.py`.
 - **Externalização de Configurações**: URLs de portais (Ipiranga) e coordenadas de Regiões de Interesse (ROIs) para OCR foram externalizadas de `services.py` para as configurações do Django (`core/settings.py`), aumentando a manutenibilidade e flexibilidade.
+
+## 17/08/2025 - Restauração de Arquivos
+
+- **Ação**: O conteúdo deste arquivo `progress.md` foi restaurado a partir do repositório GitHub, após um incidente de sobrescrita acidental no arquivo `progress.md` principal.
+- **Observações**: Esta entrada reflete a recuperação do histórico do app `common`.
+
+## 17/08/2025 - Otimização de Funções e Comandos do App Common
+
+- **Análise e Ajustes em `services.py`**:
+    - URL do dashboard (`IPIRANGA_DASHBOARD_URL`) movida de hardcode para `core/settings.py`.
+    - Função `extract_text_from_roi`: Alterado o tratamento de erro para `raise` a exceção em vez de retornar string vazia, garantindo propagação de erros.
+    - Função `normalize_text`: Corrigida a regex para remover o `R` não intencional.

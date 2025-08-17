@@ -30,9 +30,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **View `process_documents_view`:** Confirmado o funcionamento correto da view para receber múltiplos arquivos PDF, extrair informações do nome do arquivo e criar registros `CertificadoVeiculo` no banco de dados, disparando a automação via sinal `post_save` para cada certificado.
 - **Remoção de Testes:** Todos os arquivos de teste (`tests.py`) foram removidos do projeto, incluindo os testes específicos deste app.
-- **Configuração de Ferramentas:** Contribuição para a implementação de `pre-commit` com hooks para `ruff` (formatação e linting) e `pyright` (verificação de tipos).
-- **Instalação de Ferramentas de Performance:** Contribuição para a adição de `line-profiler` e `snakeviz` para análise de performance.
-- **Refatoração Completa:** Contribuição para a remoção de testes (`tests.py`), configuração de `Ruff` e atualização de documentação.
+- **Configuração de Ferramentas:** Contribuição para a implementação de `pre-commit`, `ruff`, `pyright`, `line-profiler`, e `snakeviz`.
 
 ## 30/07/2025 - Integração com Modelos Django e Automação via Sinal
 
@@ -45,3 +43,13 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Criação do Projeto Orchestra:** Inicialização do projeto Django "Orchestra".
 - **Criação e Configuração do App `dashboard`:** Implementação da view `orchestra_view` e template `orchestra.html` para a página principal.
 - **Funcionalidade de Upload e Processamento (Inicial):** Adicionada a funcionalidade de exibir arquivos selecionados e um botão "Iniciar Processamento" em `orchestra.html`. Criado o endpoint `/process-documents/` e a view `process_documents_view` para receber os arquivos enviados pelo frontend.
+
+## 17/08/2025 - Restauração de Arquivos
+
+- **Ação**: O conteúdo deste arquivo `progress.md` foi restaurado a partir do repositório GitHub, após um incidente de sobrescrita acidental no arquivo `progress.md` principal.
+- **Observações**: Esta entrada reflete a recuperação do histórico do app `dashboard`.
+
+## 17/08/2025 - Otimização de Funções e Comandos do App Dashboard
+
+- **Análise e Ajustes em `views.py`**:
+    - Removidas as instruções `assert` redundantes.

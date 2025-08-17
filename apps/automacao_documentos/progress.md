@@ -53,3 +53,12 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 16/08/2025 - Atualização de Diretrizes do Framework de Automação
 
 - **Refinamento de Diretrizes:** O arquivo `GEMINI.md` deste app foi atualizado para enfatizar a necessidade de tratamento de erros robusto e logging detalhado dentro dos `custom commands` para capturar e registrar falhas inesperadas, como `SyntaxError`, durante a execução da automação.
+
+## 17/08/2025 - Restauração de Arquivos
+
+- **Ação**: O conteúdo deste arquivo `progress.md` foi restaurado a partir do repositório GitHub, após um incidente de sobrescrita acidental no arquivo `progress.md` principal.
+- **Observações**: Esta entrada reflete a recuperação do histórico do app `automacao_documentos`.
+
+---
+
+**Instrução:** Você não pode deletar informações de nenhum dos arquivos GEMINI.md nem de nenhum dos arquivos progress.md, os arquivos GEMINI.md do projeto Orchestra contém instruções importantes para serem seguidas e devem apenas incluir novas instruções ou ajustar aquelas que já existesm, desde que sejam ajustes para melhorar ainda mais as intruções, você NUNCA deve deletar todo o conteúdo deles, em hipótese nenhuma. O mesmo serve para todos os arquivos progress.md do projeto Orchestra, todos eles contém informações sobre o histórico do projeto, processos e procedimentos realizados ao longo do tempo, neles devem apenas serem incluídas novos históricos, processos ou procedimentos realizados, em ordem cronológica, você NUNCA deve excluiu o conteúdo completo de nenhum deles em hipótese nenhuma para incluir coisas novas.

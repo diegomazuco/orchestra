@@ -26,32 +26,22 @@ class Command(BaseCommand):
 
         media_dir = os.path.join(settings.MEDIA_ROOT, "certificados_veiculos")
 
-        # 1. Delete files associated with database records
-        # Fetch paths first to avoid issues after deleting records
-        file_paths_to_delete = []
-        for certificado in CertificadoVeiculo.objects.all():
-            if certificado.arquivo and os.path.isfile(certificado.arquivo.path):
-                file_paths_to_delete.append(certificado.arquivo.path)
-
-        # 2. Bulk delete CertificadoVeiculo records from the database
         with transaction.atomic():
-            deleted_count, _ = CertificadoVeiculo.objects.all().delete()
+            certificados_ids_to_delete = []
+            for certificado in CertificadoVeiculo.objects.all():
+                try:
+                    if certificado.arquivo and certificado.arquivo.storage.exists(certificado.arquivo.name):
+                        certificado.arquivo.delete(save=False)  # Deletes file from storage
+                        self.stdout.write(f"  Arquivo {certificado.arquivo.name} de CertificadoVeiculo deletado.")
+                    certificados_ids_to_delete.append(certificado.id)
+                except Exception as e:
+                    logger.error(f"Erro ao deletar arquivo para CertificadoVeiculo ID {certificado.id}: {e}")
+                    self.stdout.write(self.style.ERROR(f"Erro ao deletar arquivo para CertificadoVeiculo ID {certificado.id}: {e}"))
+
+            deleted_count, _ = CertificadoVeiculo.objects.filter(id__in=certificados_ids_to_delete).delete()
             self.stdout.write(
                 self.style.SUCCESS(f"  {deleted_count} registros de CertificadoVeiculo deletados do banco de dados.")
             )
-
-        # 3. Delete associated files
-        for file_path in file_paths_to_delete:
-            try:
-                os.remove(file_path)
-                self.stdout.write(
-                    self.style.SUCCESS(f"  Arquivo {file_path} deletado.")
-                )
-            except OSError as e:
-                logger.error(f"Erro ao deletar arquivo {file_path}: {e}")
-                self.stdout.write(
-                    self.style.ERROR(f"Erro ao deletar arquivo {file_path}: {e}")
-                )
 
         # 4. Delete any remaining orphaned files in the media directory
         if os.path.exists(media_dir):

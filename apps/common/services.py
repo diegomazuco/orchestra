@@ -51,7 +51,7 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
             # Espera principal: redirecionamento para o dashboard
             logger.info("Aguardando redirecionamento para o dashboard...")
             await expect(page).to_have_url(
-                "https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index",
+                settings.IPIRANGA_DASHBOARD_URL,
                 timeout=15000,  # Timeout reduzido para falhar rápido
             )
         except Exception:
@@ -171,7 +171,7 @@ def extract_text_from_roi(
         return page_text.strip()
     except Exception as e:
         logger.error(f"Erro ao extrair texto do ROI {roi}: {e}")
-        return ""
+        raise
 
 
 def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
@@ -243,7 +243,7 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
 def normalize_text(text: str) -> str:
     """Normaliza o texto removendo caracteres que não são alfanuméricos, espaços ou barras (/), e espaços extras."""
     # Permite letras, números, espaços e barras (para datas)
-    normalized_text: str = re.sub(r"[^a-zA-Z0-9\s/ R]", "", text)
+    normalized_text: str = re.sub(r"[^a-zA-Z0-9\s/]", "", text)
     normalized_text = re.sub(r"\s+", " ", normalized_text).strip()
     return normalized_text
 

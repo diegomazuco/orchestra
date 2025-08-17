@@ -5,6 +5,7 @@ from typing import Any, TypedDict
 
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
+from django.conf import settings # Added import
 
 from apps.analise_infracoes.models import Infracao
 
@@ -38,7 +39,7 @@ class Command(BaseCommand):
             # Tenta conectar ao banco de dados real
             with connections["mysql_source"].cursor() as cursor:
                 cursor.execute(
-                    "SELECT placa, data_hora, local, tipo, valor, pontos, status, dados_origem FROM tbl_infracoes_exemplo"
+                    f"SELECT placa, data_hora, local, tipo, valor, pontos, status, dados_origem FROM {settings.MYSQL_INFRACOES_TABLE}"
                 )
                 fetched_rows = cursor.fetchall()
                 rows = [
@@ -120,13 +121,17 @@ class Command(BaseCommand):
 
             # Insere o lote final, se houver
             if infracoes_para_criar:
-                Infracao.objects.using(db_alias).bulk_create(infracoes_para_criar)
-                logger.info("Lote final inserido com sucesso.")
+                try:
+                    Infracao.objects.using(db_alias).bulk_create(infracoes_para_criar)
+                    logger.info("Lote final inserido com sucesso.")
+                except Exception as bulk_e:
+                    logger.error(f"Erro ao inserir lote final de infrações: {bulk_e}")
+                    self.stdout.write(self.style.ERROR(f"Erro ao inserir lote final de infrações: {bulk_e}"))
 
             logger.info(
                 f"{len(rows)} infrações foram sincronizadas com sucesso para o banco de dados '{db_alias}'."
             )
 
         except Exception as e:
-            logger.error(f"Ocorreu um erro durante a sincronização: {e}")
+            logger.error(f"Ocorreu um erro durante a sincronização: {e}", exc_info=True)
             self.stdout.write(self.style.ERROR(f"Erro durante a sincronização: {e}"))

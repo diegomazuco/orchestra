@@ -94,10 +94,22 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Ajustes de Tipagem:** Adicionados comentários `type: ignore` em `apps/automacao_ipiranga/models.py` para resolver erros de tipagem do Pyright relacionados a argumentos de construtores de campo de modelo.
 - **Refinamento de Diretrizes:** O arquivo `GEMINI.md` deste app foi atualizado para incluir lições aprendidas sobre os desafios de tipagem de operações de OCR com Pyright (ex: `fitz`, `pytesseract`) e a necessidade de `type: ignore` em linhas específicas. Também foi reforçada a importância de tratamento de erros robusto e logging detalhado na interação com o portal Playwright.
 
-## 17/08/2025 - Resumo do Dia de Trabalho e Melhorias Aplicadas
+## 17/08/2025 - Restauração de Arquivos
 
-- **Análise Detalhada do Código**: Realizada uma revisão aprofundada dos arquivos `models.py`, `signals.py`, `management/commands/automacao_documentos_ipiranga.py`, `management/commands/cleanup_media.py`, `management/commands/test_ocr_extraction.py` e `management/commands/cleanup_test_data.py`.
-- **Refatoração de Comandos de Limpeza**: 
-    - O comando `management/commands/cleanup_media.py` foi refatorado para melhorar a eficiência na exclusão de registros de banco de dados (usando exclusão em massa) e adicionar tratamento de erros robusto para operações de arquivo.
-    - O comando `management/commands/cleanup_test_data.py` foi refatorado para remover a redefinição de sequência específica do SQLite e adicionar tratamento de erros robusto para exclusão de arquivos, tornando-o mais genérico e robusto.
-- **Externalização de URLs de Portais**: As URLs hardcoded do portal Ipiranga em `management/commands/automacao_documentos_ipiranga.py` foram externalizadas para as configurações do Django (`core/settings.py`), aumentando a manutenibilidade e flexibilidade.
+- **Ação**: O conteúdo deste arquivo `progress.md` foi restaurado a partir do repositório GitHub, após um incidente de sobrescrita acidental no arquivo `progress.md` principal.
+- **Observações**: Esta entrada reflete a recuperação do histórico do app `automacao_ipiranga`.
+
+## 17/08/2025 - Otimização de Funções e Comandos do App AutomacaoIpiranga
+
+- **Análise e Ajustes em `models.py`**:
+    - Adicionados os campos `tentativas_automacao` e `tentativas_ocr` ao modelo `CertificadoVeiculo`.
+    - Adicionado `falha_max_tentativas` às opções de `STATUS_CHOICES` do `CertificadoVeiculo`.
+    - Criadas e aplicadas as migrações necessárias para as alterações nos modelos.
+- **Análise e Ajustes em `management/commands/automacao_documentos_ipiranga.py`**:
+    - Implementado o incremento do contador `tentativas_automacao` no início da execução.
+    - Adicionada verificação de limite máximo de tentativas, com marcação de status `falha_max_tentativas` e interrupção da automação.
+    - Refinado o bloco `except` para garantir a atualização robusta do status para `falha` em caso de erro.
+- **Análise e Ajustes em `management/commands/cleanup_media.py`**:
+    - Refatorada a lógica de exclusão de arquivos e registros para `CertificadoVeiculo`, garantindo que os arquivos sejam deletados do armazenamento antes dos registros do banco de dados.
+- **Análise e Ajustes em `management/commands/test_ocr_extraction.py`**:
+    - Melhorada a consistência na limpeza de texto para busca de dados.

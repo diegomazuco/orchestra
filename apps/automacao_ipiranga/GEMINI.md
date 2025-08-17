@@ -52,3 +52,10 @@
 
 * **Depuração e Execução:**
     * **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** Lembre-se de reverter para `True` antes de fazer o commit.
+
+*   **Prevenção de Looping com Contador de Tentativas (`CertificadoVeiculo`):**
+    Para garantir a robustez e evitar loops infinitos, o modelo `CertificadoVeiculo` foi aprimorado com os campos `tentativas_automacao` e `tentativas_ocr`. A automação (`automacao_documentos_ipiranga.py`) **deve** incrementar `tentativas_automacao` no início de sua execução. Se o número de tentativas exceder um limite predefinido (ex: 3), o status do certificado será alterado para `"falha_max_tentativas"`, e a automação será interrompida para aquele registro. Em caso de qualquer falha, o status do certificado **deve** ser atualizado para `"falha"` e salvo, garantindo que o registro não permaneça no estado `"pendente"` indefinidamente.
+
+---
+
+**Instrução:** Você não pode deletar informações de nenhum dos arquivos GEMINI.md nem de nenhum dos arquivos progress.md, os arquivos GEMINI.md do projeto Orchestra contém instruções importantes para serem seguidas e devem apenas incluir novas instruções ou ajustar aquelas que já existesm, desde que sejam ajustes para melhorar ainda mais as intruções, você NUNCA deve deletar todo o conteúdo deles, em hipótese nenhuma. O mesmo serve para todos os arquivos progress.md do projeto Orchestra, todos eles contém informações sobre o histórico do projeto, processos e procedimentos realizados ao longo do tempo, neles devem apenas serem incluídas novos históricos, processos ou procedimentos realizados, em ordem cronológica, você NUNCA deve excluiu o conteúdo completo de nenhum deles em hipótese nenhuma para incluir coisas novas.

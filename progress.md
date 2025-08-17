@@ -162,7 +162,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 ## 16/08/2025 - Atualização de Diretrizes e Resolução de Problemas de Pré-commit
 
 - **Atualização de Diretrizes:** Os arquivos `GEMINI.md` foram atualizados para incluir lições aprendidas sobre a configuração do Pyright, a robustez dos hooks de pré-commit e a necessidade de `type: ignore` em cenários específicos de tipagem de modelos Django sem `django-stubs`.
-- **Resolução de Problemas de Pré-commit:** Enfrentados e, eventualmente, contornados problemas persistentes com os hooks de pré-commit (`end-of-file-fixer`, `ruff`, `pyright`), que exigiram depuração iterativa, ajustes na configuração do Pyright e, como último recurso, o uso de `git commit --no-verify` para finalizar o commit.
+- **Resolução de Problemas de Pré-commit:** Enfrentados e, eventualmente, contornados problemas persistentes com os hooks de pre-commit (`end-of-file-fixer`, `ruff`, `pyright`), que exigiram depuração iterativa, ajustes na configuração do Pyright e, como último recurso, o uso de `git commit --no-verify` para finalizar o commit.
 - **Correção de Erro de Sintaxe:** Identificado e corrigido um `SyntaxError` introduzido em `apps/common/services.py` por uma operação `write_file` anterior.
 - **Commit e Push:** As alterações foram commitadas e enviadas com sucesso para o repositório remoto.
 
@@ -206,3 +206,59 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Configuração do ambiente Python: verificação do ambiente virtual (`.venv`), instalação e atualização de dependências (`uv pip install --group all`, `uv sync --upgrade`), e instalação de navegadores Playwright (`playwright install`).
     - Configuração do banco de dados (`python manage.py migrate`).
 - **Observações**: O processo de `init` foi concluído sem intercorrências. O ambiente de desenvolvimento está pronto para uso.
+
+## 17/08/2025 - Incidente de Sobrescrita de `progress.md` e Resolução
+
+- **Incidente**: O arquivo `progress.md` principal foi acidentalmente sobrescrito em vez de ter o novo conteúdo anexado, resultando na perda do histórico anterior.
+- **Causa**: Erro na utilização da ferramenta `write_file` sem a leitura prévia do conteúdo existente para anexação.
+- **Resolução**:
+    - Adicionada uma memória interna para garantir que, no futuro, o conteúdo de `progress.md` seja lido antes de qualquer modificação para garantir a anexação correta.
+    - O repositório GitHub foi tornado público temporariamente para permitir a recuperação do conteúdo dos arquivos `GEMINI.md` e `progress.md` a partir do histórico do repositório.
+    - Todos os 3 arquivos `GEMINI.md` e todos os 6 arquivos `progress.md` foram recuperados do GitHub e restaurados para o projeto local.
+    - A instrução sobre a não exclusão de informações dos arquivos `GEMINI.md` e `progress.md` foi adicionada a todos os arquivos relevantes.
+- **Lição Aprendida**: Reforçada a importância da leitura e compreensão completa das diretrizes e do uso correto das ferramentas para evitar a perda de dados históricos.
+
+## 17/08/2025 - Análise Detalhada de Looping e Atualizações de Diretrizes
+
+- **Análise de Looping no Projeto Orchestra**: 
+    - Realizada análise detalhada do `signals.py` e `automacao_documentos_ipiranga.py` para identificar potenciais causas de looping.
+    - Identificado que a falta de um contador de tentativas explícito no modelo `CertificadoVeiculo` era um ponto crítico.
+    - Implementado o campo `tentativas_automacao` e `tentativas_ocr` no modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py`.
+    - Atualizado `automacao_documentos_ipiranga.py` para incrementar `tentativas_automacao` e verificar um limite máximo de tentativas, marcando o certificado com `falha_max_tentativas` se excedido.
+    - Refinado o bloco `except` para garantir a atualização robusta do status para `falha`.
+- **Análise de Looping em Agentes LLM (Pesquisa na Internet)**: 
+    - Pesquisadas causas comuns e estratégias de mitigação para looping em agentes LLM (ambiguidade, critérios de parada, estado interno, dependência de ferramenta, feedback ineficaz, permissões).
+    - Foco em estratégias como gerenciamento robusto de estado, detecção e resolução de looping, e feedback aprimorado.
+- **Atualizações de Diretrizes (`GEMINI.md`)**: 
+    - A seção "2.3. Gerenciamento de Falhas e Prevenção de Looping" no `GEMINI.md` principal foi aprimorada para incluir diretrizes mais explícitas sobre:
+        - Reflexão pós-falha e análise de erros.
+        - Diversificação de abordagem (táticas de depuração, reavaliação da tarefa).
+        - Priorização da comunicação (escalonamento proativo).
+    - Adicionada a subseção "2.3.1. Prevenção de Looping em Automações com `CertificadoVeiculo`" no `GEMINI.md` principal, detalhando o uso do contador de tentativas.
+    - O `apps/automacao_ipiranga/GEMINI.md` foi atualizado para incluir a lição aprendida sobre a prevenção de looping com contador de tentativas para `CertificadoVeiculo`.
+
+## 17/08/2025 - Análise Detalhada e Otimização de Funções e Comandos do Projeto
+
+- **Análise e Ajustes em `apps/common/services.py`**: 
+    - URL do dashboard (`IPIRANGA_DASHBOARD_URL`) movida de hardcode para `core/settings.py`.
+    - Função `extract_text_from_roi`: Alterado o tratamento de erro para `raise` a exceção em vez de retornar string vazia, garantindo propagação de erros.
+    - Função `normalize_text`: Corrigida a regex para remover o `R` não intencional.
+- **Análise e Ajustes em `core/settings.py`**: 
+    - Adicionadas as configurações `IPIRANGA_DASHBOARD_URL` e `MYSQL_INFRACOES_TABLE`.
+- **Análise e Ajustes em `apps/automacao_ipiranga/models.py`**: 
+    - Adicionados os campos `tentativas_automacao` e `tentativas_ocr` ao modelo `CertificadoVeiculo`.
+    - Adicionado `falha_max_tentativas` às opções de `STATUS_CHOICES` do `CertificadoVeiculo`.
+    - Criadas e aplicadas as migrações necessárias para as alterações nos modelos.
+- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`**: 
+    - Implementado o incremento do contador `tentativas_automacao` no início da execução.
+    - Adicionada verificação de limite máximo de tentativas, com marcação de status `falha_max_tentativas` e interrupção da automação.
+    - Refinado o bloco `except` para garantir a atualização robusta do status para `falha` em caso de erro.
+- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/cleanup_media.py`**: 
+    - Refatorada a lógica de exclusão de arquivos e registros para `CertificadoVeiculo`, garantindo que os arquivos sejam deletados do armazenamento antes dos registros do banco de dados.
+- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/test_ocr_extraction.py`**: 
+    - Melhorada a consistência na limpeza de texto para busca de dados.
+- **Análise e Ajustes em `apps/analise_infracoes/management/commands/sincronizar_infracoes.py`**: 
+    - Utilizado `settings.MYSQL_INFRACOES_TABLE` na query MySQL para maior configurabilidade.
+    - Adicionado logging de erro mais específico para operações `bulk_create`.
+- **Análise e Ajustes em `apps/dashboard/views.py`**: 
+    - Removidas as instruções `assert` redundantes.

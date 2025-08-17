@@ -61,7 +61,7 @@ class Command(BaseCommand):
 
             # Verificação
             numero_encontrado = numero_documento in cleaned_text
-            data_encontrada = "05/FEV/26" in extracted_text.replace(" ", "")
+            data_encontrada = data_vencimento in cleaned_text
 
             self.stdout.write(self.style.SUCCESS("--- Resultados da Verificação ---"))
             if numero_encontrado:

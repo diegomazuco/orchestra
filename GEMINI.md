@@ -68,7 +68,7 @@ Para garantir a robustez e evitar comportamentos de looping, o Gemini CLI deve a
     *   **Limiar de Looping:** Se uma ação específica (ferramenta + parâmetros) for repetida `X` vezes (ex: 3 vezes) consecutivas com o mesmo resultado de falha, ou se uma sequência de ações se repetir em um padrão cíclico, considere que um looping está ocorrendo.
 
 2.  **Estratégias de Prevenção e Resolução de Looping:**
-    *   **Reflexão Pós-Falha:** Após qualquer falha (retorno de erro de uma ferramenta, output inesperado), o Gemini CLI deve analisar o output da ferramenta e o contexto atual para identificar a causa raiz da falha. Esta análise deve guiar a próxima tentativa.
+    *   **Reflexão Pós-Falha e Análise de Erros:** Após qualquer falha (retorno de erro de uma ferramenta, output inesperado), o Gemini CLI deve analisar o output da ferramenta e o contexto atual para identificar a causa raiz da falha. Esta análise deve guiar a próxima tentativa, buscando compreender o *porquê* da falha (ex: erro de sintaxe, arquivo não encontrado, permissão negada, API indisponível).
     *   **Backoff e Limite de Retentativas:** Se uma ação falhar, o Gemini CLI não deve retentá-la imediatamente com os mesmos parâmetros.
         *   Implemente um pequeno atraso (backoff) antes de cada retentativa subsequente.
         *   Limite o número de retentativas para a mesma ação com os mesmos parâmetros (ex: máximo de 3 retentativas). O Gemini CLI deve registrar essas retentativas internamente.
@@ -78,10 +78,10 @@ Para garantir a robustez e evitar comportamentos de looping, o Gemini CLI deve a
             *   Se um comando shell (`run_shell_command`) falhar, tentar pesquisar o erro na web (`google_web_search`) ou executar o comando com opções de depuração (`--verbose`, `-v`).
             *   Se um arquivo não for encontrado, tentar `glob` para localizá-lo ou verificar permissões.
             *   Se a falha persistir, considerar "táticas de depuração" como adicionar logging temporário ao código ou executar comandos em modo verbose para obter mais informações.
+            *   **Reavaliação da Tarefa:** Em casos de looping persistente, o agente pode "resetar" seu estado de pensamento e reavaliar a tarefa do zero, talvez pedindo uma reconfirmação da instrução original ao usuário.
     *   **Priorização da Comunicação (Escalonamento Proativo):** Em caso de looping detectado (atingindo o "limiar de frustração") ou falha persistente que não pode ser resolvida autonomamente, a prioridade máxima do Gemini CLI é comunicar o problema ao usuário de forma clara e concisa.
         *   **Limiar de Frustração:** Se o Gemini CLI tentar a mesma ação (ferramenta + parâmetros) e falhar 3 vezes consecutivas, ele deve *imediatamente* escalar para o usuário.
         *   **Conteúdo da Comunicação:** Explique qual tarefa estava sendo tentada, qual ação está falhando, o erro recebido, as tentativas e estratégias já utilizadas, e a sugestão de que o usuário pode precisar intervir ou fornecer uma nova instrução.
-    *   **Reset de Estado (com cautela):** Em situações extremas, onde o Gemini CLI se sente "preso" e não consegue progredir após esgotar todas as estratégias de diversificação, ele pode "resetar" seu estado de pensamento interno (mas não o estado do projeto ou do sistema de arquivos). Isso significa reavaliar a tarefa do zero, talvez pedindo uma reconfirmação da instrução original ao usuário para garantir que a compreensão inicial está correta. O Gemini CLI deve informar o usuário antes de realizar um reset de estado.
 
 ---
 
@@ -185,3 +185,19 @@ Ao iniciar ou reiniciar o servidor, siga estas etapas para um ambiente limpo:
     *   **Localização:** Os workflows estão definidos em `.github/workflows/ci.yml`.
     *   **Verificações Essenciais:** Inclui checks para `ruff` (formatação e linting) e `pyright` (verificação de tipos), garantindo que o código esteja em conformidade com os padrões antes de ser integrado à `main` branch.
     *   **Importância:** Garante a qualidade e a consistência do código em cada push e pull request, minimizando a introdução de bugs e problemas de estilo.
+
+---
+
+**Instrução:** Você não pode deletar informações de nenhum dos arquivos GEMINI.md nem de nenhum dos arquivos progress.md, os arquivos GEMINI.md do projeto Orchestra contém instruções importantes para serem seguidas e devem apenas incluir novas instruções ou ajustar aquelas que já existesm, desde que sejam ajustes para melhorar ainda mais as intruções, você NUNCA deve deletar todo o conteúdo deles, em hipótese nenhuma. O mesmo serve para todos os arquivos progress.md do projeto Orchestra, todos eles contém informações sobre o histórico do projeto, processos e procedimentos realizados ao longo do tempo, neles devem apenas serem incluídas novos históricos, processos ou procedimentos realizados, em ordem cronológica, você NUNCA deve excluiu o conteúdo completo de nenhum deles em hipótese nenhuma para incluir coisas novas.
+
+#### 2.3.1. Prevenção de Looping em Automações com `CertificadoVeiculo`
+
+Para automações que utilizam o modelo `CertificadoVeiculo` (e modelos similares que disparam automações via sinais), é **mandatório** implementar um mecanismo de contador de tentativas para prevenir loops infinitos e garantir a robustez do sistema.
+
+1.  **Campo de Tentativas no Modelo:** O modelo `CertificadoVeiculo` **deve** possuir um campo `tentativas_automacao` (do tipo `IntegerField` com `default=0`) para registrar o número de vezes que uma automação foi tentada para aquele registro.
+2.  **Incremento no Início da Automação:** No início da lógica principal do `custom command` que executa a automação (ex: `automacao_documentos_ipiranga.py`), o campo `tentativas_automacao` do `CertificadoVeiculo` correspondente **deve ser incrementado e salvo imediatamente**.
+3.  **Verificação de Limite de Tentativas:** Após o incremento, o `custom command` **deve verificar** se o número de `tentativas_automacao` excedeu um limite predefinido (ex: 3 tentativas). Se o limite for atingido:
+    *   O `CertificadoVeiculo` **deve ter seu status atualizado** para um estado terminal de falha (ex: `"falha_max_tentativas"`) e ser salvo.
+    *   A execução da automação para aquele registro **deve ser interrompida** (ex: levantando um `CommandError`).
+4.  **Tratamento Robusto de Falhas:** Em caso de qualquer falha durante a execução da automação (dentro do bloco `except`), o `CertificadoVeiculo` **deve ter seu status atualizado** para `"falha"` (ou um status de falha mais específico) e ser salvo. Isso é crucial para evitar que o registro permaneça no estado `"pendente"` e seja retentado indefinidamente.
+5.  **Limpeza Final:** O bloco `finally` do `custom command` **deve garantir** a limpeza de recursos (ex: exclusão do registro `CertificadoVeiculo` e arquivos associados) independentemente do sucesso ou falha da automação. No entanto, a atualização do status e o contador de tentativas são a primeira linha de defesa contra loops.

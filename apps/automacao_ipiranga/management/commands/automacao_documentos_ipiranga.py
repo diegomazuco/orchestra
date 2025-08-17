@@ -74,6 +74,22 @@ class Command(BaseCommand):
                 CertificadoVeiculo.objects.select_related("veiculo").get
             )(pk=certificado_id)
             assert certificado is not None
+
+            # Increment attempt counter at the very beginning
+            certificado.tentativas_automacao = (certificado.tentativas_automacao or 0) + 1
+            await sync_to_async(certificado.save)()
+            logger.info(f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id}: Tentativa {certificado.tentativas_automacao}")
+
+            # Define max attempts (can be moved to settings.py)
+            MAX_AUTOMATION_ATTEMPTS = 3
+
+            # Check if max attempts reached
+            if certificado.tentativas_automacao > MAX_AUTOMATION_ATTEMPTS:
+                logger.error(f"Certificado ID {certificado_id} excedeu o número máximo de tentativas ({MAX_AUTOMATION_ATTEMPTS}). Marcando como falha_max_tentativas.")
+                certificado.status = "falha_max_tentativas"
+                await sync_to_async(certificado.save)()
+                raise CommandError(f"Certificado ID {certificado_id} excedeu o número máximo de tentativas.")
+
             file_path_upload = certificado.arquivo.path
             logger.info(
                 f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id} encontrado."
@@ -382,9 +398,13 @@ class Command(BaseCommand):
                     f"FALHA na automação para o certificado ID {certificado_id}: {e}",
                     exc_info=True,
                 )
-                if "certificado" in locals() and certificado:
-                    await sync_to_async(setattr)(certificado, "status", "falha")
-                    await sync_to_async(certificado.save)()
+                if certificado:
+                    try:
+                        certificado.status = "falha"
+                        await sync_to_async(certificado.save)()
+                        logger.info(f"Certificado ID {certificado_id} marcado como 'falha'.")
+                    except Exception as save_error:
+                        logger.error(f"Falha ao salvar status 'falha' para certificado ID {certificado_id}: {save_error}")
 
                 if page:
                     try:
