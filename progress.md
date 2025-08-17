@@ -177,3 +177,9 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Aplicação de Melhorias Não Críticas**: 
     - **Limpeza de Dados de Teste**: O comando `apps/automacao_ipiranga/management/commands/cleanup_test_data.py` foi refatorado para remover a redefinição de sequência específica do SQLite e adicionar tratamento de erros robusto para exclusão de arquivos.
     - **Externalização de Configurações**: URLs de portais (Ipiranga) e coordenadas de Regiões de Interesse (ROIs) para OCR foram externalizadas de arquivos de código (`apps/common/services.py`, `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`) para as configurações do Django (`core/settings.py`), aumentando a manutenibilidade e flexibilidade.
+
+## 17/08/2025 - Processo de Inicialização e Melhoria das Diretrizes Git
+
+- **Processo de Inicialização (`init`)**: Executado com sucesso, incluindo sincronização do repositório, configuração do ambiente Python (instalação/atualização de dependências com `uv`, instalação de navegadores Playwright) e aplicação de migrações de banco de dados.
+- **Análise e Aprimoramento das Diretrizes Git**: Realizada análise detalhada dos comandos Git utilizados e das instruções nos arquivos `GEMINI.md`. Confirmada a correção das diretrizes existentes e identificada uma oportunidade de melhoria.
+- **Atualização de Diretrizes (`GEMINI.md`)**: O arquivo `GEMINI.md` principal foi atualizado para incluir uma etapa de verificação do `git status` antes do `git pull` no processo de `init`, tornando as instruções de sincronização do repositório mais rigorosas e explícitas.
