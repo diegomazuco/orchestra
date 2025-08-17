@@ -8,6 +8,10 @@ repos:
       - id: check-added-large-files
       - id: debug-statements
       - id: requirements-txt-fixer
+      - id: detect-private-key
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-executables-have-shebangs
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.7 # Use a versão mais recente do ruff-pre-commit
@@ -21,3 +25,9 @@ repos:
     hooks:
       - id: pyright
         additional_dependencies: [".[all]"]
+
+  - repo: https://github.com/pycqa/safety
+    rev: 3.6.0 # Use a versão mais recente do safety
+    hooks:
+      - id: safety
+        args: ["check", "--file=<(uv pip freeze)"]

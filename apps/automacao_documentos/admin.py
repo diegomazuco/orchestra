@@ -4,7 +4,7 @@ from .models import Automacao, Documento, LogExecucaoAutomacao, Portal
 
 
 @admin.register(Portal)
-class PortalAdmin(admin.ModelAdmin[Portal]):
+class PortalAdmin(admin.ModelAdmin):
     """Administração de Portais."""
 
     list_display = ("nome", "url_base")
@@ -12,7 +12,7 @@ class PortalAdmin(admin.ModelAdmin[Portal]):
 
 
 @admin.register(Documento)
-class DocumentoAdmin(admin.ModelAdmin[Documento]):
+class DocumentoAdmin(admin.ModelAdmin):
     """Administração de Documentos."""
 
     list_display = (
@@ -29,7 +29,7 @@ class DocumentoAdmin(admin.ModelAdmin[Documento]):
 
 
 @admin.register(Automacao)
-class AutomacaoAdmin(admin.ModelAdmin[Automacao]):
+class AutomacaoAdmin(admin.ModelAdmin):
     """Administração de Automações."""
 
     list_display = (
@@ -44,7 +44,7 @@ class AutomacaoAdmin(admin.ModelAdmin[Automacao]):
 
 
 @admin.register(LogExecucaoAutomacao)
-class LogExecucaoAutomacaoAdmin(admin.ModelAdmin[LogExecucaoAutomacao]):
+class LogExecucaoAutomacaoAdmin(admin.ModelAdmin):
     """Administração de Logs de Execução de Automação."""
 
     list_display = (

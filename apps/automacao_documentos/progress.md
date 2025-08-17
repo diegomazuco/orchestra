@@ -47,8 +47,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 28/07/2025 - Criação do App e Inicialização
 
-- **Criação do App:** O app `automacao_ibama` foi renomeado para `automacao_documentos` e a página Orchestra foi criada.
-- **Inicialização Completa:** Contribuição para a inicialização completa do projeto Orchestra e do app Automação Ibama.
+- **Criação do App:** Um app de automação inicial foi renomeado para `automacao_documentos` e a página Orchestra foi criada.
+- **Inicialização Completa:** Contribuição para a inicialização completa do projeto Orchestra e do app de automação.
 
 ## 16/08/2025 - Atualização de Diretrizes do Framework de Automação
 

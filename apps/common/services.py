@@ -10,6 +10,7 @@ from decouple import config
 from PIL import Image
 from playwright.async_api import Page, expect
 from pytesseract import Output  # Moved to top
+from django.conf import settings # Added import
 
 
 async def login_to_portran(page: Page, logger: logging.Logger) -> None:
@@ -28,7 +29,7 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
     try:
         logger.info("Navegando para a página de login...")
         await page.goto(
-            "https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir",
+            settings.IPIRANGA_LOGIN_URL,
             timeout=60000,
         )
 
@@ -113,8 +114,8 @@ def extract_text_from_pdf_image(
         for page_num in range(len(doc)):
             page: fitz.Page = doc.load_page(page_num)
 
-            numero_documento_roi = (100, 500, 400, 600)  # Example coordinates
-            data_vencimento_roi = (400, 500, 700, 600)  # Example coordinates
+            numero_documento_roi = settings.OCR_NUMERO_DOCUMENTO_ROI # Used setting
+            data_vencimento_roi = settings.OCR_DATA_VENCIMENTO_ROI # Used setting
 
             # Extract text from each ROI
             numero_documento_text: str = extract_text_from_roi(

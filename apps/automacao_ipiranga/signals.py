@@ -10,8 +10,6 @@ from django.db.models import Model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import CertificadoVeiculo
-
 logger = logging.getLogger(__name__)
 
 
@@ -89,11 +87,16 @@ def run_automation_command(instance_id: int) -> None:
         )
 
 
-@receiver(post_save, sender=CertificadoVeiculo)
+@receiver(
+    post_save, sender="automacao_ipiranga.CertificadoVeiculo"
+)  # Use string reference
 def trigger_automacao_certificado(
-    sender: type[Model], instance: CertificadoVeiculo, created: bool, **kwargs: Any
+    sender: type[Model], instance: Model, created: bool, **kwargs: Any
 ) -> None:
     """Dispara a automação quando um novo CertificadoVeiculo pendente é criado."""
+    # A verificação do modelo pode ser feita diretamente no if abaixo
+    # usando o sender ou o próprio instance, tornando a busca dinâmica desnecessária.
+
     logger.debug(
         f"[SIGNAL] trigger_automacao_certificado - Início. "
         f"Sender: {sender.__name__}, Instance ID: {instance.id}, "  # type: ignore

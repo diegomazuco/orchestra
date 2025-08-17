@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('nome', models.CharField(max_length=255, unique=True)),
                 ('descricao', models.TextField(blank=True)),
-                ('comando_django', models.CharField(help_text="Nome do comando Django customizado a ser executado (ex: 'automacao_documentos_ibama').", max_length=255)),
+                ('comando_django', models.CharField(help_text="Nome do comando Django customizado a ser executado (ex: 'automacao_documentos_ipiranga').", max_length=255)),
                 ('ativa', models.BooleanField(default=True)),
                 ('ultima_execucao', models.DateTimeField(blank=True, null=True)),
                 ('proxima_execucao', models.DateTimeField(blank=True, null=True)),

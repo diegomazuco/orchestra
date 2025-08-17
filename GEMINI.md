@@ -31,9 +31,10 @@ Siga **rigorosamente** esta sequência para preparar o ambiente:
 3.  **Configuração do Ambiente Python:**
     * **Ambiente Virtual:** Confirme que `./.venv` existe. Se não, crie-o com `uv venv`.
     * **Instalação de Dependências:** Instale **todas** as dependências com `uv pip install --group all`.
+    * **Verificação e Atualização de Dependências:** Verifique se há pacotes desatualizados com `uv pip list --outdated` e, se houver, atualize-os com `uv sync --upgrade`.
     * **Instalação de Navegadores Playwright:** Execute `playwright install`.
 4.  **Configuração do Banco de Dados:** Execute `python manage.py migrate`.
-5.  **Análise de Qualidade:** Execute `ruff check . --fix`, `ruff format .` (priorize a execução antes do `pyright` para resolver problemas básicos de formatação e linting) e `pyright`.
+
 6.  **Troubleshooting de Ambiente (WSL):** Se o servidor Django rodar mas estiver inacessível pelo navegador no Windows (sintoma: `SYN_SENT`), a solução permanente é criar um arquivo `.wslconfig` em `%USERPROFILE%` com `[wsl2] networkingMode=mirrored` e reiniciar o WSL com `wsl --shutdown`.
 
 #### 2.2. Processo de Finalização de Sessão (Commit e Push)
@@ -51,7 +52,7 @@ Este processo é **obrigatório** antes de cada commit:
     * Valide com `git fetch && git status`.
 
 **Lições Aprendidas com o Processo de Commit:**
-*   **Pre-commit Hooks:** Os hooks de pre-commit (especialmente `end-of-file-fixer`, `ruff`, `pyright`) são rigorosos. Certifique-se de que `ruff format .` e `ruff check . --fix` sejam executados e as alterações sejam staged *antes* de tentar o commit para evitar falhas.
+*   **Pre-commit Hooks:** Os hooks de pre-commit (especialmente `end-of-file-fixer`, `ruff`, `pyright`, `safety`, `detect-private-key`, `check-merge-conflict`, `check-json`, `check-executables-have-shebangs`) são rigorosos. Certifique-se de que `ruff format .` e `ruff check . --fix` sejam executados e as alterações sejam staged *antes* de tentar o commit para evitar falhas.
 *   **Pyright e Django (sem `django-stubs`):** A verificação de tipos com Pyright em projetos Django sem `django-stubs` pode ser desafiadora. Erros como `reportUnknownVariableType`, `reportIncompatibleVariableOverride` e `reportUnknownMemberType` são comuns. Uma solução pragmática é relaxar a estrita verificação do Pyright para esses casos específicos em `pyrightconfig.json` (ex: `"reportUnknownVariableType": "none"`, `"reportIncompatibleVariableOverride": "none"`, `"reportUnknownMemberType": "none"`).
 *   **Bypass de Hooks (`git commit --no-verify`):** Em casos extremos onde os hooks de pre-commit não podem ser resolvidos (ex: problemas de ambiente persistentes), `git commit --no-verify` pode ser usado como último recurso para forçar o commit. **ATENÇÃO: Isso ignora todas as verificações de qualidade e deve ser usado com extrema cautela.**
 
@@ -83,6 +84,8 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 * **Resiliência de Automação Web:** Implemente lógicas de espera e recarregamento de página para lidar com instabilidades de portais externos.
 * **Segurança de Credenciais:** Utilize **exclusivamente o arquivo `.env`** com `python-decouple`.
 * **Segurança Web:** Sempre use a proteção CSRF do Django. O decorador `@csrf_exempt` foi removido e não deve ser reintroduzido.
+*   **Comandos de Limpeza Eficientes:** Garanta que os comandos de limpeza de dados (ex: `cleanup_media`, `cleanup_test_data`, `cleanup_automation_data`) utilizem operações em massa para exclusão de registros de banco de dados (ex: `Model.objects.all().delete()`) e incluam tratamento de erros robusto para a exclusão de arquivos. Evite deleções linha a linha para grandes volumes de dados. Priorize abordagens agnósticas ao banco de dados sempre que possível.
+*   **Externalização de Configurações:** URLs de portais, coordenadas de Regiões de Interesse (ROIs) para OCR, e outras configurações específicas de ambiente **devem** ser externalizadas para as configurações do Django (`settings.py`) ou para o arquivo `.env` (via `python-decouple`). Evite hardcoding de valores que possam mudar entre ambientes ou que representem dados sensíveis.
 *   **Tipagem de Modelos Django com Pyright:** Sem `django-stubs`, a tipagem de modelos Django pode ser complexa. Pode ser necessário usar `type: ignore` para suprimir erros específicos do Pyright relacionados a atributos de modelo ou a argumentos de construtores de campo que não são inferidos corretamente.
 
 ---
@@ -118,3 +121,28 @@ Ao iniciar ou reiniciar o servidor, siga estas etapas para um ambiente limpo:
     * `python manage.py runserver` (Diagnóstico: `... --noreload`)
     * `python manage.py makemigrations [app]`
     * `python manage.py migrate`
+*   **Análise de Performance:**
+    *   **Visão Macro (`cProfile`):** Para identificar gargalos gerais e funções que consomem mais tempo.
+        *   **Coleta de Dados:** `python -m cProfile -o logs/comando.prof manage.py <comando>`
+        *   **Análise Detalhada (`pstats`):** Utilize o módulo `pstats` em um interpretador Python ou script para uma análise mais profunda:
+            ```python
+            import pstats
+            p = pstats.Stats('logs/comando.prof')
+            # Ordenar por tempo total gasto na função (excluindo sub-chamadas) e imprimir as 20 principais
+            p.sort_stats('tottime').print_stats(20)
+            # Ordenar por tempo cumulativo e imprimir as 20 principais
+            p.sort_stats('cumulative').print_stats(20)
+            # Imprimir chamadores (quem chamou a função) e chamados (quem a função chamou)
+            p.print_callers()
+            p.print_callees()
+            # Filtrar por um módulo ou função específica
+            p.print_stats('apps/automacao_ipiranga')
+            ```
+        *   **Visualização Gráfica (`snakeviz`):** Para uma análise visual interativa e intuitiva dos dados de perfil.
+            *   **Instalação (se necessário):** `uv add snakeviz --group dev`
+            *   **Execução:** `snakeviz logs/comando.prof` (abre no navegador)
+    *   **Visão Micro (`line_profiler`):** Para analisar o tempo de execução linha a linha de funções específicas, após identificar um gargalo com `cProfile`.
+        *   **Uso:** Adicione o decorador `@profile` à função que deseja analisar.
+        *   **Execução:** `kernprof -l manage.py <comando>`
+        *   **Visualização:** `python -m line_profiler <nome_do_arquivo_de_saida>.lprof`
+        *   **Importante:** **Lembre-se de remover o decorador `@profile` antes de fazer o commit para evitar que código de desenvolvimento seja incluído no repositório.**

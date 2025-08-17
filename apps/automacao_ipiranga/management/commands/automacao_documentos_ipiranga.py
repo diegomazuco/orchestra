@@ -9,6 +9,7 @@ from asgiref.sync import sync_to_async
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import Page, async_playwright, expect
+from django.conf import settings # Added import
 
 from apps.automacao_ipiranga.models import (
     CertificadoVeiculo,
@@ -116,8 +117,8 @@ class Command(BaseCommand):
                         f"O arquivo do certificado não foi encontrado em: {file_path_upload}"
                     )
 
-                vencidos_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7"
-                a_vencer_url = "https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7"
+                vencidos_url = settings.IPIRANGA_VENCIDOS_URL # Used setting
+                a_vencer_url = settings.IPIRANGA_A_VENCER_URL # Used setting
 
                 placa_encontrada = False
                 logger.info("Iniciando loop de navegação para páginas de veículos...")

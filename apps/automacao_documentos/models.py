@@ -60,7 +60,7 @@ class Documento(models.Model):
         """Meta options for Documento."""
 
         verbose_name = "Documento"
-        verbose_plural = "Documentos"
+        verbose_name_plural = "Documentos"
         unique_together = ("portal", "tipo", "numero")
 
     def __str__(self) -> str:
@@ -74,7 +74,7 @@ class Automacao(models.Model):
     descricao = models.TextField(blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     comando_django = models.CharField(
         max_length=255,
-        help_text="Nome do comando Django customizado a ser executado (ex: 'automacao_documentos_ibama').",
+        help_text="Nome do comando Django customizado a ser executado (ex: 'automacao_documentos_ipiranga').",
     )  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     ativa = models.BooleanField(default=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]
     ultima_execucao = models.DateTimeField(null=True, blank=True)  # type: ignore[reportMissingTypeArgument, reportCallIssue]

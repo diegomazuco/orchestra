@@ -1,12 +1,15 @@
 import os
 import shutil
+import logging # Added logging import
 from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection
+from django.db import connection # Keep connection for potential future use, but remove specific query
 
 from apps.automacao_ipiranga.models import CertificadoVeiculo
+
+logger = logging.getLogger(__name__) # Initialize logger
 
 
 class Command(BaseCommand):
@@ -24,17 +27,6 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Deletados {count} registros de CertificadoVeiculo do banco de dados."
-            )
-        )
-
-        # Resetar a sequência auto-incremental para CertificadoVeiculo (apenas para SQLite)
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='automacao_ipiranga_certificadoveiculo';"
-            )
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Sequência auto-incremental de CertificadoVeiculo resetada para 0."
             )
         )
 
@@ -61,7 +53,8 @@ class Command(BaseCommand):
                         self.stdout.write(
                             self.style.SUCCESS(f"Deletado diretório: {filename}")
                         )
-                except Exception as e:
+                except OSError as e: # Changed from generic Exception to OSError for file operations
+                    logger.error(f"Falha ao deletar {file_path}. Motivo: {e}")
                     self.stderr.write(
                         self.style.ERROR(f"Falha ao deletar {file_path}. Motivo: {e}")
                     )

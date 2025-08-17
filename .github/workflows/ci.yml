@@ -37,6 +37,9 @@ jobs:
     - name: Run Pyright checks
       run: uv run pyright
 
+    - name: Run Safety checks
+      run: uv run safety check
+
     # - name: Run Pytest (if tests are reintroduced)
     #   run: uv run pytest
     #   continue-on-error: true # Set to false if tests are mandatory

@@ -75,3 +75,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Correção de Erro de Sintaxe:** Identificado e corrigido um `SyntaxError` em `apps/common/services.py` relacionado à atribuição de variáveis e indentação.
 - **Ajustes de Tipagem:** Adicionado um comentário `type: ignore` em `apps/common/services.py` para resolver um erro de tipagem do Pyright relacionado à conversão de imagem (`Image.open(io.BytesIO(pix.tobytes()))`).
+
+## 17/08/2025 - Resumo do Dia de Trabalho e Melhorias Aplicadas
+
+- **Análise Detalhada do Código**: Realizada uma revisão aprofundada dos arquivos `services.py` e `storage.py`.
+- **Externalização de Configurações**: URLs de portais (Ipiranga) e coordenadas de Regiões de Interesse (ROIs) para OCR foram externalizadas de `services.py` para as configurações do Django (`core/settings.py`), aumentando a manutenibilidade e flexibilidade.

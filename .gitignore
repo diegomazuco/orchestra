@@ -30,5 +30,8 @@ Thumbs.db
 # Logs
 logs/
 
+# Ruff cache
+.ruff_cache/
+
 # Screenshots
 login_error_screenshot.png

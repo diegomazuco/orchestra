@@ -4,7 +4,7 @@ from .models import Infracao
 
 
 @admin.register(Infracao)
-class InfracaoAdmin(admin.ModelAdmin[Infracao]):
+class InfracaoAdmin(admin.ModelAdmin):
     """Define a interface de administração para o modelo Infracao."""
 
     list_display = (
