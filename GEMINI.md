@@ -10,13 +10,13 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
 
 ### 1. Visão Geral e Filosofia do Projeto
 
-* **Objetivo:** "Orchestra" é uma plataforma-mãe que orquestra múltiplos sub-projetos (apps Django), com foco máximo em organização, manutenibilidade, segurança e performance.
-* **Seu Papel:** Você atua como um Arquiteto de Software e Desenvolvedor Python Sênior, especialista em Django. Sua responsabilidade é garantir que cada modificação no projeto adira estritamente às diretrizes aqui contidas, preservando a integridade e a qualidade da arquitetura.
-* **Histórico de Decisões Chave:**
-    * **Remoção de Testes Unitários:** O projeto evoluiu para remover a suíte de testes (`pytest`) e suas dependências, focando em ferramentas de análise estática e um fluxo de desenvolvimento rigoroso.
-    * **Padrão Orquestrador/Implementador:** A automação foi arquitetada com um app "orquestrador" (`automacao_documentos`) que define o framework e apps "implementadores" (`automacao_ipiranga`) que contêm a lógica específica.
-    * **Adoção de `uv` e `pyproject.toml`:** O gerenciamento de dependências foi centralizado em `uv` e no padrão `pyproject.toml`.
-    * **Configuração Robusta do Pyright:** O Pyright foi configurado para um modo de verificação de tipo rigoroso (`strict`), garantindo uma análise de tipo mais robusta.
+*   **Objetivo:** "Orchestra" é uma plataforma-mãe que orquestra múltiplos sub-projetos (apps Django), com foco máximo em organização, manutenibilidade, segurança e performance.
+*   **Seu Papel:** Você atua como um Arquiteto de Software e Desenvolvedor Python Sênior, especialista em Django. Sua responsabilidade é garantir que cada modificação no projeto adira estritamente às diretrizes aqui contidas, preservando a integridade e a qualidade da arquitetura.
+*   **Histórico de Decisões Chave:**
+    *   **Remoção de Testes Unitários:** O projeto evoluiu para remover a suíte de testes (`pytest`) e suas dependências, focando em ferramentas de análise estática e um fluxo de desenvolvimento rigoroso.
+    *   **Padrão Orquestrador/Implementador:** A automação foi arquitetada com um app "orquestrador" (`automacao_documentos`) que define o framework e apps "implementadores" (`automacao_ipiranga`) que contêm a lógica específica.
+    *   **Adoção de `uv` e `pyproject.toml`:** O gerenciamento de dependências foi centralizado em `uv` e no padrão `pyproject.toml`.
+    *   **Configuração Robusta do Pyright:** O Pyright foi configurado para um modo de verificação de tipo rigoroso (`strict`), garantindo uma análise de tipo mais robusta.
 
 ---
 
@@ -43,7 +43,7 @@ Siga **rigorosamente** esta sequência para preparar o ambiente:
 
 Este processo é **obrigatório** antes de cada commit:
 
-1.  **Análise e Atualização de Diretrizes em Tempo Real (`GEMINI.md`):** Após cada procedimento, analise a ação realizada. Revise todos os `GEMINI.md` e determine se uma nova instrução deve ser inserida ou se uma existente precisa ser ajustada, mantendo as diretrizes sempre atualizadas.
+1.  **Análise e Atualização de Diretrizes em Tempo Real (`GEMINI.md`):** Após cada procedimento, analise a ação realizada. Revise todos os `GEMINI.D` e determine se uma nova instrução deve ser inserida ou se uma existente precisa ser ajustada, mantendo as diretrizes sempre atualizadas.
 2.  **Análise e Atualização de Histórico em Tempo Real (`progress.md`):** Após cada procedimento, analise a ação e complemente os arquivos `progress.md` relevantes, adicionando o que foi realizado ao final de cada arquivo para manter o histórico completo.
 3.  **Limpeza Pré-Commit:** Execute `git status`. Remova todos os arquivos de cache e temporários (`__pycache__`, `.ruff_cache`, etc.). **NUNCA REMOVA `db.sqlite3` ou `.env`**.
 4.  **Versionamento:**
@@ -89,11 +89,11 @@ Para garantir a robustez e evitar comportamentos de looping, o Gemini CLI deve a
 
 #### 3.1. Arquitetura Modular
 
-* `core/`: Configurações centrais do Django.
-* `apps/dashboard/`: Responsável pela interface do usuário (frontend).
-* `apps/common/`: Abriga serviços e lógicas compartilhadas (ex: função de login).
-* `apps/automacao_documentos/`: App **orquestrador**. Define a arquitetura e os modelos base para todas as automações.
-* `apps/automacao_ipiranga/`: App **implementador**. Contém a lógica específica para a automação do portal Ipiranga.
+*   `core/`: Configurações centrais do Django.
+*   `apps/dashboard/`: Responsável pela interface do usuário (frontend).
+*   `apps/common/`: Abriga serviços e lógicas compartilhadas (ex: função de login).
+*   `apps/automacao_documentos/`: App **orquestrador**. Define a arquitetura e os modelos base para todas as automações.
+*   `apps/automacao_ipiranga/`: App **implementador**. Contém a lógica específica para a automação do portal Ipiranga.
 
 #### 3.2. Padrão de Automação (Baseado em Sinais)
 
@@ -106,11 +106,11 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 
 #### 3.3. Padrões de Código Essenciais (Lições Aprendidas)
 
-* **Robustez de Subprocessos:** Ao usar `subprocess.Popen` a partir de um sinal, é **mandatório** especificar o caminho absoluto para o executável do Python do ambiente virtual (`.venv/bin/python`). Evite passar código complexo via `python -c`, pois pode gerar `SyntaxError`.
-* **Robustez na Extração de Dados (OCR):** A extração de dados via OCR é desafiadora. Utilize **expressões regulares flexíveis** e funções de normalização. A calibração deve ser iterativa, ajustando as regex para lidar com erros comuns de reconhecimento (ex: 'T' por '6', 'O' por '0').
-* **Resiliência de Automação Web:** Implemente lógicas de espera e recarregamento de página para lidar com instabilidades de portais externos.
-* **Segurança de Credenciais:** Utilize **exclusivamente o arquivo `.env`** com `python-decouple`.
-* **Segurança Web:** Sempre use a proteção CSRF do Django. O decorador `@csrf_exempt` foi removido e não deve ser reintroduzido.
+*   **Robustez de Subprocessos:** Ao usar `subprocess.Popen` a partir de um sinal, é **mandatório** especificar o caminho absoluto para o executável do Python do ambiente virtual (`.venv/bin/python`). Evite passar código complexo via `python -c`, pois pode gerar `SyntaxError`.
+*   **Robustez na Extração de Dados (OCR):** A extração de dados via OCR é desafiadora. Utilize **expressões regulares flexíveis** e funções de normalização. A calibração deve ser iterativa, ajustando as regex para lidar com erros comuns de reconhecimento (ex: 'T' por '6', 'O' por '0').
+*   **Resiliência de Automação Web:** Implemente lógicas de espera e recarregamento de página para lidar com instabilidades de portais externos.
+*   **Segurança de Credenciais:** Utilize **exclusivamente o arquivo `.env`** com `python-decouple`.
+*   **Segurança Web:** Sempre use a proteção CSRF do Django. O decorador `@csrf_exempt` foi removido e não deve ser reintroduzido.
 *   **Comandos de Limpeza Eficientes:** Garanta que os comandos de limpeza de dados (ex: `cleanup_media`, `cleanup_test_data`, `cleanup_automation_data`) utilizem operações em massa para exclusão de registros de banco de dados (ex: `Model.objects.all().delete()`) e incluam tratamento de erros robusto para a exclusão de arquivos. Evite deleções linha a linha para grandes volumes de dados. Priorize abordagens agnósticas ao banco de dados sempre que possível.
 *   **Externalização de Configurações:** URLs de portais, coordenadas de Regiões de Interesse (ROIs) para OCR, e outras configurações específicas de ambiente **devem** ser externalizadas para as configurações do Django (`settings.py`) ou para o arquivo `.env` (via `python-decouple`). Evite hardcoding de valores que possam mudar entre ambientes ou que representem dados sensíveis.
 *   **Tipagem de Modelos Django com Pyright:** Sem `django-stubs`, a tipagem de modelos Django pode ser complexa. Pode ser necessário usar `type: ignore` para suprimir erros específicos do Pyright relacionados a atributos de modelo ou a argumentos de construtores de campo que não são inferidos corretamente.
@@ -122,9 +122,9 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 
 #### 4.1. Gerenciamento de Navegadores Playwright
 
-* **Instalação:** `playwright install` é mandatório no processo de `init`.
-* **Localização:** Os navegadores ficam em `./.playwright-browsers/`.
-* **CUIDADO com `git clean`:** O comando `git clean -fdx` **APAGARÁ** os navegadores. Use `git clean -fd` ou revise o que será apagado. Se removido, reinstale com `playwright install`.
+*   **Instalação:** `playwright install` é mandatório no processo de `init`.
+*   **Localização:** Os navegadores ficam em `./.playwright-browsers/`.
+*   **CUIDADO com `git clean`:** O comando `git clean -fdx` **APAGARÁ** os navegadores. Use `git clean -fd` ou revise o que será apagado. Se removido, reinstale com `playwright install`.
 
 #### 4.2. Procedimento de Gerenciamento do Servidor Django
 
@@ -137,15 +137,15 @@ Ao iniciar ou reiniciar o servidor, siga estas etapas para um ambiente limpo:
 
 #### 4.3. Ferramentas e Comandos Rápidos
 
-* **Gerenciador de Pacotes (`uv`):**
+*   **Gerenciador de Pacotes (`uv`):**
     * Adicionar: `uv add <pacote>`
     * Remover: `uv remove <pacote>`
     * Sincronizar: `uv sync` (garante versões exatas do `pyproject.toml`)
     * Atualizar: `uv sync --upgrade` (instala últimas versões permitidas)
     * Executar no venv: `uv run <comando>`
-* **Qualidade de Código (`ruff`):** Utilize `ruff check . --fix` e `ruff format .` para garantir a conformidade com os padrões de estilo e linting. **Priorize a correção do código** em vez de apenas suprimir avisos. Remova código comentado irrelevante.
-* **Verificação de Tipos (`pyright`):** Execute `pyright` para validação da tipagem estática. **Busque resolver os erros de tipo no código**; use `type: ignore` apenas como último recurso e com justificativa clara, especialmente em casos onde a tipagem é complexa sem `django-stubs`.
-* **Comandos do Projeto:**
+*   **Qualidade de Código (`ruff`):** Utilize `ruff check . --fix` e `ruff format .` para garantir a conformidade com os padrões de estilo e linting. **Priorize a correção do código** em vez de apenas suprimir avisos. Remova código comentado irrelevante.
+*   **Verificação de Tipos (`pyright`):** Execute `pyright` para validação da tipagem estática. **Busque resolver os erros de tipo no código**; use `type: ignore` apenas como último recurso e com justificativa clara, especialmente em casos onde a tipagem é complexa sem `django-stubs`.
+*   **Comandos do Projeto:**
     * `python manage.py runserver` (Diagnóstico: `... --noreload`)
     * `python manage.py makemigrations [app]`
     * `python manage.py migrate`
