@@ -58,6 +58,31 @@ Este processo é **obrigatório** antes de cada commit:
 *   **Pyright e Django (sem `django-stubs`):** A verificação de tipos com Pyright em projetos Django sem `django-stubs` pode ser desafiadora. Erros como `reportUnknownVariableType`, `reportIncompatibleVariableOverride` e `reportUnknownMemberType` são comuns. Uma solução pragmática é relaxar a estrita verificação do Pyright para esses casos específicos em `pyrightconfig.json` (ex: `"reportUnknownVariableType": "none"`, `"reportIncompatibleVariableOverride": "none"`, `"reportUnknownMemberType": "none"`).
 *   **Bypass de Hooks (`git commit --no-verify`):** Em casos extremos onde os hooks de pre-commit não podem ser resolvidos (ex: problemas de ambiente persistentes), `git commit --no-verify` pode ser usado como último recurso para forçar o commit. **ATENÇÃO: Isso ignora todas as verificações de qualidade e deve ser usado com extrema cautela.**
 
+#### 2.3. Gerenciamento de Falhas e Prevenção de Looping
+
+Para garantir a robustez e evitar comportamentos de looping, o Gemini CLI deve aderir estritamente às seguintes diretrizes:
+
+1.  **Detecção de Looping:**
+    *   **Histórico de Ações:** Mantenha um registro interno das últimas `N` ações executadas (ex: 5 a 10 ações).
+    *   **Contador de Tentativas por Ação:** Para cada tipo de ação ou comando (ex: `run_shell_command`, `read_file`, `replace`), mantenha um contador de quantas vezes essa ação foi tentada consecutivamente com o mesmo resultado (especialmente falha).
+    *   **Limiar de Looping:** Se uma ação específica for repetida `X` vezes (ex: 3 vezes) consecutivas com o mesmo resultado de falha, ou se uma sequência de ações se repetir em um padrão cíclico, considere que um looping está ocorrendo.
+
+2.  **Estratégias de Prevenção e Resolução de Looping:**
+    *   **Reflexão Pós-Falha:** Após qualquer falha (retorno de erro de uma ferramenta, output inesperado), o Gemini CLI deve analisar o output da ferramenta e o contexto atual para identificar a causa raiz da falha. Esta análise deve guiar a próxima tentativa.
+    *   **Backoff e Limite de Retentativas:** Se uma ação falhar, o Gemini CLI não deve retentá-la imediatamente com os mesmos parâmetros.
+        *   Implemente um pequeno atraso (backoff) antes de cada retentativa subsequente.
+        *   Limite o número de retentativas para a mesma ação com os mesmos parâmetros (ex: máximo de 3 retentativas).
+    *   **Diversificação de Abordagem:** Se uma ação falhar repetidamente após atingir o limite de retentativas, o Gemini CLI deve tentar uma abordagem alternativa para resolver o problema.
+        *   Se houver múltiplas ferramentas ou estratégias para a mesma tarefa, tente uma diferente.
+        *   Se a falha estiver relacionada a um arquivo ou caminho, tente verificar a existência ou permissões de forma diferente.
+        *   Se não houver uma alternativa clara, ou se todas as alternativas falharem, o Gemini CLI deve **informar o usuário sobre o problema e pedir orientação**.
+    *   **Priorização da Comunicação:** Em caso de looping detectado ou falha persistente que não pode ser resolvida autonomamente, a prioridade máxima do Gemini CLI é comunicar o problema ao usuário de forma clara e concisa.
+        *   Explique qual ação estava sendo tentada.
+        *   Descreva o problema encontrado.
+        *   Mencione as tentativas e estratégias já utilizadas.
+        *   Peça ao usuário para fornecer uma nova instrução ou orientação.
+    *   **Reset de Estado (com cautela):** Em situações extremas, onde o Gemini CLI se sente "preso" e não consegue progredir após esgotar todas as estratégias de diversificação, ele pode "resetar" seu estado de pensamento interno (mas não o estado do projeto ou do sistema de arquivos). Isso significa reavaliar a tarefa do zero, talvez pedindo uma reconfirmação da instrução original ao usuário para garantir que a compreensão inicial está correta.
+
 ---
 
 ### 3. Arquitetura e Padrões de Projeto
@@ -89,6 +114,7 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 *   **Comandos de Limpeza Eficientes:** Garanta que os comandos de limpeza de dados (ex: `cleanup_media`, `cleanup_test_data`, `cleanup_automation_data`) utilizem operações em massa para exclusão de registros de banco de dados (ex: `Model.objects.all().delete()`) e incluam tratamento de erros robusto para a exclusão de arquivos. Evite deleções linha a linha para grandes volumes de dados. Priorize abordagens agnósticas ao banco de dados sempre que possível.
 *   **Externalização de Configurações:** URLs de portais, coordenadas de Regiões de Interesse (ROIs) para OCR, e outras configurações específicas de ambiente **devem** ser externalizadas para as configurações do Django (`settings.py`) ou para o arquivo `.env` (via `python-decouple`). Evite hardcoding de valores que possam mudar entre ambientes ou que representem dados sensíveis.
 *   **Tipagem de Modelos Django com Pyright:** Sem `django-stubs`, a tipagem de modelos Django pode ser complexa. Pode ser necessário usar `type: ignore` para suprimir erros específicos do Pyright relacionados a atributos de modelo ou a argumentos de construtores de campo que não são inferidos corretamente.
+*   **Resiliência da Automação Playwright:** Ao desenvolver automações web com Playwright, garanta a robustez utilizando seletores CSS/XPath explícitos e estáveis, implementando esperas condicionais (`page.wait_for_selector`, `page.wait_for_load_state`) e tratando exceções para elementos não encontrados ou interações falhas. Isso minimiza a quebra da automação devido a pequenas alterações na interface dos portais externos.
 
 ---
 
@@ -117,8 +143,8 @@ Ao iniciar ou reiniciar o servidor, siga estas etapas para um ambiente limpo:
     * Sincronizar: `uv sync` (garante versões exatas do `pyproject.toml`)
     * Atualizar: `uv sync --upgrade` (instala últimas versões permitidas)
     * Executar no venv: `uv run <comando>`
-* **Qualidade de Código:** `ruff check . --fix` e `ruff format .`. **Remova código comentado irrelevante.**
-* **Verificação de Tipos:** `pyright`.
+* **Qualidade de Código (`ruff`):** Utilize `ruff check . --fix` e `ruff format .` para garantir a conformidade com os padrões de estilo e linting. **Priorize a correção do código** em vez de apenas suprimir avisos. Remova código comentado irrelevante.
+* **Verificação de Tipos (`pyright`):** Execute `pyright` para validação da tipagem estática. **Busque resolver os erros de tipo no código**; use `type: ignore` apenas como último recurso e com justificativa clara, especialmente em casos onde a tipagem é complexa sem `django-stubs`.
 * **Comandos do Projeto:**
     * `python manage.py runserver` (Diagnóstico: `... --noreload`)
     * `python manage.py makemigrations [app]`
@@ -148,3 +174,12 @@ Ao iniciar ou reiniciar o servidor, siga estas etapas para um ambiente limpo:
         *   **Execução:** `kernprof -l manage.py <comando>`
         *   **Visualização:** `python -m line_profiler <nome_do_arquivo_de_saida>.lprof`
         *   **Importante:** **Lembre-se de remover o decorador `@profile` antes de fazer o commit para evitar que código de desenvolvimento seja incluído no repositório.**
+
+---
+
+### 5. Integração Contínua (CI/CD)
+
+*   **GitHub Actions:** O projeto utiliza GitHub Actions para automação de testes e verificações de qualidade de código.
+    *   **Localização:** Os workflows estão definidos em `.github/workflows/ci.yml`.
+    *   **Verificações Essenciais:** Inclui checks para `ruff` (formatação e linting) e `pyright` (verificação de tipos), garantindo que o código esteja em conformidade com os padrões antes de ser integrado à `main` branch.
+    *   **Importância:** Garante a qualidade e a consistência do código em cada push e pull request, minimizando a introdução de bugs e problemas de estilo.

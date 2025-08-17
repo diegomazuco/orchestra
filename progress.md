@@ -183,3 +183,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Processo de Inicialização (`init`)**: Executado com sucesso, incluindo sincronização do repositório, configuração do ambiente Python (instalação/atualização de dependências com `uv`, instalação de navegadores Playwright) e aplicação de migrações de banco de dados.
 - **Análise e Aprimoramento das Diretrizes Git**: Realizada análise detalhada dos comandos Git utilizados e das instruções nos arquivos `GEMINI.md`. Confirmada a correção das diretrizes existentes e identificada uma oportunidade de melhoria.
 - **Atualização de Diretrizes (`GEMINI.md`)**: O arquivo `GEMINI.md` principal foi atualizado para incluir uma etapa de verificação do `git status` antes do `git pull` no processo de `init`, tornando as instruções de sincronização do repositório mais rigorosas e explícitas.
+
+## 17/08/2025 - Melhoria das Diretrizes de Prevenção de Looping
+
+- **Atualização de Diretrizes (`GEMINI.md`):** O arquivo `GEMINI.md` principal foi atualizado com uma nova seção "2.3. Gerenciamento de Falhas e Prevenção de Looping". Esta seção inclui diretrizes detalhadas para o Gemini CLI sobre detecção de looping (histórico de ações, contadores de tentativas, limiares de looping) e estratégias de prevenção e resolução (reflexão pós-falha, backoff e limite de retentativas, diversificação de abordagem, priorização da comunicação com o usuário e reset de estado com cautela).
