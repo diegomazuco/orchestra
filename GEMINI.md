@@ -63,25 +63,25 @@ Este processo é **obrigatório** antes de cada commit:
 Para garantir a robustez e evitar comportamentos de looping, o Gemini CLI deve aderir estritamente às seguintes diretrizes:
 
 1.  **Detecção de Looping:**
-    *   **Histórico de Ações:** Mantenha um registro interno das últimas `N` ações executadas (ex: 5 a 10 ações).
-    *   **Contador de Tentativas por Ação:** Para cada tipo de ação ou comando (ex: `run_shell_command`, `read_file`, `replace`), mantenha um contador de quantas vezes essa ação foi tentada consecutivamente com o mesmo resultado (especialmente falha).
-    *   **Limiar de Looping:** Se uma ação específica for repetida `X` vezes (ex: 3 vezes) consecutivas com o mesmo resultado de falha, ou se uma sequência de ações se repetir em um padrão cíclico, considere que um looping está ocorrendo.
+    *   **Histórico de Ações:** Mantenha um registro interno das últimas `N` ações executadas, incluindo a ferramenta utilizada, seus parâmetros e o resultado (sucesso/falha). Isso permite identificar padrões repetitivos de forma mais precisa.
+    *   **Contador de Tentativas por Ação:** Para cada combinação única de ferramenta e parâmetros, mantenha um contador de quantas vezes essa ação foi tentada consecutivamente com o mesmo resultado (especialmente falha).
+    *   **Limiar de Looping:** Se uma ação específica (ferramenta + parâmetros) for repetida `X` vezes (ex: 3 vezes) consecutivas com o mesmo resultado de falha, ou se uma sequência de ações se repetir em um padrão cíclico, considere que um looping está ocorrendo.
 
 2.  **Estratégias de Prevenção e Resolução de Looping:**
     *   **Reflexão Pós-Falha:** Após qualquer falha (retorno de erro de uma ferramenta, output inesperado), o Gemini CLI deve analisar o output da ferramenta e o contexto atual para identificar a causa raiz da falha. Esta análise deve guiar a próxima tentativa.
     *   **Backoff e Limite de Retentativas:** Se uma ação falhar, o Gemini CLI não deve retentá-la imediatamente com os mesmos parâmetros.
         *   Implemente um pequeno atraso (backoff) antes de cada retentativa subsequente.
-        *   Limite o número de retentativas para a mesma ação com os mesmos parâmetros (ex: máximo de 3 retentativas).
+        *   Limite o número de retentativas para a mesma ação com os mesmos parâmetros (ex: máximo de 3 retentativas). O Gemini CLI deve registrar essas retentativas internamente.
     *   **Diversificação de Abordagem:** Se uma ação falhar repetidamente após atingir o limite de retentativas, o Gemini CLI deve tentar uma abordagem alternativa para resolver o problema.
-        *   Se houver múltiplas ferramentas ou estratégias para a mesma tarefa, tente uma diferente.
-        *   Se a falha estiver relacionada a um arquivo ou caminho, tente verificar a existência ou permissões de forma diferente.
-        *   Se não houver uma alternativa clara, ou se todas as alternativas falharem, o Gemini CLI deve **informar o usuário sobre o problema e pedir orientação**.
-    *   **Priorização da Comunicação:** Em caso de looping detectado ou falha persistente que não pode ser resolvida autonomamente, a prioridade máxima do Gemini CLI é comunicar o problema ao usuário de forma clara e concisa.
-        *   Explique qual ação estava sendo tentada.
-        *   Descreva o problema encontrado.
-        *   Mencione as tentativas e estratégias já utilizadas.
-        *   Peça ao usuário para fornecer uma nova instrução ou orientação.
-    *   **Reset de Estado (com cautela):** Em situações extremas, onde o Gemini CLI se sente "preso" e não consegue progredir após esgotar todas as estratégias de diversificação, ele pode "resetar" seu estado de pensamento interno (mas não o estado do projeto ou do sistema de arquivos). Isso significa reavaliar a tarefa do zero, talvez pedindo uma reconfirmação da instrução original ao usuário para garantir que a compreensão inicial está correta.
+        *   **Táticas de Diversificação:**
+            *   Se uma ferramenta de escrita (`write_file`, `replace`) falhar, tentar ler o arquivo (`read_file`) para verificar o estado atual ou usar `search_file_content` para localizar o trecho exato.
+            *   Se um comando shell (`run_shell_command`) falhar, tentar pesquisar o erro na web (`google_web_search`) ou executar o comando com opções de depuração (`--verbose`, `-v`).
+            *   Se um arquivo não for encontrado, tentar `glob` para localizá-lo ou verificar permissões.
+            *   Se a falha persistir, considerar "táticas de depuração" como adicionar logging temporário ao código ou executar comandos em modo verbose para obter mais informações.
+    *   **Priorização da Comunicação (Escalonamento Proativo):** Em caso de looping detectado (atingindo o "limiar de frustração") ou falha persistente que não pode ser resolvida autonomamente, a prioridade máxima do Gemini CLI é comunicar o problema ao usuário de forma clara e concisa.
+        *   **Limiar de Frustração:** Se o Gemini CLI tentar a mesma ação (ferramenta + parâmetros) e falhar 3 vezes consecutivas, ele deve *imediatamente* escalar para o usuário.
+        *   **Conteúdo da Comunicação:** Explique qual tarefa estava sendo tentada, qual ação está falhando, o erro recebido, as tentativas e estratégias já utilizadas, e a sugestão de que o usuário pode precisar intervir ou fornecer uma nova instrução.
+    *   **Reset de Estado (com cautela):** Em situações extremas, onde o Gemini CLI se sente "preso" e não consegue progredir após esgotar todas as estratégias de diversificação, ele pode "resetar" seu estado de pensamento interno (mas não o estado do projeto ou do sistema de arquivos). Isso significa reavaliar a tarefa do zero, talvez pedindo uma reconfirmação da instrução original ao usuário para garantir que a compreensão inicial está correta. O Gemini CLI deve informar o usuário antes de realizar um reset de estado.
 
 ---
 
@@ -115,6 +115,8 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 *   **Externalização de Configurações:** URLs de portais, coordenadas de Regiões de Interesse (ROIs) para OCR, e outras configurações específicas de ambiente **devem** ser externalizadas para as configurações do Django (`settings.py`) ou para o arquivo `.env` (via `python-decouple`). Evite hardcoding de valores que possam mudar entre ambientes ou que representem dados sensíveis.
 *   **Tipagem de Modelos Django com Pyright:** Sem `django-stubs`, a tipagem de modelos Django pode ser complexa. Pode ser necessário usar `type: ignore` para suprimir erros específicos do Pyright relacionados a atributos de modelo ou a argumentos de construtores de campo que não são inferidos corretamente.
 *   **Resiliência da Automação Playwright:** Ao desenvolver automações web com Playwright, garanta a robustez utilizando seletores CSS/XPath explícitos e estáveis, implementando esperas condicionais (`page.wait_for_selector`, `page.wait_for_load_state`) e tratando exceções para elementos não encontrados ou interações falhas. Isso minimiza a quebra da automação devido a pequenas alterações na interface dos portais externos.
+*   **Mecanismos de Bloqueio/Status para Automações:** Para automações críticas (ex: processamento de `CertificadoVeiculo`), considere a implementação de mecanismos de bloqueio ou status mais granulares no modelo (ex: `pendente`, `em_processamento`, `concluido`, `falha_web`, `falha_ocr`, `cancelado`). Isso evita que múltiplas automações tentem processar o mesmo registro simultaneamente ou que um registro falho seja retentado indefinidamente sem intervenção.
+*   **Contadores de Tentativas no Modelo:** Para modelos que disparam automações (ex: `CertificadoVeiculo`), adicione campos como `tentativas_automacao` e `tentativas_ocr`. A automação deve parar de tentar após um número definido de falhas, marcando o registro com um status final de falha e evitando loops infinitos de retentativa.
 
 ---
 
