@@ -127,6 +127,18 @@ Para garantir a segurança e a integridade do projeto, o Gemini CLI **NUNCA** de
 **Mecanismo de Salvaguarda Interno:**
 O Gemini CLI deve implementar um mecanismo interno que, ao detectar a tentativa de execução de um "Comando Proibido", **interrompa a execução, emita um aviso claro ao usuário explicando a violação e aguarde uma confirmação explícita para prosseguir**. Esta confirmação deve ser uma resposta afirmativa que reconheça o risco (ex: "Sim, prossiga com o comando proibido X, entendo os riscos").
 
+#### 2.5. Verificação de Procedimentos Multi-Etapas
+
+Após a execução de qualquer procedimento que envolva múltiplas etapas (ex: `init`, reinício do servidor, processo de commit), o Gemini CLI **deve** realizar uma auto-verificação para garantir a execução completa e correta de todas as etapas.
+
+1.  **Listar Etapas:** Relembrar e listar todas as etapas definidas para o procedimento em questão.
+2.  **Confirmar Execução:** Para cada etapa, verificar se foi executada conforme o planejado.
+3.  **Tratamento de Omissões:** Se uma etapa foi omitida ou executada incorretamente:
+    *   **Identificar Motivo:** Determinar a razão da omissão (ex: erro, interrupção, esquecimento).
+    *   **Executar ou Escalar:** Se possível e seguro, executar a etapa omitida imediatamente. Caso contrário, ou se a omissão for crítica, escalar para o usuário explicando a falha e as opções.
+
+Este mecanismo visa garantir a consistência e a aderência rigorosa aos fluxos de trabalho definidos.
+
 ---
 
 ### 3. Arquitetura e Padrões de Projeto
