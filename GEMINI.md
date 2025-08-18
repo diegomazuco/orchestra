@@ -58,30 +58,51 @@ Este processo é **obrigatório** antes de cada commit:
 *   **Pyright e Django (sem `django-stubs`):** A verificação de tipos com Pyright em projetos Django sem `django-stubs` pode ser desafiadora. Erros como `reportUnknownVariableType`, `reportIncompatibleVariableOverride` e `reportUnknownMemberType` são comuns. Uma solução pragmática é relaxar a estrita verificação do Pyright para esses casos específicos em `pyrightconfig.json` (ex: `"reportUnknownVariableType": "none"`, `"reportIncompatibleVariableOverride": "none"`, `"reportUnknownMemberType": "none"`).
 *   **Bypass de Hooks (`git commit --no-verify`):** Em casos extremos onde os hooks de pre-commit não podem ser resolvidos (ex: problemas de ambiente persistentes), `git commit --no-verify` pode ser usado como último recurso para forçar o commit. **ATENÇÃO: Isso ignora todas as verificações de qualidade e deve ser usado com extrema cautela.**
 
-#### 2.3. Gerenciamento de Falhas e Prevenção de Looping
+#### 2.3. Gerenciamento de Falhas e Prevenção de Looping Aprimorado
 
-Para garantir a robustez e evitar comportamentos de looping, o Gemini CLI deve aderir estritamente às seguintes diretrizes:
+Para garantir a robustez, evitar comportamentos de looping e responder inteligentemente a falhas, o Gemini CLI deve aderir estritamente às seguintes diretrizes:
 
-1.  **Detecção de Looping:**
-    *   **Histórico de Ações:** Mantenha um registro interno das últimas `N` ações executadas, incluindo a ferramenta utilizada, seus parâmetros e o resultado (sucesso/falha). Isso permite identificar padrões repetitivos de forma mais precisa.
-    *   **Contador de Tentativas por Ação:** Para cada combinação única de ferramenta e parâmetros, mantenha um contador de quantas vezes essa ação foi tentada consecutivamente com o mesmo resultado (especialmente falha).
-    *   **Limiar de Looping:** Se uma ação específica (ferramenta + parâmetros) for repetida `X` vezes (ex: 3 vezes) consecutivas com o mesmo resultado de falha, ou se uma sequência de ações se repetir em um padrão cíclico, considere que um looping está ocorrendo.
+1.  **Detecção de Looping e Estagnação:**
+    *   **Histórico de Ações e Resultados:** Mantenha um registro interno detalhado das últimas `N` ações executadas (ex: 5-10 ações), incluindo a ferramenta utilizada, seus parâmetros, o resultado (sucesso/falha) e o output relevante.
+    *   **Contador de Tentativas Consecutivas:** Para cada combinação única de ferramenta e parâmetros, mantenha um contador de quantas vezes essa ação foi tentada consecutivamente com o mesmo resultado de falha.
+    *   **Limiar de Estagnação/Looping:**
+        *   Se uma ação específica (ferramenta + parâmetros) for repetida `X` vezes (ex: 3 vezes) consecutivas com o mesmo resultado de falha, considere um looping.
+        *   Se o progresso em direção ao objetivo estagnar (nenhuma nova informação relevante ou mudança de estado por `Y` ações), considere uma estagnação.
 
-2.  **Estratégias de Prevenção e Resolução de Looping:**
-    *   **Reflexão Pós-Falha e Análise de Erros:** Após qualquer falha (retorno de erro de uma ferramenta, output inesperado), o Gemini CLI deve analisar o output da ferramenta e o contexto atual para identificar a causa raiz da falha. Esta análise deve guiar a próxima tentativa, buscando compreender o *porquê* da falha (ex: erro de sintaxe, arquivo não encontrado, permissão negada, API indisponível).
-    *   **Backoff e Limite de Retentativas:** Se uma ação falhar, o Gemini CLI não deve retentá-la imediatamente com os mesmos parâmetros.
-        *   Implemente um pequeno atraso (backoff) antes de cada retentativa subsequente.
-        *   Limite o número de retentativas para a mesma ação com os mesmos parâmetros (ex: máximo de 3 retentativas). O Gemini CLI deve registrar essas retentativas internamente.
-    *   **Diversificação de Abordagem:** Se uma ação falhar repetidamente após atingir o limite de retentativas, o Gemini CLI deve tentar uma abordagem alternativa para resolver o problema.
-        *   **Táticas de Diversificação:**
-            *   Se uma ferramenta de escrita (`write_file`, `replace`) falhar, tentar ler o arquivo (`read_file`) para verificar o estado atual ou usar `search_file_content` para localizar o trecho exato.
-            *   Se um comando shell (`run_shell_command`) falhar, tentar pesquisar o erro na web (`google_web_search`) ou executar o comando com opções de depuração (`--verbose`, `-v`).
-            *   Se um arquivo não for encontrado, tentar `glob` para localizá-lo ou verificar permissões.
-            *   Se a falha persistir, considerar "táticas de depuração" como adicionar logging temporário ao código ou executar comandos em modo verbose para obter mais informações.
-            *   **Reavaliação da Tarefa:** Em casos de looping persistente, o agente pode "resetar" seu estado de pensamento e reavaliar a tarefa do zero, talvez pedindo uma reconfirmação da instrução original ao usuário.
-    *   **Priorização da Comunicação (Escalonamento Proativo):** Em caso de looping detectado (atingindo o "limiar de frustração") ou falha persistente que não pode ser resolvida autonomamente, a prioridade máxima do Gemini CLI é comunicar o problema ao usuário de forma clara e concisa.
-        *   **Limiar de Frustração:** Se o Gemini CLI tentar a mesma ação (ferramenta + parâmetros) e falhar 3 vezes consecutivas, ele deve *imediatamente* escalar para o usuário.
-        *   **Conteúdo da Comunicação:** Explique qual tarefa estava sendo tentada, qual ação está falhando, o erro recebido, as tentativas e estratégias já utilizadas, e a sugestão de que o usuário pode precisar intervir ou fornecer uma nova instrução.
+2.  **Ciclo de Ação-Reflexão-Resolução:**
+    Após cada ação, especialmente em caso de falha, o Gemini CLI deve seguir um ciclo rigoroso:
+
+    *   **2.1. Análise Imediata da Falha:**
+        *   Examine o `output` da ferramenta e o `stderr` (se houver) para identificar a causa raiz da falha (ex: `FileNotFoundError`, `SyntaxError`, `PermissionDenied`, `APIError`, `Timeout`, `RateLimitExceeded`).
+        *   Classifique o tipo de erro (transitório vs. permanente, recuperável vs. irrecuperável).
+        *   Analise o contexto atual (estado do projeto, arquivos, histórico recente) para entender *por que* a falha ocorreu.
+
+    *   **2.2. Estratégias de Retentativa Inteligente (Nível 1 - Táticas):**
+        Se a falha for transitória ou recuperável, tente uma retentativa inteligente:
+        *   **Backoff Exponencial com Jitter:** Implemente um pequeno atraso crescente (ex: 1s, 2s, 4s) antes de cada retentativa subsequente, adicionando um pequeno atraso aleatório para evitar picos de tráfego.
+        *   **Retentativa Específica por Erro:**
+            *   Se `FileNotFoundError`: Tente usar `glob` para localizar o arquivo, ou `list_directory` para verificar o diretório.
+            *   Se `SyntaxError` (em `run_shell_command` com código): Reavalie a sintaxe do comando ou do script.
+            *   Se `PermissionDenied`: Verifique as permissões do arquivo/diretório.
+            *   Se `Timeout` ou `APIError` (transitório): Retente com backoff.
+            *   Se `RateLimitExceeded`: Respeite o cabeçalho `Retry-After` ou implemente um atraso maior.
+        *   **Limitar Retentativas:** Não exceda um número predefinido de retentativas para a mesma ação (ex: 3 vezes).
+
+    *   **2.3. Diversificação de Abordagem (Nível 2 - Estratégias):**
+        Se as retentativas inteligentes falharem ou se o erro for permanente/irrecuperável para a abordagem atual, mude a estratégia:
+        *   **Reavaliação da Ferramenta:** Se uma ferramenta falhar consistentemente, considere usar uma ferramenta alternativa para a mesma tarefa (ex: se `write_file` falhar, tente `run_shell_command` com `echo > file`).
+        *   **Mudança de Fluxo:** Se um passo específico do plano falhar repetidamente, reavalie o plano completo. Existe uma maneira diferente de alcançar o objetivo?
+        *   **Táticas de Depuração:** Considere adicionar logging temporário ao código, executar comandos em modo verbose, ou usar `search_file_content` para inspecionar o estado do código.
+        *   **Circuit Breaker:** Se uma ferramenta ou API falhar repetidamente (ex: 5 falhas consecutivas), "abra o disjuntor" e evite chamadas futuras a essa ferramenta por um período, assumindo que ela está inoperante.
+
+    *   **2.4. Escalonamento Proativo para o Usuário (Nível 3 - Intervenção Humana):**
+        Se o looping for detectado (limiar de estagnação/looping atingido) ou se uma falha persistir após todas as estratégias de resolução autônoma, a prioridade máxima é comunicar o problema ao usuário.
+        *   **Comunicação Clara:** Explique qual tarefa estava sendo tentada, qual ação está falhando, o erro recebido, as tentativas e estratégias já utilizadas, e a sugestão de que o usuário pode precisar intervir ou fornecer uma nova instrução.
+        *   **Contexto Completo:** Forneça todo o contexto relevante para que o usuário possa tomar uma decisão informada.
+
+**Considerações Adicionais:**
+*   **Estado Interno:** Mantenha um estado interno que reflita o progresso da tarefa (ex: `GATHERING_INFO`, `PLANNING`, `IMPLEMENTING`, `VERIFYING`, `FAILED_HALT`). Transições de estado devem ser explícitas.
+*   **Priorização de Segurança:** Nunca ignore erros de segurança ou permissão. Escalone imediatamente se houver dúvidas.
 
 ---
 
