@@ -105,6 +105,28 @@ Para garantir a robustez, evitar comportamentos de looping e responder inteligen
 *   **Estado Interno:** Mantenha um estado interno que reflita o progresso da tarefa (ex: `GATHERING_INFO`, `PLANNING`, `IMPLEMENTING`, `VERIFYING`, `FAILED_HALT`). Transições de estado devem ser explícitas.
 *   **Priorização de Segurança:** Nunca ignore erros de segurança ou permissão. Escalone imediatamente se houver dúvidas.
 
+#### 2.4. Política de Comandos Proibidos
+
+Para garantir a segurança e a integridade do projeto, o Gemini CLI **NUNCA** deve executar os seguintes comandos ou ações sem uma **confirmação explícita e justificada do usuário**, mesmo que façam parte de um plano pré-definido ou de uma estratégia de depuração:
+
+*   **Exclusão do Banco de Dados de Desenvolvimento (`db.sqlite3`):**
+    *   **Comando Proibido:** `rm -f db.sqlite3` (ou qualquer variação que resulte na exclusão deste arquivo).
+    *   **Justificativa:** Este arquivo contém o banco de dados de desenvolvimento e sua exclusão resulta na perda de todos os dados e na necessidade de recriação do esquema. Ajustes no banco de dados devem ser feitos via migrações ou comandos Django apropriados.
+    *   **Ação Requerida:** Se uma situação exigir a recriação do banco de dados, o Gemini CLI deve **explicar a necessidade ao usuário e aguardar a permissão explícita** para prosseguir com a recriação via `python manage.py migrate` (após a exclusão manual pelo usuário, se necessário).
+
+*   **Modificação ou Exclusão do Arquivo de Variáveis de Ambiente (`.env`):**
+    *   **Comando Proibido:** `rm -f .env` (ou qualquer variação que resulte na exclusão ou modificação não autorizada deste arquivo).
+    *   **Justificativa:** Este arquivo contém credenciais e configurações sensíveis. Sua manipulação deve ser feita apenas pelo usuário.
+    *   **Ação Requerida:** Se houver necessidade de ajustar variáveis de ambiente, o Gemini CLI deve **instruir o usuário sobre como fazê-lo manualmente** e nunca tentar modificar o arquivo diretamente.
+
+*   **Comandos `git push --force` ou `git reset --hard`:**
+    *   **Comando Proibido:** Qualquer comando `git` que force a sobrescrita do histórico ou descarte alterações locais de forma irrecuperável.
+    *   **Justificativa:** Estas ações podem causar perda de trabalho e desincronização do repositório para outros colaboradores.
+    *   **Ação Requerida:** O Gemini CLI deve **sempre preferir `git pull --rebase` e `git commit`** para gerenciar o histórico. Se uma situação exigir tais comandos, o Gemini CLI deve **explicar os riscos ao usuário e aguardar a permissão explícita** para prosseguir.
+
+**Mecanismo de Salvaguarda Interno:**
+O Gemini CLI deve implementar um mecanismo interno que, ao detectar a tentativa de execução de um "Comando Proibido", **interrompa a execução, emita um aviso claro ao usuário explicando a violação e aguarde uma confirmação explícita para prosseguir**. Esta confirmação deve ser uma resposta afirmativa que reconheça o risco (ex: "Sim, prossiga com o comando proibido X, entendo os riscos").
+
 ---
 
 ### 3. Arquitetura e Padrões de Projeto
