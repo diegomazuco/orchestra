@@ -46,6 +46,7 @@ Este processo é **obrigatório** antes de cada commit:
 1.  **Análise e Atualização de Diretrizes em Tempo Real (`GEMINI.md`):** Após cada procedimento, analise a ação realizada. Revise todos os `GEMINI.D` e determine se uma nova instrução deve ser inserida ou se uma existente precisa ser ajustada, mantendo as diretrizes sempre atualizadas.
 2.  **Análise e Atualização de Histórico em Tempo Real (`progress.md`):** Após cada procedimento, analise a ação e complemente os arquivos `progress.md` relevantes, adicionando o que foi realizado ao final de cada arquivo para manter o histórico completo.
 3.  **Limpeza Pré-Commit:** Execute `git status`. Remova todos os arquivos de cache e temporários (`__pycache__`, `.ruff_cache`, etc.). **NUNCA REMOVA `db.sqlite3` ou `.env`**.
+    *   **ATENÇÃO:** O arquivo `db.sqlite3` é o banco de dados de desenvolvimento e **NÃO DEVE SER EXCLUÍDO EM HIPÓTESE ALGUMA**, mesmo para fins de depuração ou para garantir um estado "limpo". Ajustes no banco de dados devem ser feitos via migrações ou comandos Django apropriados, não pela exclusão do arquivo. A exclusão acidental pode levar à perda de dados e à necessidade de recriação completa do ambiente de dados.
 4.  **Versionamento:**
     * `git add .`
     * `git commit -m "..."` (Use mensagens detalhadas explicando o "porquê").
