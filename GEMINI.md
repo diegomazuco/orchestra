@@ -186,12 +186,14 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 
 #### 4.2. Procedimento de Gerenciamento do Servidor Django
 
-Ao iniciar ou reiniciar o servidor, siga estas etapas para um ambiente limpo:
-1.  **Liberar Porta:** Certifique-se de que a porta 8000 está livre (`lsof -i :8000` e `kill -9 <PID>`).
-2.  **Limpar Banco de Dados:** Execute `python manage.py cleanup_automation_data`.
-3.  **Limpar Arquivos Temporários:** Execute `python manage.py cleanup_media`.
-4.  **Limpar Logs:** Remova arquivos de log antigos (`logs/`).
-5.  **Iniciar Servidor:** Inicie o servidor (ex: `python manage.py runserver`).
+Ao iniciar ou reiniciar o servidor, ou **antes de cada novo ciclo de teste**, siga estas etapas para garantir um ambiente limpo e consistente:
+1.  **Verificar e Finalizar Processos Existentes:** Antes de iniciar o servidor, verifique se há outros processos Python relacionados ao projeto em execução (ex: `ps aux | grep python`). Se houver, finalize-os todos para evitar conflitos e múltiplos processos.
+2.  **Liberar Porta:** Certifique-se de que a porta 8000 está livre (`lsof -i :8000` e `kill -9 <PID>`).
+3.  **Limpar Banco de Dados (CertificadoVeiculo):** Execute `python manage.py shell -c "from apps.automacao_ipiranga.models import CertificadoVeiculo; CertificadoVeiculo.objects.all().delete()"` para garantir que todos os registros de automação anteriores sejam removidos.
+4.  **Limpar Banco de Dados (Automation Data):** Execute `python manage.py cleanup_automation_data`.
+5.  **Limpar Arquivos Temporários:** Execute `python manage.py cleanup_media`.
+6.  **Limpar Logs:** Remova arquivos de log antigos (`logs/`).
+7.  **Iniciar Servidor:** Inicie o servidor (ex: `python manage.py runserver`).
 
 #### 4.3. Ferramentas e Comandos Rápidos
 
