@@ -3,9 +3,9 @@ import random
 from datetime import datetime, timedelta
 from typing import Any, TypedDict
 
+from django.conf import settings  # Added import
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
-from django.conf import settings # Added import
 
 from apps.analise_infracoes.models import Infracao
 

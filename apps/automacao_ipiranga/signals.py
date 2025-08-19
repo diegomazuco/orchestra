@@ -102,12 +102,12 @@ def trigger_automacao_certificado(
         f"Sender: {sender.__name__}, Instance ID: {instance.id}, "  # type: ignore
         f"Created: {created}, Status: {instance.status}"  # type: ignore
     )
-    if instance.status == "pendente":  # type: ignore
+    if created and instance.status == "pendente":  # type: ignore
         logger.info(
-            f"[SIGNAL] Condições atendidas. Disparando automação para o Certificado ID: {instance.id}"  # type: ignore
+            f"[SIGNAL] Condições atendidas (objeto criado e pendente). Disparando automação para o Certificado ID: {instance.id}"  # type: ignore
         )
         transaction.on_commit(lambda: run_automation_command(instance.id))  # type: ignore
     else:
         logger.info(
-            f"[SIGNAL] Condições não atendidas. Nenhuma automação foi disparada para o Certificado ID: {instance.id}."  # type: ignore
+            f"[SIGNAL] Condições não atendidas (objeto não criado ou status não pendente). Nenhuma automação foi disparada para o Certificado ID: {instance.id}."  # type: ignore
         )

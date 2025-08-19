@@ -1,11 +1,13 @@
+import logging  # Added logging import
 import os
 import shutil
-import logging # Added logging import
 from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection # Keep connection for potential future use, but remove specific query
+from django.db import (
+    connection,  # Keep connection for potential future use, but remove specific query
+)
 
 from apps.automacao_ipiranga.models import CertificadoVeiculo
 

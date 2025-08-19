@@ -7,10 +7,13 @@ import fitz  # type: ignore # PyMuPDF
 import numpy as np
 import pytesseract  # type: ignore
 from decouple import config
+from django.conf import settings  # Added import
 from PIL import Image
 from playwright.async_api import Page, expect
 from pytesseract import Output  # Moved to top
-from django.conf import settings # Added import
+from skimage.transform import rotate
+from skimage.filters import unsharp_mask
+from scipy.ndimage import gaussian_filter
 
 
 async def login_to_portran(page: Page, logger: logging.Logger) -> None:
@@ -119,10 +122,10 @@ def extract_text_from_pdf_image(
 
             # Extract text from each ROI
             numero_documento_text: str = extract_text_from_roi(
-                page, numero_documento_roi, logger, tesseract_config
+                page, numero_documento_roi, logger, tesseract_config, page_num
             )
             data_vencimento_text: str = extract_text_from_roi(
-                page, data_vencimento_roi, logger, tesseract_config
+                page, data_vencimento_roi, logger, tesseract_config, page_num
             )
 
             text += f"Numero Documento: {numero_documento_text}\nData Vencimento: {data_vencimento_text}"
@@ -141,6 +144,7 @@ def extract_text_from_roi(
     roi: tuple[int, int, int, int],
     logger: logging.Logger,
     tesseract_config: str,
+    page_num: int, # Added page_num
 ) -> str:
     """Extracts text from a specific region of interest on a page."""
     try:
@@ -155,12 +159,54 @@ def extract_text_from_roi(
         logger.debug("OCR: Convertendo imagem para escala de cinza com Pillow.")
         img = img.convert("L")
 
-        # Binarization using NumPy
-        logger.debug("OCR: Iniciando binarização com NumPy.")
-
+        # Convert PIL Image to NumPy array for scikit-image/scipy processing
         img_np: np.ndarray = np.array(img)
+
+        # Deskewing (Skew Correction) using Hough Transform
+        try:
+            from skimage.transform import hough_line, hough_line_peaks
+            from skimage.feature import canny
+            from skimage.filters import threshold_otsu
+
+            # Convert to binary image
+            thresh = threshold_otsu(img_np)
+            binary = img_np > thresh
+
+            # Edge detection
+            edges = canny(binary, sigma=1.0)
+
+            # Hough Transform
+            h, theta, d = hough_line(edges)
+
+            # Find the strongest lines
+            _, angles, _ = hough_line_peaks(h, theta, d)
+
+            # Calculate the average angle, convert to degrees
+            if angles.size > 0:
+                angle = np.rad2deg(np.mean(angles)) - 90 # Adjust for vertical lines
+                if abs(angle) > 0.1: # Only rotate if angle is significant
+                    logger.info(f"OCR: Deskewing - Rotating by {angle:.2f} degrees using Hough Transform.")
+                    img_np = (rotate(img_np, angle, resize=False, mode='edge') * 255).astype(np.uint8)
+                    img = Image.fromarray(img_np)
+            else:
+                logger.info("OCR: Deskewing - No strong lines found for Hough Transform.")
+        except Exception as e:
+            logger.warning(f"OCR: Deskewing failed (Hough Transform): {e}")
+
+        # Noise Reduction (Gaussian Blur)
+        logger.debug("OCR: Aplicando redução de ruído (Gaussian Blur).")
+        img_np = gaussian_filter(img_np, sigma=0.7) # sigma value can be tuned
+        img = Image.fromarray(img_np)
+
+        # Binarization using NumPy (after deskewing and noise reduction)
+        logger.debug("OCR: Iniciando binarização com NumPy.")
         img_np = np.where(img_np < 128, 0, 255).astype(np.uint8)
         img = Image.fromarray(img_np)
+
+        # Save screenshot of the processed image before OCR
+        screenshot_path = f"logs/ocr_processed_image_{page_num}.png"
+        img.save(screenshot_path)
+        logger.info(f"OCR: Processed image saved to {screenshot_path}")
 
         logger.debug("OCR: Iniciando extração de texto com Tesseract.")
 

@@ -262,3 +262,6 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Adicionado logging de erro mais específico para operações `bulk_create`.
 - **Análise e Ajustes em `apps/dashboard/views.py`**: 
     - Removidas as instruções `assert` redundantes.
+
+- [2025-08-19] Ajuste nas instruções do processo 'init' no GEMINI.md para torná-lo inteligente e idempotente, evitando a percepção de looping.
+- [2025-08-19] Melhorias na robustez da automação e OCR: Aprimoramentos significativos na lógica de disparo de sinais, aumento de timeouts do Playwright, tratamento de erros em blocos finally e implementação de técnicas avançadas de pré-processamento de imagem para OCR (deskewing, redução de ruído, binarização).

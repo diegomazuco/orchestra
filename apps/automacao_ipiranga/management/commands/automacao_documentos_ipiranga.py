@@ -6,10 +6,10 @@ from argparse import ArgumentParser
 from typing import Any
 
 from asgiref.sync import sync_to_async
+from django.conf import settings  # Added import
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import Page, async_playwright, expect
-from django.conf import settings # Added import
 
 from apps.automacao_ipiranga.models import (
     CertificadoVeiculo,
@@ -22,6 +22,8 @@ from apps.common.services import (
 )
 
 logger = logging.getLogger(__name__)
+
+print("DEBUG: automacao_documentos_ipiranga.py loaded - Version 20250818_1")
 
 
 class Command(BaseCommand):
@@ -217,7 +219,7 @@ class Command(BaseCommand):
 
                 logger.info("Clicando na aba 'Certificados'...")
                 await page.locator("a#certificados-tab").click()
-                await page.wait_for_load_state("networkidle")
+                await page.wait_for_load_state("networkidle", timeout=60000)
 
                 certificate_fieldsets = page.locator("fieldset.certificado-box")
                 found_certificate = False
@@ -248,9 +250,10 @@ class Command(BaseCommand):
                         )
                         # Add robust wait for the "Atualizar" button to be visible
                         logger.info("Aguardando botão 'Atualizar' ficar visível...")
+                        await page.screenshot(path="screenshot_after_cert_tab_click.png")
                         await fieldset.locator(
                             "button.btn-atualizar-requisito"
-                        ).wait_for(state="visible", timeout=30000)
+                        ).wait_for(state="visible", timeout=60000)
                         logger.info("Botão 'Atualizar' visível. Clicando...")
                         await fieldset.locator("button.btn-atualizar-requisito").click()
                         await page.wait_for_load_state("networkidle")
@@ -425,20 +428,31 @@ class Command(BaseCommand):
                     await browser.close()
                     logger.info("FINALLY BLOCK: Browser closed.")
                 # Cleanup: Delete certificate and associated file regardless of success or failure
-                if certificado and certificado.pk:
-                    logger.info(
-                        f"FINALLY BLOCK: Attempting to delete Certificado ID {certificado.id} from DB."  # type: ignore[reportUnknownMemberType]
-                    )
-                    await sync_to_async(certificado.delete)()
-                    logger.info(
-                        f"FINALLY BLOCK: Certificado ID {certificado.id} deleted from DB."  # type: ignore[reportUnknownMemberType]
-                    )
+                if certificado:
+                    logger.info(f"FINALLY BLOCK: Certificado object is not None. PK: {certificado.pk}")
+                    if certificado.pk:
+                        logger.info(
+                            f"FINALLY BLOCK: Attempting to delete Certificado ID {certificado.id} from DB."  # type: ignore[reportUnknownMemberType]
+                        )
+                        try:
+                            await sync_to_async(certificado.delete)()
+                            logger.info(
+                                f"FINALLY BLOCK: Certificado ID {certificado.id} deleted from DB."  # type: ignore[reportUnknownMemberType]
+                            )
+                        except Exception as delete_error:
+                            logger.error(f"FINALLY BLOCK: Error deleting Certificado ID {certificado.id} from DB: {delete_error}")
+                    else:
+                        logger.info("FINALLY BLOCK: Certificado.pk is None. Skipping DB deletion.")
+
                     if file_path_upload and os.path.exists(file_path_upload):
                         logger.info(
                             f"FINALLY BLOCK: Attempting to delete file {file_path_upload}."
                         )
-                        os.remove(file_path_upload)
-                        logger.info(f"FINALLY BLOCK: File {file_path_upload} deleted.")
+                        try:
+                            os.remove(file_path_upload)
+                            logger.info(f"FINALLY BLOCK: File {file_path_upload} deleted.")
+                        except OSError as file_delete_error:
+                            logger.error(f"FINALLY BLOCK: Error deleting file {file_path_upload}: {file_delete_error}")
                     else:
                         logger.info(
                             f"FINALLY BLOCK: File {file_path_upload} not found or path not set. Skipping file deletion."
@@ -448,17 +462,15 @@ class Command(BaseCommand):
                     )
                 else:
                     logger.info(
-                        "FINALLY BLOCK: No certificate or primary key found for specific cleanup."
+                        "FINALLY BLOCK: Certificado object is None. Skipping specific cleanup."
                     )
 
-                logger.info("FINALLY BLOCK: Calling cleanup_automation_data.")
-
-                await sync_to_async(call_command)("cleanup_automation_data")
-                logger.info("FINALLY BLOCK: cleanup_automation_data called.")
+                
 
     def handle(self, *args: Any, **options: Any) -> None:
         """Executa o comando de automação de forma síncrona."""
         try:
-            asyncio.run(self.handle_async(options["certificado_id"], *args, **options))
+            certificado_id = options.pop("certificado_id") # Use pop to remove it from options
+            asyncio.run(self.handle_async(certificado_id, **options))
         except CommandError as e:
             self.stderr.write(self.style.ERROR(f"Erro no comando: {e}"))

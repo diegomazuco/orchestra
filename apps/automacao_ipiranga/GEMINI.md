@@ -26,10 +26,10 @@
 
 * **Lógica de Negócio (Fluxo por Sinal):**
     1.  O upload de um PDF via `dashboard` cria um registro `CertificadoVeiculo` com status `pendente`.
-    2.  O sinal `post_save` em `signals.py` é acionado por esta criação.
+    2.  O sinal `post_save` em `signals.py` é acionado por esta criação. **É crucial que o handler do sinal verifique `if created` para garantir que a automação seja disparada apenas na criação inicial do objeto, e não em atualizações subsequentes.**
     3.  O handler do sinal executa o `custom command` `automacao_documentos_ipiranga` em um subprocesso.
     4.  O comando executa a automação (login, busca, extração, upload).
-    5.  **Regra de Limpeza Crítica:** Ao final da execução, dentro de um bloco `finally`, o comando **deve obrigatoriamente deletar o registro `CertificadoVeiculo` e o arquivo PDF associado**.
+    5.  **Regra de Limpeza Crítica:** Ao final da execução, dentro de um bloco `finally`, o comando **deve obrigatoriamente deletar o registro `CertificadoVeiculo` e o arquivo PDF associado, com tratamento de erros robusto para garantir a limpeza mesmo em caso de falhas.**
 
 * **Gerenciamento de Tempo Limite:** A automação implementa um tempo limite global (atualmente 90 segundos) para evitar travamentos, utilizando `asyncio.wait_for` em operações críticas como a extração OCR.
 
@@ -39,6 +39,7 @@
 
 * **Extração de Dados do PDF (OCR):**
     * **Calibração Iterativa:** A extração OCR é complexa. O processo deve ser iterativo, ajustando configurações do Tesseract e refinando as expressões regulares em `common/services.py` para lidar com erros de reconhecimento.
+    * **Técnicas de Pré-processamento de Imagem:** Para aumentar a precisão do OCR, utilize técnicas como correção de inclinação (deskewing), redução de ruído (ex: Gaussian Blur) e binarização. Essas técnicas, implementadas em `common/services.py`, são cruciais para otimizar a qualidade da imagem antes do reconhecimento.
     * **Exemplos de Padrões Robustos:**
         * Para textos: `r"(CERTIFICADO DE INSPE.*?)"`
         * Para datas: `r"(\d{1,2}/[A-Z]{3}/\d{2,4})"`
@@ -47,7 +48,7 @@
 
 * **Interação com o Portal Ipiranga:**
     * **IDs Dinâmicos de Campos:** Os campos de formulário no portal (ex: "Número do Documento", "Vencimento") têm IDs dinâmicos (`licenca-numero-X`). A automação deve primeiro extrair o número `X` do elemento pai para então construir os seletores corretos.
-    * **Instabilidade:** O portal pode apresentar um "Erro Inesperado". A função de login em `common/services.py` já implementa uma lógica de espera e recarregamento para lidar com isso.
+    * **Instabilidade e Tempos Limite:** O portal pode apresentar "Erro Inesperado" ou lentidão. A função de login em `common/services.py` já implementa uma lógica de espera e recarregamento. Além disso, tempos limite (`timeout`) aumentados para operações críticas do Playwright (ex: `wait_for_load_state`, `wait_for`) são essenciais para a resiliência da automação.
     *   **Robustez da Automação Playwright:** A interação com o portal deve incluir tratamento de erros robusto e logging detalhado para diagnosticar problemas de navegação e preenchimento de campos, especialmente quando o Pyright sinaliza `Argument type is unknown` em operações de preenchimento de formulário.
 
 * **Depuração e Execução:**

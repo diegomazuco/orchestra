@@ -38,3 +38,5 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Análise e Ajustes em `management/commands/sincronizar_infracoes.py`**:
     - Utilizado `settings.MYSQL_INFRACOES_TABLE` na query MySQL para maior configurabilidade.
     - Adicionado logging de erro mais específico para operações `bulk_create`.
+- [2025-08-19] Ajustes de Qualidade de Código:
+    - Correção de importação em `management/commands/sincronizar_infracoes.py` para seguir padrões de estilo e linting.

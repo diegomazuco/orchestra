@@ -92,3 +92,6 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - URL do dashboard (`IPIRANGA_DASHBOARD_URL`) movida de hardcode para `core/settings.py`.
     - Função `extract_text_from_roi`: Alterado o tratamento de erro para `raise` a exceção em vez de retornar string vazia, garantindo propagação de erros.
     - Função `normalize_text`: Corrigida a regex para remover o `R` não intencional.
+- [2025-08-19] Melhorias no Processamento de OCR:
+    - Implementação de técnicas avançadas de pré-processamento de imagem em `services.py` para otimizar a precisão do OCR, incluindo correção de inclinação (deskewing) via Hough Transform, redução de ruído (Gaussian Blur) e binarização aprimorada.
+    - Adição de salvamento de imagem processada para depuração (`logs/ocr_processed_image_{page_num}.png`).

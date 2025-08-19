@@ -29,12 +29,13 @@ Qualquer nova automação no projeto Orchestra deve se conformar a esta arquitet
 
 * **Fluxo Padrão de Orquestração (a ser seguido pelos implementadores):**
     1.  Um evento externo cria um registro em um modelo "gatilho" no app implementador.
-    2.  Um sinal `post_save` nesse modelo gatilho detecta a nova entrada.
+    2.  Um sinal `post_save` nesse modelo gatilho detecta a nova entrada. **É crucial que o handler do sinal verifique `if created` para garantir que a automação seja disparada apenas na criação inicial do objeto, e não em atualizações subsequentes.**
     3.  O sinal dispara o `custom command` correspondente em um **subprocesso**, seguindo a regra de usar o caminho absoluto do python do `.venv`.
     4.  O `custom command` executa a lógica do robô, atualiza o status e garante a limpeza de recursos em um bloco `finally`.
-    5.  **Limpeza de Recursos:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários.
+    5.  **Limpeza de Recursos:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários, **com tratamento de erros robusto para garantir a limpeza mesmo em caso de falhas.**
     6.  **Gerenciamento de Tempo Limite e Execução Assíncrona:** Para `custom commands` de longa duração (OCR, web scraping), é **mandatório** que sejam implementados de forma assíncrona (`asyncio`) e incluam mecanismos de tempo limite (ex: `asyncio.wait_for`) para evitar que fiquem presos indefinidamente.
     7.  **Robustez do Custom Command:** O `custom command` deve ser implementado com tratamento de erros robusto, incluindo logging detalhado e tratamento de exceções para `SyntaxError` ou outros problemas inesperados que possam ocorrer durante sua execução. Além disso, é **mandatório** que os comandos de limpeza de recursos (ex: exclusão de registros de banco de dados e arquivos temporários) utilizem operações em massa (bulk operations) para eficiência e incluam tratamento de erros robusto para a exclusão de arquivos. Isso garante que falhas na automação sejam capturadas e registradas adequadamente e que a limpeza seja eficiente e confiável.
+    8.  **Melhores Práticas de OCR:** Para extração de dados via OCR, implementadores devem considerar técnicas avançadas de pré-processamento de imagem, como correção de inclinação (deskewing), redução de ruído e binarização, para otimizar a precisão do reconhecimento.
 
 ---
 

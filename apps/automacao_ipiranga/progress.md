@@ -113,3 +113,8 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Refatorada a lógica de exclusão de arquivos e registros para `CertificadoVeiculo`, garantindo que os arquivos sejam deletados do armazenamento antes dos registros do banco de dados.
 - **Análise e Ajustes em `management/commands/test_ocr_extraction.py`**:
     - Melhorada a consistência na limpeza de texto para busca de dados.
+- [2025-08-19] Melhorias na Automação e OCR:
+    - Lógica de disparo de sinal aprimorada em `signals.py` para garantir que a automação seja disparada apenas na criação inicial do objeto (`if created`).
+    - Tempos limite (`timeout`) aumentados para operações críticas do Playwright em `automacao_documentos_ipiranga.py` (de 30s para 60s) para maior resiliência.
+    - Blocos `finally` em `automacao_documentos_ipiranga.py` aprimorados com tratamento de erros robusto para exclusão de `CertificadoVeiculo` e arquivos associados.
+    - Implementação de técnicas avançadas de pré-processamento de imagem para OCR em `common/services.py` (correção de inclinação, redução de ruído, binarização) para otimizar a precisão.

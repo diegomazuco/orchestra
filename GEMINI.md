@@ -24,20 +24,25 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
 
 #### 2.1. Processo de Inicialização (`init`)
 
-Siga **rigorosamente** esta sequência para preparar o ambiente:
+O processo `init` é projetado para ser inteligente e idempotente. Ele verifica o estado atual do ambiente e executa apenas as ações estritamente necessárias para sincronizá-lo, evitando trabalho redundante e a percepção de looping.
 
-1.  **Análise de Contexto Total:** Leia e internalize o conteúdo completo de **todos** os arquivos `GEMINI.md` e `progress.md` do projeto. Isso é crucial para que o Gemini CLI compreenda todas as instruções, regras e o histórico de processos e procedimentos já realizados, garantindo que novos processos sejam efetuados em conformidade e evitando a repetição de erros.
-2.  **Sincronização do Repositório:**
-    *   **Verifique o Status:** Execute `git status` para identificar quaisquer alterações locais não comitadas. Se houver, comite-as ou descarte-as conforme necessário antes de prosseguir.
-    *   **Atualize o Repositório:** Execute `git pull` para sincronizar com a versão mais recente.
-3.  **Configuração do Ambiente Python:**
-    * **Ambiente Virtual:** Confirme que `./.venv` existe. Se não, crie-o com `uv venv`.
-    * **Instalação de Dependências:** Instale **todas** as dependências com `uv pip install --group all`.
-    * **Verificação e Atualização de Dependências:** Verifique se há pacotes desatualizados com `uv pip list --outdated` e, se houver, atualize-os com `uv sync --upgrade`.
-    * **Instalação de Navegadores Playwright:** Execute `playwright install`.
-4.  **Configuração do Banco de Dados:** Execute `python manage.py migrate`.
+1.  **Análise de Contexto (Sempre Executado):** Leia e internalize o conteúdo completo de **todos** os arquivos `GEMINI.md` e `progress.md` do projeto para compreender o contexto, as diretrizes e o histórico.
 
-6.  **Troubleshooting de Ambiente (WSL):** Se o servidor Django rodar mas estiver inacessível pelo navegador no Windows (sintoma: `SYN_SENT`), a solução permanente é criar um arquivo `.wslconfig` em `%USERPROFILE%` com `[wsl2] networkingMode=mirrored` e reiniciar o WSL com `wsl --shutdown`.
+2.  **Sincronização Inteligente do Repositório:**
+    *   **Verificar Status:** Execute `git status` para avaliar o estado do branch.
+    *   **Verificar Remoto:** Execute `git fetch` para buscar as atualizações mais recentes do repositório remoto.
+    *   **Comparar e Sincronizar:** Compare o status local com o remoto. Se o branch local estiver desatualizado, execute `git pull` para sincronizar. Caso contrário, informe que o repositório já está atualizado.
+
+3.  **Configuração Inteligente do Ambiente Python:**
+    *   **Ambiente Virtual:** Verifique a existência do diretório `./.venv`. Se não existir, crie-o com `uv venv`.
+    *   **Sincronização de Dependências:** Execute `uv sync`. Este comando é idempotente e garantirá que o ambiente virtual esteja em perfeita sincronia com o `uv.lock`, instalando apenas o que for necessário.
+    *   **Navegadores Playwright:** Verifique se os binários do Playwright já existem no diretório `./.playwright-browsers/`. Se existirem, pule a instalação. Caso contrário, execute `playwright install`.
+
+4.  **Sincronização Inteligente do Banco de Dados:**
+    *   **Verificar Migrações:** Execute `python manage.py showmigrations` para verificar se há migrações não aplicadas.
+    *   **Aplicar Migrações (se necessário):** Se houver migrações pendentes, execute `python manage.py migrate`. Caso contrário, informe que o banco de dados já está atualizado.
+
+5.  **Troubleshooting de Ambiente (WSL):** Se o servidor Django rodar mas estiver inacessível pelo navegador no Windows (sintoma: `SYN_SENT`), a solução permanente é criar um arquivo `.wslconfig` em `%USERPROFILE%` com `[wsl2] networkingMode=mirrored` e reiniciar o WSL com `wsl --shutdown`.
 
 #### 2.2. Processo de Finalização de Sessão (Commit e Push)
 
