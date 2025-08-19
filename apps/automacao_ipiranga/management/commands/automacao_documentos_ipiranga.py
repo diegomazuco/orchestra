@@ -266,20 +266,17 @@ class Command(BaseCommand):
                         )
 
                         numero_documento_valor: str = "N/A"
-                        vencimento_valor_pdf: str = "N/A"
+                        vencimento_valor_portal: str = "N/A"
 
                         if "CIPP" in str(nome_certificado_alvo).upper():  # type: ignore[reportUnknownMemberType]
                             logger.info(
                                 "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
                             )
                             try:
-                                numero_documento_valor, vencimento_valor_pdf = (
+                                # The extract_cipp_data now returns the numeric document value and formatted date
+                                numero_documento_valor, vencimento_valor_portal = (
                                     extract_cipp_data(pdf_text, logger)
                                 )
-                                # NEW: Ensure numero_documento_valor contains only digits
-                                numero_documento_valor = str(
-                                    re.sub(r"\D", "", numero_documento_valor)
-                                )  # type: ignore[reportUnknownMemberType]
                             except ValueError as ve:
                                 logger.error(
                                     f"Erro na extração de dados do PDF: {ve}. Texto do PDF: {pdf_text[:1000]}..."
@@ -296,7 +293,7 @@ class Command(BaseCommand):
                             f"Número do Documento Extraído: {numero_documento_valor}"  # type: ignore[reportUnknownMemberType]
                         )
                         logger.info(
-                            f"Data de Vencimento Extraída: {vencimento_valor_pdf}"  # type: ignore[reportUnknownMemberType]
+                            f"Data de Vencimento Extraída: {vencimento_valor_portal}"  # type: ignore[reportUnknownMemberType]
                         )
                         # --- End of new PDF processing logic ---
 
@@ -349,17 +346,15 @@ class Command(BaseCommand):
                             path=f"logs/screenshot_after_numero_fill_{certificado.id}.png"  # type: ignore[reportUnknownMemberType]
                         )
 
-                        vencimento_formatado: str = convert_date_format(
-                            vencimento_valor_pdf, logger
+                        # Use the already formatted vencimento_valor_portal
+                        logger.info(
+                            f"Preenchendo campo de vencimento: {vencimento_id} com valor {vencimento_valor_portal}"  # type: ignore[reportUnknownMemberType]
                         )
                         logger.info(
-                            f"Preenchendo campo de vencimento: {vencimento_id} com valor {vencimento_formatado}"  # type: ignore[reportUnknownMemberType]
-                        )
-                        logger.info(
-                            f"[AUTOMACAO_IPIRANGA] Vencimento formatado para preenchimento: {vencimento_formatado}"  # type: ignore[reportUnknownMemberType]
+                            f"[AUTOMACAO_IPIRANGA] Vencimento formatado para preenchimento: {vencimento_valor_portal}"  # type: ignore[reportUnknownMemberType]
                         )
                         await page.wait_for_selector(vencimento_id, timeout=30000)
-                        await page.fill(vencimento_id, vencimento_formatado)
+                        await page.fill(vencimento_id, vencimento_valor_portal)
                         await page.screenshot(
                             path=f"logs/screenshot_after_vencimento_fill_{certificado.id}.png"  # type: ignore[reportUnknownMemberType]
                         )

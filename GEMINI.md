@@ -54,7 +54,7 @@ Este processo é **obrigatório** antes de cada commit:
     *   **ATENÇÃO:** O arquivo `db.sqlite3` é o banco de dados de desenvolvimento e **NÃO DEVE SER EXCLUÍDO EM HIPÓTESE ALGUMA**, mesmo para fins de depuração ou para garantir um estado "limpo". Ajustes no banco de dados devem ser feitos via migrações ou comandos Django apropriados, não pela exclusão do arquivo. A exclusão acidental pode levar à perda de dados e à necessidade de recriação completa do ambiente de dados.
 4.  **Versionamento:**
     * `git add .`
-    * `git commit -m "..."` (Use mensagens detalhadas explicando o "porquê").
+    * `git commit -m "..."` (Use mensagens detalhadas explicando o "porquê"). **Para mensagens multi-linha ou com caracteres especiais (ex: `), considere usar `git commit -F <arquivo_temporario>` para evitar problemas de interpretação do shell.**
     * `git pull --rebase`
     * `git push`
     * Valide com `git fetch && git status`.

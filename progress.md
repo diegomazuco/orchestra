@@ -265,3 +265,4 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 - [2025-08-19] Ajuste nas instruções do processo 'init' no GEMINI.md para torná-lo inteligente e idempotente, evitando a percepção de looping.
 - [2025-08-19] Melhorias na robustez da automação e OCR: Aprimoramentos significativos na lógica de disparo de sinais, aumento de timeouts do Playwright, tratamento de erros em blocos finally e implementação de técnicas avançadas de pré-processamento de imagem para OCR (deskewing, redução de ruído, binarização).
+- [2025-08-19] Ajuste nas diretrizes Git: Adicionada instrução no GEMINI.md sobre o uso de `git commit -F` para mensagens de commit multi-linha ou com caracteres especiais, a fim de evitar problemas de interpretação do shell.

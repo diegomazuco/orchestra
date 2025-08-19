@@ -108,8 +108,8 @@ def extract_text_from_pdf_image(
 ) -> str:
     """Extrai texto de imagens dentro de um arquivo PDF usando PyMuPDF e Tesseract OCR."""
     text = ""
-    if not tesseract_config:
-        tesseract_config = "--psm 6"  # Assume a single uniform block of text.
+    # Always use PSM 11 for better recognition of sparse text
+    tesseract_config = "--psm 11"
 
     doc: fitz.Document | None = None
     try:
@@ -150,7 +150,7 @@ def extract_text_from_roi(
     try:
         logger.debug(f"OCR: Extraindo texto do ROI: {roi}")
         pix: fitz.Pixmap = page.get_pixmap(
-            matrix=fitz.Matrix(600 / 72, 600 / 72), clip=roi
+            matrix=fitz.Matrix(1200 / 72, 1200 / 72), clip=roi
         )
         img: Image.Image = Image.open(io.BytesIO(pix.tobytes()))  # type: ignore[reportUnknownArgumentType]
         logger.info("OCR: Imagem do ROI carregada.")
@@ -195,12 +195,18 @@ def extract_text_from_roi(
 
         # Noise Reduction (Gaussian Blur)
         logger.debug("OCR: Aplicando redução de ruído (Gaussian Blur).")
-        img_np = gaussian_filter(img_np, sigma=0.7) # sigma value can be tuned
+        img_np = gaussian_filter(img_np, sigma=1.0) # sigma value can be tuned
         img = Image.fromarray(img_np)
 
-        # Binarization using NumPy (after deskewing and noise reduction)
-        logger.debug("OCR: Iniciando binarização com NumPy.")
-        img_np = np.where(img_np < 128, 0, 255).astype(np.uint8)
+        # Contrast Enhancement (Unsharp Mask)
+        logger.debug("OCR: Aplicando realce de contraste (Unsharp Mask).")
+        img_np = (unsharp_mask(img_np, radius=1.0, amount=1.0) * 255).astype(np.uint8)
+        img = Image.fromarray(img_np)
+
+        # Binarization using Otsu's method
+        logger.debug("OCR: Iniciando binarização com método de Otsu.")
+        thresh = threshold_otsu(img_np) # Use Otsu's method to find optimal threshold
+        img_np = (img_np > thresh).astype(np.uint8) * 255 # Apply threshold and convert to 0 or 255
         img = Image.fromarray(img_np)
 
         # Save screenshot of the processed image before OCR
@@ -224,66 +230,57 @@ def extract_cipp_data(pdf_text: str, logger: logging.Logger) -> tuple[str, str]:
     """Extrai dados específicos (número do documento e vencimento) de um certificado CIPP."""
     logger.info("Iniciando extração de dados específicos para certificado CIPP...")
 
-    # Normalize the text to make regex more robust against OCR noise
     normalized_pdf_text: str = normalize_text(pdf_text)
     logger.info(
         f"OCR: Normalized PDF text (first 500 chars): {normalized_pdf_text[:500]}..."
     )
 
-    # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
-    # Allowing for common OCR errors like 'C' instead of 'Ç', 'A' instead of 'Ã', 'O' instead of 'Õ'
-    # Use a more flexible regex for "CERTIFICADO DE INSPEÇÃO"
-    # Allowing for common OCR errors and variations in spacing/characters
-    match: re.Match[str] | None = re.search(
-        r"(CERTIFICADO\s*(DE|D|E)?\s*INSPE[CÇ][AÃ]O.*?)(?=(CERTIFICADO\s*(DE|D|E)?\s*INSPE[CÇ][AÃ]O|$))",
+    # Search for "Número do Certificado" block
+    match_certificado_block: re.Match[str] | None = re.search(
+        r"(Número do Certificado:.*?)(?=DATA DE VENCIMENTO|$)",
         normalized_pdf_text,
         re.IGNORECASE | re.DOTALL,
     )
 
-    if not match:
+    if not match_certificado_block:
         logger.warning(
-            "Não foi possível encontrar um bloco de 'CERTIFICADO DE INSPEÇÃO' no PDF CIPP."
+            "Não foi possível encontrar o bloco 'Número do Certificado' no PDF CIPP."
         )
-        raise ValueError("Bloco de certificado CIPP não encontrado.")
+        raise ValueError("Bloco 'Número do Certificado' não encontrado.")
 
-    first_block: str = match.group(1)
-    logger.info(f"Bloco de certificado CIPP encontrado: {first_block[:500]}...")
+    certificado_block: str = match_certificado_block.group(1)
+    logger.info(f"Bloco 'Número do Certificado' encontrado: {certificado_block[:500]}...")
 
+    # Extract "Número do Certificado" value
     match_numero: re.Match[str] | None = re.search(
-        r"SP\s*([A-Z][0-9T]{6})", first_block, re.IGNORECASE | re.DOTALL
+        r"Número do Certificado:\s*([A-Z0-9]+)", certificado_block, re.IGNORECASE
     )
     if match_numero:
-        extracted_raw: str = match_numero.group(1)
-        logger.info(f"OCR: Extracted raw numero: {extracted_raw}")
-        # Apply a more targeted cleaning for the document number
-        # Replace common OCR misreads for digits, specifically 'T' for '6' or '7'
-        cleaned_num: str = extracted_raw.replace("T", "6")  # Prioritize 'T' as '6'
-        cleaned_num = (
-            cleaned_num.replace("I", "1")
-            .replace("O", "0")
-            .replace("S", "5")
-            .replace("Z", "2")
-        )
-        cleaned_num = re.sub(
-            r"[^A-Z0-9]", "", cleaned_num
-        ).upper()  # Remove non-alphanumeric
-        numero_documento_valor: str = cleaned_num
-        logger.info(f"OCR: Final numero_documento_valor: {numero_documento_valor}")
+        extracted_raw_numero: str = match_numero.group(1)
+        logger.info(f"OCR: Extracted raw numero do certificado: {extracted_raw_numero}")
+        # Filter out non-numeric characters for the portal field
+        numero_documento_valor: str = re.sub(r"[^0-9]", "", extracted_raw_numero)
+        logger.info(f"OCR: Final numero_documento_valor (apenas números): {numero_documento_valor}")
     else:
-        logger.warning("Número do documento CIPP não encontrado.")
-        raise ValueError("Número do documento CIPP não encontrado.")
+        logger.warning("Número do Certificado não encontrado.")
+        raise ValueError("Número do Certificado não encontrado.")
 
-    all_dates: list[tuple[str, str, str]] = re.findall(
-        r"(\d{1,2}|[OISZ]{1,2})\s*/\s*([A-Z]{3})\s*/\s*(\d{2,4})",
-        first_block,
+    # Extract "DATA DE VENCIMENTO"
+    match_data_vencimento: re.Match[str] | None = re.search(
+        r"DATA DE VENCIMENTO:\s*(\d{1,2}/\s*[A-Z]{3}/\s*\d{2,4})",
+        normalized_pdf_text,
         re.IGNORECASE,
     )
-    vencimento_valor_pdf: str | None = "/".join(all_dates[-1]) if all_dates else None
-    if vencimento_valor_pdf is None:
-        raise ValueError("Data de vencimento CIPP não encontrada.")
-    logger.info(f"Data de vencimento CIPP extraída: {vencimento_valor_pdf}")
+    if match_data_vencimento:
+        vencimento_valor_pdf_raw: str = match_data_vencimento.group(1)
+        logger.info(f"Data de vencimento bruta extraída: {vencimento_valor_pdf_raw}")
+        vencimento_valor_portal: str = convert_date_format(vencimento_valor_pdf_raw, logger)
+        logger.info(f"Data de vencimento formatada para portal: {vencimento_valor_portal}")
+    else:
+        logger.warning("Data de vencimento não encontrada.")
+        raise ValueError("Data de vencimento não encontrada.")
 
-    return numero_documento_valor, vencimento_valor_pdf
+    return numero_documento_valor, vencimento_valor_portal
 
 
 def normalize_text(text: str) -> str:

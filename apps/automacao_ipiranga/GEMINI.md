@@ -40,10 +40,13 @@
 * **Extração de Dados do PDF (OCR):**
     * **Calibração Iterativa:** A extração OCR é complexa. O processo deve ser iterativo, ajustando configurações do Tesseract e refinando as expressões regulares em `common/services.py` para lidar com erros de reconhecimento.
     * **Técnicas de Pré-processamento de Imagem:** Para aumentar a precisão do OCR, utilize técnicas como correção de inclinação (deskewing), redução de ruído (ex: Gaussian Blur) e binarização. Essas técnicas, implementadas em `common/services.py`, são cruciais para otimizar a qualidade da imagem antes do reconhecimento.
+    * **Identificação de Campos Específicos:**
+        * **"Número do Certificado" (PDF):** O OCR deve buscar por este campo no PDF. O valor extraído deve ser tratado para conter apenas caracteres alfanuméricos. No portal, este campo é "Número do Documento" e aceita apenas números.
+        * **"DATA DE VENCIMENTO" (PDF):** O OCR deve buscar por este campo no PDF. O valor extraído (ex: "DD/MON/YY") deve ser formatado para "DD/MM/YYYY" antes de ser inserido no campo "Vencimento" do portal.
     * **Exemplos de Padrões Robustos:**
         * Para textos: `r"(CERTIFICADO DE INSPE.*?)"`
         * Para datas: `r"(\d{1,2}/[A-Z]{3}/\d{2,4})"`
-        * Para números de documento: `r"([A-Z][0-9T]{6})"` (permite 'T' no lugar de dígitos)
+        * Para números de documento: `r"([A-Z][0-9T]{6})"`
     *   **Desafios de Tipagem (Pyright):** Mesmo com configurações relaxadas do Pyright, a tipagem de operações de OCR com bibliotecas como `fitz` e `pytesseract` pode gerar avisos ou erros (ex: `Argument type is unknown`, `Cannot access attribute`). Pode ser necessário usar `type: ignore` em linhas específicas para suprimir esses avisos/erros, especialmente em chamadas como `Image.open(io.BytesIO(pix.tobytes()))`.
 
 * **Interação com o Portal Ipiranga:**
@@ -53,6 +56,8 @@
 
 * **Depuração e Execução:**
     * **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** Lembre-se de reverter para `True` antes de fazer o commit.
+
+*   **Estratégia de Depuração de OCR:** Ao depurar problemas de extração de dados via OCR, é crucial inspecionar a imagem processada após as etapas de pré-processamento (ex: `logs/ocr_processed_image_0.png`). Se o texto não estiver legível nesta imagem, o problema reside no pré-processamento da imagem (escalonamento, binarização, redução de ruído, realce de contraste), e não nas expressões regulares do Tesseract. Ajustes devem ser focados em otimizar a qualidade da imagem antes do reconhecimento.
 
 *   **Prevenção de Looping com Contador de Tentativas (`CertificadoVeiculo`):**
     Para garantir a robustez e evitar loops infinitos, o modelo `CertificadoVeiculo` foi aprimorado com os campos `tentativas_automacao` e `tentativas_ocr`. A automação (`automacao_documentos_ipiranga.py`) **deve** incrementar `tentativas_automacao` no início de sua execução. Se o número de tentativas exceder um limite predefinido (ex: 3), o status do certificado será alterado para `"falha_max_tentativas"`, e a automação será interrompida para aquele registro. Em caso de qualquer falha, o status do certificado **deve** ser atualizado para `"falha"` e salvo, garantindo que o registro não permaneça no estado `"pendente"` indefinidamente.

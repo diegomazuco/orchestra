@@ -95,3 +95,12 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - [2025-08-19] Melhorias no Processamento de OCR:
     - Implementação de técnicas avançadas de pré-processamento de imagem em `services.py` para otimizar a precisão do OCR, incluindo correção de inclinação (deskewing) via Hough Transform, redução de ruído (Gaussian Blur) e binarização aprimorada.
     - Adição de salvamento de imagem processada para depuração (`logs/ocr_processed_image_{page_num}.png`).
+- [2025-08-19] Depuração Iterativa de OCR:
+    - **Ajustes de Pré-processamento de Imagem em `services.py` (`extract_text_from_roi`):**
+        - Implementação de binarização usando o método de Otsu para otimizar o limiar.
+        - Aumento do fator de escala para 1200 DPI (`matrix=fitz.Matrix(1200 / 72, 1200 / 72)`) para capturar mais detalhes da imagem.
+        - Aumento do `sigma` do filtro Gaussiano para 1.0 (`gaussian_filter(img_np, sigma=1.0)`) para maior suavização de ruído.
+        - Definição explícita do Page Segmentation Mode (PSM) do Tesseract para 11 (`tesseract_config = "--psm 11"`) para melhor reconhecimento de texto esparso.
+        - Adição de `unsharp_mask` (`unsharp_mask(img_np, radius=1.0, amount=1.0)`) para realce de contraste e nitidez das bordas.
+    - **Resultados:** Apesar dos múltiplos ajustes, o texto extraído pelo OCR permaneceu ilegível, indicando que a qualidade da imagem após o pré-processamento ainda é o principal gargalo.
+    - **Lição Aprendida:** A legibilidade da imagem processada (`logs/ocr_processed_image_0.png`) é o fator determinante para o sucesso do OCR. Se a imagem não for legível, o Tesseract não conseguirá extrair os dados corretamente, independentemente das regexes ou configurações.
