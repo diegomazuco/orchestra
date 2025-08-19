@@ -139,6 +139,13 @@ Após a execução de qualquer procedimento que envolva múltiplas etapas (ex: `
 
 Este mecanismo visa garantir a consistência e a aderência rigorosa aos fluxos de trabalho definidos.
 
+4.  **Gerenciamento de Estado para Prevenção de Looping em Ações Bem-Sucedidas:**
+    Para procedimentos que envolvem múltiplas ações que podem ser repetidas (mesmo que bem-sucedidas) e levar a um looping sem progresso claro (ex: atualização de arquivos `progress.md` em sequência), o Gemini CLI deve:
+    *   **Definir um Estado de Conclusão Claro:** Para cada sub-tarefa ou item em uma lista a ser processada, deve haver um critério explícito de quando esse item foi "concluído".
+    *   **Manter um Registro de Progresso Interno:** Utilizar um registro interno (ex: uma lista de IDs processados, um contador de itens restantes) para saber exatamente onde a execução parou e qual é o próximo item a ser processado.
+    *   **Evitar Re-processamento:** Se um item já foi marcado como "concluído" para a tarefa atual, ele não deve ser re-processado.
+    *   **Detectar Estagnação por Falta de Progresso:** Se, após um número razoável de ações (mesmo que bem-sucedidas), o registro de progresso interno não avançar, isso deve ser interpretado como uma estagnação/looping, acionando as estratégias de diversificação ou escalonamento ao usuário.
+
 ---
 
 ### 3. Arquitetura e Padrões de Projeto
