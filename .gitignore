@@ -35,3 +35,6 @@ logs/
 
 # Screenshots
 login_error_screenshot.png
+
+# Temporary files
+commit_message.txt
