@@ -51,7 +51,6 @@ class CertificadoVeiculo(models.Model):
     data_criacao: models.DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore[reportUnknownVariableType]
     data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
     tentativas_automacao: models.IntegerField = models.IntegerField(default=0)  # type: ignore[reportUnknownVariableType]
-    tentativas_ocr: models.IntegerField = models.IntegerField(default=0)  # type: ignore[reportUnknownVariableType]
 
     objects: "Manager[CertificadoVeiculo]"  # type: ignore[reportIncompatibleVariableOverride]
 

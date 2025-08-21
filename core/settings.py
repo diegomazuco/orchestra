@@ -155,15 +155,22 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Automation Settings
-IPIRANGA_LOGIN_URL = config("IPIRANGA_LOGIN_URL", default="https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir")
-IPIRANGA_VENCIDOS_URL = config("IPIRANGA_VENCIDOS_URL", default="https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7")
-IPIRANGA_A_VENCER_URL = config("IPIRANGA_A_VENCER_URL", default="https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7")
-IPIRANGA_DASHBOARD_URL = config("IPIRANGA_DASHBOARD_URL", default="https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index")
-
-# OCR Region of Interest (ROI) coordinates (x1, y1, x2, y2)
-# These are example coordinates and should be adjusted based on document layout
-OCR_NUMERO_DOCUMENTO_ROI = config("OCR_NUMERO_DOCUMENTO_ROI", cast=Csv(cast=int), default="100,500,400,600")
-OCR_DATA_VENCIMENTO_ROI = config("OCR_DATA_VENCIMENTO_ROI", cast=Csv(cast=int), default="400,500,700,600")
+IPIRANGA_LOGIN_URL = config(
+    "IPIRANGA_LOGIN_URL",
+    default="https://sites.redeipiranga.com.br/WAPortranNew/usuario/exibir",
+)
+IPIRANGA_VENCIDOS_URL = config(
+    "IPIRANGA_VENCIDOS_URL",
+    default="https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=2&status=1,2,3,4,7",
+)
+IPIRANGA_A_VENCER_URL = config(
+    "IPIRANGA_A_VENCER_URL",
+    default="https://sites.redeipiranga.com.br/WAPortranNew/veiculo/index?situacoesDocumentos=3&status=1,2,3,4,7",
+)
+IPIRANGA_DASHBOARD_URL = config(
+    "IPIRANGA_DASHBOARD_URL",
+    default="https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index",
+)
 
 # MySQL Infractions Table
 MYSQL_INFRACOES_TABLE = config("MYSQL_INFRACOES_TABLE", default="tbl_infracoes_exemplo")

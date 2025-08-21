@@ -30,17 +30,33 @@ class Command(BaseCommand):
             certificados_ids_to_delete = []
             for certificado in CertificadoVeiculo.objects.all():
                 try:
-                    if certificado.arquivo and certificado.arquivo.storage.exists(certificado.arquivo.name):
-                        certificado.arquivo.delete(save=False)  # Deletes file from storage
-                        self.stdout.write(f"  Arquivo {certificado.arquivo.name} de CertificadoVeiculo deletado.")
+                    if certificado.arquivo and certificado.arquivo.storage.exists(
+                        certificado.arquivo.name
+                    ):
+                        certificado.arquivo.delete(
+                            save=False
+                        )  # Deletes file from storage
+                        self.stdout.write(
+                            f"  Arquivo {certificado.arquivo.name} de CertificadoVeiculo deletado."
+                        )
                     certificados_ids_to_delete.append(certificado.id)
                 except Exception as e:
-                    logger.error(f"Erro ao deletar arquivo para CertificadoVeiculo ID {certificado.id}: {e}")
-                    self.stdout.write(self.style.ERROR(f"Erro ao deletar arquivo para CertificadoVeiculo ID {certificado.id}: {e}"))
+                    logger.error(
+                        f"Erro ao deletar arquivo para CertificadoVeiculo ID {certificado.id}: {e}"
+                    )
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Erro ao deletar arquivo para CertificadoVeiculo ID {certificado.id}: {e}"
+                        )
+                    )
 
-            deleted_count, _ = CertificadoVeiculo.objects.filter(id__in=certificados_ids_to_delete).delete()
+            deleted_count, _ = CertificadoVeiculo.objects.filter(
+                id__in=certificados_ids_to_delete
+            ).delete()
             self.stdout.write(
-                self.style.SUCCESS(f"  {deleted_count} registros de CertificadoVeiculo deletados do banco de dados.")
+                self.style.SUCCESS(
+                    f"  {deleted_count} registros de CertificadoVeiculo deletados do banco de dados."
+                )
             )
 
         # 4. Delete any remaining orphaned files in the media directory
@@ -61,7 +77,9 @@ class Command(BaseCommand):
                     except OSError as e:
                         logger.error(f"Erro ao deletar arquivo órfão {file_path}: {e}")
                         self.stdout.write(
-                            self.style.ERROR(f"Erro ao deletar arquivo órfão {file_path}: {e}")
+                            self.style.ERROR(
+                                f"Erro ao deletar arquivo órfão {file_path}: {e}"
+                            )
                         )
 
         self.stdout.write(self.style.SUCCESS("Limpeza concluída."))

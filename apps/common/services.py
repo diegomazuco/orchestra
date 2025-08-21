@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import re
-from typing import Any
+
 
 from decouple import config
 from django.conf import settings
@@ -95,13 +95,15 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
         raise  # Re-levanta a exceção para que o comando que chamou saiba que falhou
 
 
-def extract_certificate_data_from_filename(filename: str, logger: logging.Logger) -> tuple[str, str]:
+def extract_certificate_data_from_filename(
+    filename: str, logger: logging.Logger
+) -> tuple[str, str]:
     """Extrai o número do certificado e a data de vencimento do nome do arquivo."""
     logger.info(f"Extraindo dados do nome do arquivo: {filename}")
     # Expected format: PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf
-    # Example: FJX1217_A760379_05022026.pdf
-
-    match = re.match(r".*?_([A-Z0-9]+)_(\d{2})(\d{2})(\d{4})\.pdf", filename, re.IGNORECASE)
+    match = re.match(
+        r".*?_([A-Z0-9]+)_(\d{2})(\d{2})(\d{4})\.pdf", filename, re.IGNORECASE
+    )
     if not match:
         logger.error(f"Formato de nome de arquivo inválido: {filename}")
         raise ValueError(f"Formato de nome de arquivo inválido: {filename}")
@@ -113,5 +115,7 @@ def extract_certificate_data_from_filename(filename: str, logger: logging.Logger
 
     data_vencimento = f"{day}/{month}/{year}"
 
-    logger.info(f"Dados extraídos: Número do Certificado={numero_certificado}, Data de Vencimento={data_vencimento}")
+    logger.info(
+        f"Dados extraídos: Número do Certificado={numero_certificado}, Data de Vencimento={data_vencimento}"
+    )
     return numero_certificado, data_vencimento

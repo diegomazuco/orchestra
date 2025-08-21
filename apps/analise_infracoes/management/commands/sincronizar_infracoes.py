@@ -126,7 +126,11 @@ class Command(BaseCommand):
                     logger.info("Lote final inserido com sucesso.")
                 except Exception as bulk_e:
                     logger.error(f"Erro ao inserir lote final de infrações: {bulk_e}")
-                    self.stdout.write(self.style.ERROR(f"Erro ao inserir lote final de infrações: {bulk_e}"))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Erro ao inserir lote final de infrações: {bulk_e}"
+                        )
+                    )
 
             logger.info(
                 f"{len(rows)} infrações foram sincronizadas com sucesso para o banco de dados '{db_alias}'."

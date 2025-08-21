@@ -104,3 +104,17 @@ Este arquivo registra as principais ações e configurações realizadas especif
         - Adição de `unsharp_mask` (`unsharp_mask(img_np, radius=1.0, amount=1.0)`) para realce de contraste e nitidez das bordas.
     - **Resultados:** Apesar dos múltiplos ajustes, o texto extraído pelo OCR permaneceu ilegível, indicando que a qualidade da imagem após o pré-processamento ainda é o principal gargalo.
     - **Lição Aprendida:** A legibilidade da imagem processada (`logs/ocr_processed_image_0.png`) é o fator determinante para o sucesso do OCR. Se a imagem não for legível, o Tesseract não conseguirá extrair os dados corretamente, independentemente das regexes ou configurações.
+- [2025-08-21] Implementação da Extração de Dados por Nome de Arquivo:
+    - **Nova Função de Extração**: O arquivo `services.py` foi atualizado com a nova função `extract_certificate_data_from_filename`. Esta função centraliza a lógica para extrair o número do certificado e a data de vencimento diretamente do nome do arquivo PDF, substituindo a abordagem anterior baseada em OCR.
+
+---
+
+## 21/08/2025 - Refatoração Completa para Remoção da Lógica de OCR
+
+- **Abandono do OCR:** Realizada uma refatoração em todo o projeto para remover completamente a funcionalidade de extração de dados de PDFs via OCR.
+- **Nova Abordagem:** A extração de "Número do Certificado" e "Data de Vencimento" agora é feita exclusivamente a partir do nome do arquivo, que segue o padrão `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`.
+- **Ações de Limpeza:**
+    - Removidas configurações de OCR (`OCR_..._ROI`) do arquivo `core/settings.py`.
+    - Removido o campo `tentativas_ocr` do modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py`.
+    - Criada e aplicada uma nova migração (`0004_remove_certificadoveiculo_tentativas_ocr`) para remover a coluna do banco de dados.
+- **Verificação:** As ferramentas `ruff` e `pyright` foram executadas para garantir a qualidade e a correção do código após a refatoração.

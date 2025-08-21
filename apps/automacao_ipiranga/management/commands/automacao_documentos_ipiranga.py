@@ -7,7 +7,7 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.conf import settings  # Added import
-from django.core.management import call_command
+
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import Page, async_playwright, expect
 
@@ -15,9 +15,7 @@ from apps.automacao_ipiranga.models import (
     CertificadoVeiculo,
 )
 from apps.common.services import (
-    convert_date_format,
-    extract_cipp_data,
-    extract_text_from_pdf_image,
+    extract_certificate_data_from_filename,
     login_to_portran,
 )
 
@@ -78,19 +76,27 @@ class Command(BaseCommand):
             assert certificado is not None
 
             # Increment attempt counter at the very beginning
-            certificado.tentativas_automacao = (certificado.tentativas_automacao or 0) + 1
+            certificado.tentativas_automacao = (
+                certificado.tentativas_automacao or 0
+            ) + 1
             await sync_to_async(certificado.save)()
-            logger.info(f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id}: Tentativa {certificado.tentativas_automacao}")
+            logger.info(
+                f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id}: Tentativa {certificado.tentativas_automacao}"
+            )
 
             # Define max attempts (can be moved to settings.py)
-            MAX_AUTOMATION_ATTEMPTS = 3
+            max_automation_attempts = 3
 
             # Check if max attempts reached
-            if certificado.tentativas_automacao > MAX_AUTOMATION_ATTEMPTS:
-                logger.error(f"Certificado ID {certificado_id} excedeu o número máximo de tentativas ({MAX_AUTOMATION_ATTEMPTS}). Marcando como falha_max_tentativas.")
+            if certificado.tentativas_automacao > max_automation_attempts:
+                logger.error(
+                    f"Certificado ID {certificado_id} excedeu o número máximo de tentativas ({max_automation_attempts}). Marcando como falha_max_tentativas."
+                )
                 certificado.status = "falha_max_tentativas"
                 await sync_to_async(certificado.save)()
-                raise CommandError(f"Certificado ID {certificado_id} excedeu o número máximo de tentativas.")
+                raise CommandError(
+                    f"Certificado ID {certificado_id} excedeu o número máximo de tentativas."
+                )
 
             file_path_upload = certificado.arquivo.path
             logger.info(
@@ -135,8 +141,8 @@ class Command(BaseCommand):
                         f"O arquivo do certificado não foi encontrado em: {file_path_upload}"
                     )
 
-                vencidos_url = settings.IPIRANGA_VENCIDOS_URL # Used setting
-                a_vencer_url = settings.IPIRANGA_A_VENCER_URL # Used setting
+                vencidos_url = settings.IPIRANGA_VENCIDOS_URL  # Used setting
+                a_vencer_url = settings.IPIRANGA_A_VENCER_URL  # Used setting
 
                 placa_encontrada = False
                 logger.info("Iniciando loop de navegação para páginas de veículos...")
@@ -250,7 +256,9 @@ class Command(BaseCommand):
                         )
                         # Add robust wait for the "Atualizar" button to be visible
                         logger.info("Aguardando botão 'Atualizar' ficar visível...")
-                        await page.screenshot(path="screenshot_after_cert_tab_click.png")
+                        await page.screenshot(
+                            path="screenshot_after_cert_tab_click.png"
+                        )
                         await fieldset.locator(
                             "button.btn-atualizar-requisito"
                         ).wait_for(state="visible", timeout=60000)
@@ -259,41 +267,26 @@ class Command(BaseCommand):
                         await page.wait_for_load_state("networkidle")
 
                         # --- Start of new PDF processing logic ---
-                        logger.info("Iniciando extração de texto do PDF...")
-                        pdf_text = extract_text_from_pdf_image(file_path_upload, logger)
-                        logger.info(
-                            "Texto do PDF extraído. Identificando tipo de certificado..."
-                        )
-
-                        numero_documento_valor: str = "N/A"
-                        vencimento_valor_portal: str = "N/A"
-
-                        if "CIPP" in str(nome_certificado_alvo).upper():  # type: ignore[reportUnknownMemberType]
-                            logger.info(
-                                "Tipo de certificado identificado como CIPP. Extraindo dados específicos..."
-                            )
-                            try:
-                                # The extract_cipp_data now returns the numeric document value and formatted date
-                                numero_documento_valor, vencimento_valor_portal = (
-                                    extract_cipp_data(pdf_text, logger)
+                        logger.info("Iniciando extração de dados do nome do arquivo...")
+                        try:
+                            numero_documento_valor, vencimento_valor_portal = (
+                                extract_certificate_data_from_filename(
+                                    os.path.basename(file_path_upload), logger
                                 )
-                            except ValueError as ve:
-                                logger.error(
-                                    f"Erro na extração de dados do PDF: {ve}. Texto do PDF: {pdf_text[:1000]}..."
-                                )
-                                raise CommandError(
-                                    f"Erro na extração de dados do PDF: {ve}"
-                                ) from ve
-                        else:
-                            logger.warning(
-                                f"Tipo de certificado '{nome_certificado_alvo}' não reconhecido. Extração de dados genérica ou falha."  # type: ignore[reportUnknownMemberType]
                             )
+                        except ValueError as ve:
+                            logger.error(
+                                f"Erro ao extrair dados do nome do arquivo: {ve}"
+                            )
+                            raise CommandError(
+                                f"Erro ao extrair dados do nome do arquivo: {ve}"
+                            ) from ve
 
                         logger.info(
-                            f"Número do Documento Extraído: {numero_documento_valor}"  # type: ignore[reportUnknownMemberType]
+                            f"Número do Documento Extraído: {numero_documento_valor}"
                         )
                         logger.info(
-                            f"Data de Vencimento Extraída: {vencimento_valor_portal}"  # type: ignore[reportUnknownMemberType]
+                            f"Data de Vencimento Extraída: {vencimento_valor_portal}"
                         )
                         # --- End of new PDF processing logic ---
 
@@ -400,9 +393,13 @@ class Command(BaseCommand):
                     try:
                         certificado.status = "falha"
                         await sync_to_async(certificado.save)()
-                        logger.info(f"Certificado ID {certificado_id} marcado como 'falha'.")
+                        logger.info(
+                            f"Certificado ID {certificado_id} marcado como 'falha'."
+                        )
                     except Exception as save_error:
-                        logger.error(f"Falha ao salvar status 'falha' para certificado ID {certificado_id}: {save_error}")
+                        logger.error(
+                            f"Falha ao salvar status 'falha' para certificado ID {certificado_id}: {save_error}"
+                        )
 
                 if page:
                     try:
@@ -424,7 +421,9 @@ class Command(BaseCommand):
                     logger.info("FINALLY BLOCK: Browser closed.")
                 # Cleanup: Delete certificate and associated file regardless of success or failure
                 if certificado:
-                    logger.info(f"FINALLY BLOCK: Certificado object is not None. PK: {certificado.pk}")
+                    logger.info(
+                        f"FINALLY BLOCK: Certificado object is not None. PK: {certificado.pk}"
+                    )
                     if certificado.pk:
                         logger.info(
                             f"FINALLY BLOCK: Attempting to delete Certificado ID {certificado.id} from DB."  # type: ignore[reportUnknownMemberType]
@@ -435,9 +434,13 @@ class Command(BaseCommand):
                                 f"FINALLY BLOCK: Certificado ID {certificado.id} deleted from DB."  # type: ignore[reportUnknownMemberType]
                             )
                         except Exception as delete_error:
-                            logger.error(f"FINALLY BLOCK: Error deleting Certificado ID {certificado.id} from DB: {delete_error}")
+                            logger.error(
+                                f"FINALLY BLOCK: Error deleting Certificado ID {certificado.id} from DB: {delete_error}"
+                            )
                     else:
-                        logger.info("FINALLY BLOCK: Certificado.pk is None. Skipping DB deletion.")
+                        logger.info(
+                            "FINALLY BLOCK: Certificado.pk is None. Skipping DB deletion."
+                        )
 
                     if file_path_upload and os.path.exists(file_path_upload):
                         logger.info(
@@ -445,9 +448,13 @@ class Command(BaseCommand):
                         )
                         try:
                             os.remove(file_path_upload)
-                            logger.info(f"FINALLY BLOCK: File {file_path_upload} deleted.")
+                            logger.info(
+                                f"FINALLY BLOCK: File {file_path_upload} deleted."
+                            )
                         except OSError as file_delete_error:
-                            logger.error(f"FINALLY BLOCK: Error deleting file {file_path_upload}: {file_delete_error}")
+                            logger.error(
+                                f"FINALLY BLOCK: Error deleting file {file_path_upload}: {file_delete_error}"
+                            )
                     else:
                         logger.info(
                             f"FINALLY BLOCK: File {file_path_upload} not found or path not set. Skipping file deletion."
@@ -460,12 +467,12 @@ class Command(BaseCommand):
                         "FINALLY BLOCK: Certificado object is None. Skipping specific cleanup."
                     )
 
-                
-
     def handle(self, *args: Any, **options: Any) -> None:
         """Executa o comando de automação de forma síncrona."""
         try:
-            certificado_id = options.pop("certificado_id") # Use pop to remove it from options
+            certificado_id = options.pop(
+                "certificado_id"
+            )  # Use pop to remove it from options
             asyncio.run(self.handle_async(certificado_id, **options))
         except CommandError as e:
             self.stderr.write(self.style.ERROR(f"Erro no comando: {e}"))

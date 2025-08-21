@@ -18,8 +18,6 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
     *   **Adoção de `uv` e `pyproject.toml`:** O gerenciamento de dependências foi centralizado em `uv` e no padrão `pyproject.toml`.
     *   **Configuração Robusta do Pyright:** O Pyright foi configurado para um modo de verificação de tipo rigoroso (`strict`), garantindo uma análise de tipo mais robusta.
     *   **Abandono da Extração de Dados via OCR de PDFs:** Devido à complexidade, instabilidade e alto custo de manutenção da extração de dados via OCR de documentos PDF, o projeto decidiu abandonar essa abordagem. A partir de agora, o 'Número do Certificado' e a 'DATA DE VENCIMENTO' serão extraídos diretamente do nome do arquivo PDF, que seguirá um formato padronizado (ex: `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`).
-    *   **Abandono da Extração de Dados via OCR de PDFs:** Devido à complexidade, instabilidade e alto custo de manutenção da extração de dados via OCR de documentos PDF, o projeto decidiu abandonar essa abordagem. A partir de agora, o 'Número do Certificado' e a 'DATA DE VENCIMENTO' serão extraídos diretamente do nome do arquivo PDF, que seguirá um formato padronizado (ex: `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`).
-    *   **Abandono da Extração de Dados via OCR de PDFs:** Devido à complexidade, instabilidade e alto custo de manutenção da extração de dados via OCR de documentos PDF, o projeto decidiu abandonar essa abordagem. A partir de agora, o 'Número do Certificado' e a 'DATA DE VENCIMENTO' serão extraídos diretamente do nome do arquivo PDF, que seguirá um formato padronizado (ex: `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`).
 
 ---
 

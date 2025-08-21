@@ -266,3 +266,15 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - [2025-08-19] Ajuste nas instruções do processo 'init' no GEMINI.md para torná-lo inteligente e idempotente, evitando a percepção de looping.
 - [2025-08-19] Melhorias na robustez da automação e OCR: Aprimoramentos significativos na lógica de disparo de sinais, aumento de timeouts do Playwright, tratamento de erros em blocos finally e implementação de técnicas avançadas de pré-processamento de imagem para OCR (deskewing, redução de ruído, binarização).
 - [2025-08-19] Ajuste nas diretrizes Git: Adicionada instrução no GEMINI.md sobre o uso de `git commit -F` para mensagens de commit multi-linha ou com caracteres especiais, a fim de evitar problemas de interpretação do shell.
+
+---
+
+## 21/08/2025 - Refatoração Completa para Remoção da Lógica de OCR
+
+- **Abandono do OCR:** Realizada uma refatoração em todo o projeto para remover completamente a funcionalidade de extração de dados de PDFs via OCR.
+- **Nova Abordagem:** A extração de "Número do Certificado" e "Data de Vencimento" agora é feita exclusivamente a partir do nome do arquivo, que segue o padrão `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`.
+- **Ações de Limpeza:**
+    - Removidas configurações de OCR (`OCR_..._ROI`) do arquivo `core/settings.py`.
+    - Removido o campo `tentativas_ocr` do modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py`.
+    - Criada e aplicada uma nova migração (`0004_remove_certificadoveiculo_tentativas_ocr`) para remover a coluna do banco de dados.
+- **Verificação:** As ferramentas `ruff` e `pyright` foram executadas para garantir a qualidade e a correção do código após a refatoração.

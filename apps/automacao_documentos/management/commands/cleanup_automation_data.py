@@ -27,13 +27,19 @@ class Command(BaseCommand):
             deleted_certificados = 0
             for certificado in certificados_to_delete:
                 try:
-                    if certificado.arquivo and certificado.arquivo.storage.exists(certificado.arquivo.name):
+                    if certificado.arquivo and certificado.arquivo.storage.exists(
+                        certificado.arquivo.name
+                    ):
                         certificado.arquivo.delete(save=False)
-                        self.stdout.write(f"  Arquivo {certificado.arquivo.name} de CertificadoVeiculo deletado.")
+                        self.stdout.write(
+                            f"  Arquivo {certificado.arquivo.name} de CertificadoVeiculo deletado."
+                        )
                     certificado.delete()
                     deleted_certificados += 1
                 except Exception as e:
-                    logger.error(f"Erro ao deletar CertificadoVeiculo ID {certificado.id} ou seu arquivo: {e}")
+                    logger.error(
+                        f"Erro ao deletar CertificadoVeiculo ID {certificado.id} ou seu arquivo: {e}"
+                    )
             self.stdout.write(
                 f"  {deleted_certificados} registros de CertificadoVeiculo deletados."
             )
@@ -61,13 +67,19 @@ class Command(BaseCommand):
             deleted_documentos = 0
             for documento in documentos_to_delete:
                 try:
-                    if documento.arquivo_pdf and documento.arquivo_pdf.storage.exists(documento.arquivo_pdf.name):
+                    if documento.arquivo_pdf and documento.arquivo_pdf.storage.exists(
+                        documento.arquivo_pdf.name
+                    ):
                         documento.arquivo_pdf.delete(save=False)
-                        self.stdout.write(f"  Arquivo {documento.arquivo_pdf.name} de Documento deletado.")
+                        self.stdout.write(
+                            f"  Arquivo {documento.arquivo_pdf.name} de Documento deletado."
+                        )
                     documento.delete()
                     deleted_documentos += 1
                 except Exception as e:
-                    logger.error(f"Erro ao deletar Documento ID {documento.id} ou seu arquivo: {e}")
+                    logger.error(
+                        f"Erro ao deletar Documento ID {documento.id} ou seu arquivo: {e}"
+                    )
             self.stdout.write(
                 f"  {deleted_documentos} registros de Documento deletados."
             )
