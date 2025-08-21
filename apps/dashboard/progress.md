@@ -58,6 +58,17 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 21/08/2025 - Refatoração Completa para Remoção da Lógica de OCR
 
+- **Resolução de Problema de Memória do CLI:** Identificado e resolvido o erro "JavaScript heap out of memory" no Gemini CLI, aumentando o limite de memória do processo Node.js via `export NODE_OPTIONS`. Isso permitiu a continuidade das operações de refatoração.
+- **Otimização e Correção do `pre-commit`:**
+    - Investigada e resolvida a falha persistente do hook `safety` (`Repository not found`).
+    - Atualizada a configuração do `safety` no `.pre-commit-config.yaml` para usar um hook `local` que executa `scripts/run_safety.py`, contornando problemas de acesso ao repositório e interpretação de comandos.
+    - Verificado o sucesso da execução de todos os hooks do `pre-commit`.
+- **Gerenciamento de Pacotes com `uv`:**
+    - Tentativa de atualização de pacotes desatualizados (`filelock`, `psutil`, `pydantic`, `pydantic-core`) via `uv sync --upgrade` e `uv add --upgrade`.
+    - Constatado que a atualização não foi possível devido a restrições de dependência (provavelmente do `safety` ou outras dependências), mantendo as versões atuais por compatibilidade.
+- **Limpeza de Arquivos Temporários:**
+    - Removido o arquivo temporário `commit_message.txt` utilizado para mensagens de commit.
+    - Adicionado `commit_message.txt` ao `.gitignore` para evitar seu rastreamento futuro.
 - **Abandono do OCR:** Realizada uma refatoração em todo o projeto para remover completamente a funcionalidade de extração de dados de PDFs via OCR.
 - **Nova Abordagem:** A extração de "Número do Certificado" e "Data de Vencimento" agora é feita exclusivamente a partir do nome do arquivo, que segue o padrão `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`.
 - **Ações de Limpeza:**

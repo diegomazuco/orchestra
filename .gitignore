@@ -38,3 +38,5 @@ login_error_screenshot.png
 
 # Temporary files
 commit_message.txt
+test_log.log
+uv.lock
