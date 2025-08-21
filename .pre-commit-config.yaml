@@ -26,8 +26,12 @@ repos:
       - id: pyright
         additional_dependencies: [".[all]"]
 
-  - repo: https://github.com/pycqa/safety
-    rev: 3.6.0 # Use a versão mais recente do safety
+  - repo: local
     hooks:
       - id: safety
-        args: ["check", "--file=<(uv pip freeze)"]
+        name: safety
+        entry: python scripts/run_safety.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        types: [python]

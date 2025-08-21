@@ -8,6 +8,16 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
 
 ---
 
+### 0. Diretrizes Operacionais do Gemini CLI
+
+*   **Gerenciamento de Memória (Heap Size):** Se o Gemini CLI apresentar erros de "JavaScript heap out of memory", é provável que o processo esteja esgotando a memória alocada. Para aumentar o limite de memória, defina a variável de ambiente `NODE_OPTIONS` antes de iniciar o CLI:
+    ```bash
+    export NODE_OPTIONS="--max-old-space-size=8192" # Define o limite para 8GB (ajuste conforme necessário)
+    ```
+    Esta configuração é temporária para a sessão atual do terminal. Para torná-la permanente, adicione a linha ao seu arquivo de configuração de shell (ex: `~/.bashrc` ou `~/.zshrc`).
+
+---
+
 ### 1. Visão Geral e Filosofia do Projeto
 
 *   **Objetivo:** "Orchestra" é uma plataforma-mãe que orquestra múltiplos sub-projetos (apps Django), com foco máximo em organização, manutenibilidade, segurança e performance.
@@ -65,7 +75,7 @@ Este processo é **obrigatório** antes de cada commit:
     *   **ATENÇÃO:** O arquivo `db.sqlite3` é o banco de dados de desenvolvimento e **NÃO DEVE SER EXCLUÍDO EM HIPÓTESE ALGUMA**, mesmo para fins de depuração ou para garantir um estado "limpo". Ajustes no banco de dados devem ser feitos via migrações ou comandos Django apropriados, não pela exclusão do arquivo. A exclusão acidental pode levar à perda de dados e à necessidade de recriação completa do ambiente de dados.
 4.  **Versionamento:**
     * `git add .`
-    * `git commit -m "..."` (Use mensagens detalhadas explicando o "porquê"). **Todas as mensagens de commit devem ser em Português do Brasil.** Para mensagens multi-linha ou com caracteres especiais (ex: `), considere usar `git commit -F <arquivo_temporario>` para evitar problemas de interpretação do shell.**
+    * `git commit -m "..."` (Use mensagens detalhadas explicando o "porquê"). **Todas as mensagens de commit devem ser em Português do Brasil.** Para evitar problemas de interpretação do shell com mensagens multi-linha ou que contenham caracteres especiais (ex: `), é **altamente recomendado** usar `git commit -F <arquivo_temporario>` para passar a mensagem a partir de um arquivo.
     * `git pull --rebase`
     * `git push`
     * Valide com `git fetch && git status`.
@@ -217,11 +227,13 @@ Ao iniciar ou reiniciar o servidor, ou **antes de cada novo ciclo de teste**, si
 #### 4.3. Ferramentas e Comandos Rápidos
 
 *   **Gerenciador de Pacotes (`uv`):**
-    * Adicionar: `uv add <pacote>`
-    * Remover: `uv remove <pacote>`
-    * Sincronizar: `uv sync` (garante versões exatas do `pyproject.toml`)
-    * Atualizar: `uv sync --upgrade` (instala últimas versões permitidas)
-    * Executar no venv: `uv run <comando>`
+    *   **Princípio:** Sempre utilize `uv` para gerenciar dependências e executar comandos no ambiente virtual. Priorize a instalação de **versões estáveis** dos pacotes e dependências, **nunca utilize versões beta**.
+    *   **Adicionar:** `uv add <pacote>` (Adiciona um pacote ao `pyproject.toml` e instala-o. Use `--dev` ou `--group <grupo>` para grupos específicos.)
+    *   **Remover:** `uv remove <pacote>` (Remove um pacote do `pyproject.toml` e desinstala-o.)
+    *   **Sincronizar:** `uv sync` (Garante que o ambiente virtual esteja em perfeita sincronia com o `uv.lock`, instalando apenas o que for necessário. Ideal para fixar o ambiente.)
+    *   **Atualizar:** `uv sync --upgrade` (Atualiza os pacotes para as últimas versões permitidas pelas restrições do `pyproject.toml` e atualiza o `uv.lock`.)
+    *   **Executar no venv:** `uv run <comando>` (Executa um comando no contexto do ambiente virtual do projeto.)
+*   **Lidando com Pacotes Desatualizados Persistentes:** Se `uv sync --upgrade` não atualizar um pacote para sua versão mais recente disponível, isso geralmente indica que outras dependências do projeto (ou o `uv.lock`) estão fixando uma versão mais antiga. Nesses casos, forçar a atualização pode introduzir quebras de compatibilidade. A decisão de atualizar deve ser baseada em uma análise manual das notas de lançamento do pacote e da compatibilidade com as dependências existentes.
 *   **Qualidade de Código (`ruff`):** Utilize `ruff check . --fix` e `ruff format .` para garantir a conformidade com os padrões de estilo e linting. **Priorize a correção do código** em vez de apenas suprimir avisos. Remova código comentado irrelevante.
 *   **Verificação de Tipos (`pyright`):** Execute `pyright` para validação da tipagem estática. **Busque resolver os erros de tipo no código**; use `type: ignore` apenas como último recurso e com justificativa clara, especialmente em casos onde a tipagem é complexa sem `django-stubs`.
 *   **Comandos do Projeto:**

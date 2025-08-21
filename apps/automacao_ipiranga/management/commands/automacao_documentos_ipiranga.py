@@ -7,7 +7,6 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from django.conf import settings  # Added import
-
 from django.core.management.base import BaseCommand, CommandError
 from playwright.async_api import Page, async_playwright, expect
 

@@ -13,10 +13,10 @@ dependencies = [
     "python-decouple>=3.8",
     "python-dotenv>=1.1.1",
     "ruff>=0.12.7",
-    "filelock>=3.16.1",
-    "psutil>=6.1.1",
-    "pydantic>=2.9.2",
-    "pydantic-core>=2.23.4",
+    "filelock",
+    "psutil",
+    "pydantic",
+    "pydantic-core",
 ]
 
 [tool.ruff]

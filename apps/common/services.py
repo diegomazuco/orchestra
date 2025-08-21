@@ -2,7 +2,6 @@ import asyncio
 import logging
 import re
 
-
 from decouple import config
 from django.conf import settings
 from playwright.async_api import Page, expect
@@ -98,24 +97,40 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
 def extract_certificate_data_from_filename(
     filename: str, logger: logging.Logger
 ) -> tuple[str, str]:
-    """Extrai o número do certificado e a data de vencimento do nome do arquivo."""
+    """Extrai o número do certificado e a data de vencimento do nome do arquivo.
+
+    Formato esperado: PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf
+    Exemplo: ABC1234_CIPP_T123456_25122025.pdf
+    """
     logger.info(f"Extraindo dados do nome do arquivo: {filename}")
-    # Expected format: PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf
+
+    # Regex para o novo formato: PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf
     match = re.match(
-        r".*?_([A-Z0-9]+)_(\d{2})(\d{2})(\d{4})\.pdf", filename, re.IGNORECASE
+        r"([A-Z0-9]+)_([A-Z0-9]+)_([A-Z0-9]+)_(\d{8})\.pdf", filename, re.IGNORECASE
     )
+
     if not match:
         logger.error(f"Formato de nome de arquivo inválido: {filename}")
         raise ValueError(f"Formato de nome de arquivo inválido: {filename}")
 
-    numero_certificado = match.group(1)
-    day = match.group(2)
-    month = match.group(3)
-    year = match.group(4)
+    numero_certificado = match.group(3)
+    data_vencimento_raw = match.group(4)
 
-    data_vencimento = f"{day}/{month}/{year}"
+    # Converte DDMMYYYY para DD/MM/YYYY
+    if len(data_vencimento_raw) == 8:
+        day = data_vencimento_raw[0:2]
+        month = data_vencimento_raw[2:4]
+        year = data_vencimento_raw[4:8]
+        data_vencimento_formatada = f"{day}/{month}/{year}"
+    else:
+        logger.error(
+            f"Formato de data de vencimento inválido no nome do arquivo: {data_vencimento_raw}"
+        )
+        raise ValueError(
+            f"Formato de data de vencimento inválido: {data_vencimento_raw}"
+        )
 
     logger.info(
-        f"Dados extraídos: Número do Certificado={numero_certificado}, Data de Vencimento={data_vencimento}"
+        f"Dados extraídos: Número do Certificado={numero_certificado}, Data de Vencimento={data_vencimento_formatada}"
     )
-    return numero_certificado, data_vencimento
+    return numero_certificado, data_vencimento_formatada

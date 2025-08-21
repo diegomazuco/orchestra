@@ -39,7 +39,7 @@
 
 * **Extração de Dados do Nome do Arquivo:**
     *   **Abandono do OCR:** A extração de dados via OCR foi abandonada devido à sua complexidade e instabilidade.
-    *   **Formato do Nome do Arquivo:** A extração do "Número do Certificado" e da "Data de Vencimento" agora depende **estritamente** do nome do arquivo PDF. O formato mandatório é `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf` (ex: `ABC1234_T123456_25122025.pdf`).
+    *   **Formato do Nome do Arquivo:** A extração do "Número do Certificado" e da "Data de Vencimento" agora depende **estritamente** do nome do arquivo PDF. O formato mandatório é `PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf` (ex: `ABC1234_CIPP_T123456_25122025.pdf`).
     *   **Função Centralizada:** A lógica de extração está na função `extract_certificate_data_from_filename` no arquivo `apps/common/services.py`. Qualquer ajuste no padrão de extração deve ser feito de forma centralizada nesta função.
     *   **Validação:** A automação deve validar o nome do arquivo no início do processo. Arquivos com formato inválido devem ser marcados com status de erro e não devem prosseguir para a automação web.
 
