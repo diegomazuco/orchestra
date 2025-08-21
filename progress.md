@@ -60,7 +60,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Execução de `ruff check . --fix` e `ruff format .` para análise e correção de qualidade de código.
     - Correção de docstrings ausentes e código comentado.
     - Execução de `pyright` para validação da tipagem estática.
-    - Correção de erro de tipagem em `apps/common/services.py` na função `extract_cipp_data`, garantindo que `numero_documento_valor` seja sempre uma string ou que um `ValueError` seja levantado, alinhando com o tipo de retorno `tuple[str, str]`.
+    - Correção de erro de tipagem em `apps/common/services.py` na função `extract_cipp_data`, garantindo que `numero_documento_valor` seja sempre uma string ou que um `ValueError` seja levantado, alinhando com o tipo de retorno `tuple[str, str]`
 - **Refatoração do Processo de OCR e Execução Assíncrona:**
     - Em `apps/common/services.py`:
         - Removidas dependências e lógicas de correção de inclinação, redução de ruído e aprimoramento de contraste para simplificar o processo de OCR.
@@ -169,12 +169,12 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 ## 17/08/2025 - Resumo do Dia de Trabalho e Melhorias Aplicadas
 
 - **Processo de Inicialização (`init`)**: Executado e verificado, incluindo sincronização do repositório, configuração do ambiente Python (instalação/atualização de dependências com `uv`, instalação de navegadores Playwright), aplicação de migrações de banco de dados e execução de ferramentas de qualidade (`ruff`, `pyright`).
-- **Análise e Aprimoramento de Ferramentas de Qualidade e Segurança**:
+- **Análise e Aprimoramento de Ferramentas de Qualidade e Segurança**
     - **`safety`**: Integrado ao pipeline de CI/CD (`.github/workflows/ci.yml`) e aos hooks de pré-commit (`.pre-commit-config.yaml`) para automação da verificação de vulnerabilidades.
-    - **`pre-commit`**: Aprimorado com a adição de hooks de segurança e qualidade (`detect-private-key`, `check-merge-conflict`, `check-json`, `check-executables-have-shebangs`) para uma análise mais detalhada e robusta.
+    - **`pre-commit`**: Aprimorado com a adição de hooks de segurança e qualidade (`detect-private-key`, `check-merge-conflict`, `check-json`, `check-executables-have_shebangs`) para uma análise mais detalhada e robusta.
 - **Atualização de Documentação**: O `GEMINI.md` global foi atualizado para refletir a remoção das etapas de `ruff` e `pyright` do comando `init`, que agora são gerenciadas pelo `pre-commit`.
 - **Análise Detalhada da Estrutura e Código do Projeto**: Realizada uma revisão abrangente de todos os arquivos, pastas e códigos, confirmando a excelente condição geral do projeto e identificando áreas para melhoria.
-- **Aplicação de Melhorias Não Críticas**:
+- **Aplicação de Melhorias Não Críticas**
     - **Limpeza de Dados de Teste**: O comando `apps/automacao_ipiranga/management/commands/cleanup_test_data.py` foi refatorado para remover a redefinição de sequência específica do SQLite e adicionar tratamento de erros robusto para exclusão de arquivos.
     - **Externalização de Configurações**: URLs de portais (Ipiranga) e coordenadas de Regiões de Interesse (ROIs) para OCR foram externalizadas de arquivos de código (`apps/common/services.py`, `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`) para as configurações do Django (`core/settings.py`), aumentando a manutenibilidade e flexibilidade.
 
@@ -220,16 +220,16 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 ## 17/08/2025 - Análise Detalhada de Looping e Atualizações de Diretrizes
 
-- **Análise de Looping no Projeto Orchestra**:
+- **Análise de Looping no Projeto Orchestra**
     - Realizada análise detalhada do `signals.py` e `automacao_documentos_ipiranga.py` para identificar potenciais causas de looping.
     - Identificado que a falta de um contador de tentativas explícito no modelo `CertificadoVeiculo` era um ponto crítico.
     - Implementado o campo `tentativas_automacao` e `tentativas_ocr` no modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py`.
     - Atualizado `automacao_documentos_ipiranga.py` para incrementar `tentativas_automacao` e verificar um limite máximo de tentativas, marcando o certificado com `falha_max_tentativas` se excedido.
     - Refinado o bloco `except` para garantir a atualização robusta do status para `falha`.
-- **Análise de Looping em Agentes LLM (Pesquisa na Internet)**:
+- **Análise de Looping em Agentes LLM (Pesquisa na Internet)**
     - Pesquisadas causas comuns e estratégias de mitigação para looping em agentes LLM (ambiguidade, critérios de parada, estado interno, dependência de ferramenta, feedback ineficaz, permissões).
     - Foco em estratégias como gerenciamento robusto de estado, detecção e resolução de looping, e feedback aprimorado.
-- **Atualizações de Diretrizes (`GEMINI.md`)**:
+- **Atualizações de Diretrizes (`GEMINI.md`)**
     - A seção "2.3. Gerenciamento de Falhas e Prevenção de Looping" no `GEMINI.md` principal foi aprimorada para incluir diretrizes mais explícitas sobre:
         - Reflexão pós-falha e análise de erros.
         - Diversificação de abordagem (táticas de depuração, reavaliação da tarefa).
@@ -239,28 +239,28 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 ## 17/08/2025 - Análise Detalhada e Otimização de Funções e Comandos do Projeto
 
-- **Análise e Ajustes em `apps/common/services.py`**:
+- **Análise e Ajustes em `apps/common/services.py`**
     - URL do dashboard (`IPIRANGA_DASHBOARD_URL`) movida de hardcode para `core/settings.py`.
     - Função `extract_text_from_roi`: Alterado o tratamento de erro para `raise` a exceção em vez de retornar string vazia, garantindo propagação de erros.
     - Função `normalize_text`: Corrigida a regex para remover o `R` não intencional.
-- **Análise e Ajustes em `core/settings.py`**:
+- **Análise e Ajustes em `core/settings.py`**
     - Adicionadas as configurações `IPIRANGA_DASHBOARD_URL` e `MYSQL_INFRACOES_TABLE`.
-- **Análise e Ajustes em `apps/automacao_ipiranga/models.py`**:
+- **Análise e Ajustes em `apps/automacao_ipiranga/models.py`**
     - Adicionados os campos `tentativas_automacao` e `tentativas_ocr` ao modelo `CertificadoVeiculo`.
     - Adicionado `falha_max_tentativas` às opções de `STATUS_CHOICES` do `CertificadoVeiculo`.
     - Criadas e aplicadas as migrações necessárias para as alterações nos modelos.
-- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`**:
+- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`**
     - Implementado o incremento do contador `tentativas_automacao` no início da execução.
     - Adicionada verificação de limite máximo de tentativas, com marcação de status `falha_max_tentativas` e interrupção da automação.
     - Refinado o bloco `except` para garantir a atualização robusta do status para `falha` em caso de erro.
-- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/cleanup_media.py`**:
+- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/cleanup_media.py`**
     - Refatorada a lógica de exclusão de arquivos e registros para `CertificadoVeiculo`, garantindo que os arquivos sejam deletados do armazenamento antes dos registros do banco de dados.
-- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/test_ocr_extraction.py`**:
+- **Análise e Ajustes em `apps/automacao_ipiranga/management/commands/test_ocr_extraction.py`**
     - Melhorada a consistência na limpeza de texto para busca de dados.
-- **Análise e Ajustes em `apps/analise_infracoes/management/commands/sincronizar_infracoes.py`**:
+- **Análise e Ajustes em `apps/analise_infracoes/management/commands/sincronizar_infracoes.py`**
     - Utilizado `settings.MYSQL_INFRACOES_TABLE` na query MySQL para maior configurabilidade.
     - Adicionado logging de erro mais específico para operações `bulk_create`.
-- **Análise e Ajustes em `apps/dashboard/views.py`**:
+- **Análise e Ajustes em `apps/dashboard/views.py`**
     - Removidas as instruções `assert` redundantes.
 
 - [2025-08-19] Ajuste nas instruções do processo 'init' no GEMINI.md para torná-lo inteligente e idempotente, evitando a percepção de looping.
@@ -278,10 +278,11 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Verificado o sucesso da execução de todos os hooks do `pre-commit`.
 - **Gerenciamento de Pacotes com `uv`:**
     - Tentativa de atualização de pacotes desatualizados (`filelock`, `psutil`, `pydantic`, `pydantic-core`) via `uv sync --upgrade` e `uv add --upgrade`.
-    - Constatado que a atualização não foi possível devido a restrições de dependência (provavelmente do `safety` ou outras dependências), mantendo as versões atuais por compatibilidade.
+    - Constatado que a atualização não foi possível devido a restrições de dependência (provavelmente do `safety` ou outras dependências), mantendo as versões atuais por compatibilidade).
 - **Limpeza de Arquivos Temporários:**
     - Removido o arquivo temporário `commit_message.txt` utilizado para mensagens de commit.
     - Adicionado `commit_message.txt` ao `.gitignore` para evitar seu rastreamento futuro.
+- **Gerenciamento do `.gitignore`:** O arquivo `.gitignore` foi revisado e atualizado para garantir que todos os arquivos e diretórios temporários, de cache e de ambiente (`test_log.log`, `uv.lock`, `commit_message.txt`) sejam corretamente ignorados pelo controle de versão.
 - **Abandono do OCR:** Realizada uma refatoração em todo o projeto para remover completamente a funcionalidade de extração de dados de PDFs via OCR.
 - **Nova Abordagem:** A extração de "Número do Certificado" e "Data de Vencimento" agora é feita exclusivamente a partir do nome do arquivo, que segue o padrão `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`.
 - **Ações de Limpeza:**
@@ -289,3 +290,11 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Removido o campo `tentativas_ocr` do modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py`.
     - Criada e aplicada uma nova migração (`0004_remove_certificadoveiculo_tentativas_ocr`) para remover a coluna do banco de dados.
 - **Verificação:** As ferramentas `ruff` e `pyright` foram executadas para garantir a qualidade e a correção do código após a refatoração.
+
+**Instrução:** Você não pode deletar informações de nenhum dos arquivos GEMINI.md nem de nenhum dos arquivos progress.md, os arquivos GEMINI.md do projeto Orchestra contém instruções importantes para serem seguidas e devem apenas incluir novas instruções ou ajustar aquelas que já existesm, desde que sejam ajustes para melhorar ainda mais as intruções, você NUNCA deve deletar todo o conteúdo deles, em hipótese nenhuma. O mesmo serve para todos os arquivos progress.md do projeto Orchestra, todos eles contém informações sobre o histórico do projeto, processos e procedimentos realizados ao longo do tempo, neles devem apenas serem incluídas novos históricos, processos ou procedimentos realizados, em ordem cronológica, você NUNCA deve excluiu o conteúdo completo de nenhum deles em hipótese nenhuma para incluir coisas novas.
+
+## 21/08/2025 - Correção de Histórico e Reinserção de Instruções
+
+- **Problema:** Identificado que a seção "Refatoração Completa para Remoção da Lógica de OCR" e a instrução de não deletar informações dos arquivos `GEMINI.md` e `progress.md` foram acidentalmente removidas durante operações anteriores.
+- **Ação:** As seções e instruções foram reinseridas nos arquivos `progress.md` afetados para garantir a integridade e completude do histórico.
+- **Observações:** Este incidente reforça a importância da revisão cuidadosa das operações de escrita e da validação do conteúdo após as modificações.

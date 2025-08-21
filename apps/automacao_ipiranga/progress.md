@@ -43,7 +43,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Problemas Persistentes:** A automação Playwright ainda não consegue navegar para as URLs "Vencidos" e "À vencer" após a autenticação. O problema de limpeza de arquivos temporários também persistiu.
 - **Ações Realizadas:**
     - Implementação de um tempo limite global de 30 segundos para a automação.
-    - Adição de logging mais granular na função de OCR.
+    - Adição de logging mais granular na função de OCR para depurar a extração de texto.
     - Refinamento da estratégia de limpeza de dados, movendo-a para o bloco `finally` da automação.
 - **Próximos Passos (Foco Principal):**
     - Depuração da navegação pós-autenticação.
@@ -52,7 +52,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 ## 11/08/2025 - Ajustes de Qualidade de Código e Migrações
 
-- **Ajustes de Qualidade de Código:**
+- **Ajustes de Tipagem:**
     - Correção de problemas de docstrings e simplificação de `if` aninhados no `cleanup_media.py`.
 - **Migrações:**
     - Geração e aplicação da migração `0002_alter_certificadoveiculo_arquivo.py`.
@@ -60,12 +60,12 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 10/08/2025 - Análise e Refatoração de Documentação
 
 - **Análise Rigorosa do Projeto:** Contribuição para a análise detalhada de toda a estrutura do projeto.
-- **Refatoração de `GEMINI.md` e `progress.md`:** Os arquivos de documentação e progresso foram lidos, analisados e refatorados para consolidar as melhores instruções e histórico.
+- **Refatoração de `GEMINI.md` e `progress.md`:** Os arquivos de documentação e progresso foram leds, analisados e refatorados para consolidar as melhores instruções e histórico.
 
 ## 08/08/2025 - Correção do Gatilho de Automação e Ajuste na Extração de Dados do PDF
 
 - **Correção do Gatilho de Automação:** Solucionado problema onde subprocessos disparados por sinal não utilizavam o ambiente virtual (`.venv`).
-- **Ajuste na Extração de Dados do PDF:** Expressões regulares foram ajustadas para melhorar a precisão da extração de dados via OCR.
+- **Ajuste na Extração de Dados do PDF:** Expressões regulares foram ajustadas para melhorar a precisão do OCR.
 
 ## 04/08/2025 - Melhorias na Depuração e Correção de Migrações
 
@@ -148,10 +148,11 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Verificado o sucesso da execução de todos os hooks do `pre-commit`.
 - **Gerenciamento de Pacotes com `uv`:**
     - Tentativa de atualização de pacotes desatualizados (`filelock`, `psutil`, `pydantic`, `pydantic-core`) via `uv sync --upgrade` e `uv add --upgrade`.
-    - Constatado que a atualização não foi possível devido a restrições de dependência (provavelmente do `safety` ou outras dependências), mantendo as versões atuais por compatibilidade.
+    - Constatado que a atualização não foi possível devido a restrições de dependência (provavelmente do `safety` ou outras dependências), mantendo as versões atuais por compatibilidade).
 - **Limpeza de Arquivos Temporários:**
     - Removido o arquivo temporário `commit_message.txt` utilizado para mensagens de commit.
     - Adicionado `commit_message.txt` ao `.gitignore` para evitar seu rastreamento futuro.
+- **Gerenciamento do `.gitignore`:** O arquivo `.gitignore` foi revisado e atualizado para garantir que todos os arquivos e diretórios temporários, de cache e de ambiente (`test_log.log`, `uv.lock`, `commit_message.txt`) sejam corretamente ignorados pelo controle de versão.
 - **Abandono do OCR:** Realizada uma refatoração em todo o projeto para remover completamente a funcionalidade de extração de dados de PDFs via OCR.
 - **Nova Abordagem:** A extração de "Número do Certificado" e "Data de Vencimento" agora é feita exclusivamente a partir do nome do arquivo, que segue o padrão `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`.
 - **Ações de Limpeza:**
@@ -159,3 +160,11 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - Removido o campo `tentativas_ocr` do modelo `CertificadoVeiculo` em `apps/automacao_ipiranga/models.py`.
     - Criada e aplicada uma nova migração (`0004_remove_certificadoveiculo_tentativas_ocr`) para remover a coluna do banco de dados.
 - **Verificação:** As ferramentas `ruff` e `pyright` foram executadas para garantir a qualidade e a correção do código após a refatoração.
+
+**Instrução:** Você não pode deletar informações de nenhum dos arquivos GEMINI.md nem de nenhum dos arquivos progress.md, os arquivos GEMINI.md do projeto Orchestra contém instruções importantes para serem seguidas e devem apenas incluir novas instruções ou ajustar aquelas que já existesm, desde que sejam ajustes para melhorar ainda mais as intruções, você NUNCA deve deletar todo o conteúdo deles, em hipótese nenhuma. O mesmo serve para todos os arquivos progress.md do projeto Orchestra, todos eles contém informações sobre o histórico do projeto, processos e procedimentos realizados ao longo do tempo, neles devem apenas serem incluídas novos históricos, processos ou procedimentos realizados, em ordem cronológica, você NUNCA deve excluiu o conteúdo completo de nenhum deles em hipótese nenhuma para incluir coisas novas.
+
+## 21/08/2025 - Correção de Histórico e Reinserção de Instruções
+
+- **Problema:** Identificado que a seção "Refatoração Completa para Remoção da Lógica de OCR" e a instrução de não deletar informações dos arquivos `GEMINI.md` e `progress.md` foram acidentalmente removidas durante operações anteriores.
+- **Ação:** As seções e instruções foram reinseridas nos arquivos `progress.md` afetados para garantir a integridade e completude do histórico.
+- **Observações:** Este incidente reforça a importância da revisão cuidadosa das operações de escrita e da validação do conteúdo após as modificações.
