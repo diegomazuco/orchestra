@@ -8,14 +8,14 @@
 
 ### 1. Visão Geral e Responsabilidade
 
-* **Objetivo do App:** Servir como o **orquestrador central**. Ele define a arquitetura, os modelos de dados e o fluxo de negócio padrão para o registro, disparo e monitoramento de robôs de automação.
-* **Responsabilidade:** Este app é responsável pelo **"O QUÊ"** (a estrutura da automação), enquanto os apps implementadores são responsáveis pelo **"COMO"** (a lógica específica de cada robô).
+*   **Objetivo do App:** Servir como o **orquestrador central**. Ele define a arquitetura, os modelos de dados e o fluxo de negócio padrão para o registro, disparo e monitoramento de robôs de automação.
+*   **Responsabilidade:** Este app é responsável pelo **"O QUÊ"** (a estrutura da automação), enquanto os apps implementadores são responsáveis pelo **"COMO"** (a lógica específica de cada robô).
 
 ---
 
 ### 2. Dependências Críticas
 
-* **`playwright`:** A versão deve ser fixada para garantir a estabilidade das automações. A versão testada e aprovada é `1.54.0`. Garanta que `playwright==1.54.0` esteja no `pyproject.toml`.
+*   **`playwright`:** A versão deve ser fixada para garantir a estabilidade das automações. A versão testada e aprovada é `1.54.0`. Garanta que `playwright==1.54.0` esteja no `pyproject.toml`.
 
 ---
 
@@ -23,18 +23,18 @@
 
 Qualquer nova automação no projeto Orchestra deve se conformar a esta arquitetura:
 
-* **Modelos Base (a serem definidos neste app):**
-    * `Automacao(models.Model)`: Registra cada tipo de automação (Ex: "Ipiranga - Atualização de CIPP").
-    * `ExecucaoAutomacao(models.Model)`: Registra cada disparo de uma automação, contendo status, `ForeignKey` para `Automacao`, e log.
+*   **Modelos Base:**
+    *   `Automacao(models.Model)`: Registra cada tipo de automação (Ex: "Ipiranga - Atualização de CIPP").
+    *   `ExecucaoAutomacao(models.Model)`: Registra cada disparo de uma automação, contendo status, `ForeignKey` para `Automacao`, e log.
 
-* **Fluxo Padrão de Orquestração (a ser seguido pelos implementadores):**
+*   **Fluxo Padrão de Orquestração (a ser seguido pelos implementadores):**
     1.  Um evento externo cria um registro em um modelo "gatilho" no app implementador.
     2.  Um sinal `post_save` nesse modelo gatilho detecta a nova entrada. **É crucial que o handler do sinal verifique `if created` para garantir que a automação seja disparada apenas na criação inicial do objeto, e não em atualizações subsequentes.**
-    3.  O sinal dispara o `custom command` correspondente em um **subprocesso**, seguindo a regra de usar o caminho absoluto do python do `.venv`.
+    3.  O sinal dispara o `custom command` correspondente em um **subprocesso**, utilizando o caminho absoluto do executável Python do ambiente virtual (`.venv/bin/python`).
     4.  O `custom command` executa a lógica do robô, atualiza o status e garante a limpeza de recursos em um bloco `finally`.
-    5.  **Limpeza de Recursos:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários, **com tratamento de erros robusto para garantir a limpeza mesmo em caso de falhas.**
+    5.  **Limpeza de Recursos:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários, **com tratamento de erros robusto para garantir a limpeza mesmo em caso de falhas.** Priorize operações em massa (bulk operations) para exclusão de registros de banco de dados e tratamento de erros robusto para a exclusão de arquivos.
     6.  **Gerenciamento de Tempo Limite e Execução Assíncrona:** Para `custom commands` de longa duração (ex: web scraping), é **mandatório** que sejam implementados de forma assíncrona (`asyncio`) e incluam mecanismos de tempo limite (ex: `asyncio.wait_for`) para evitar que fiquem presos indefinidamente.
-    7.  **Robustez do Custom Command:** O `custom command` deve ser implementado com tratamento de erros robusto, incluindo logging detalhado e tratamento de exceções para `SyntaxError` ou outros problemas inesperados que possam ocorrer durante sua execução. Além disso, é **mandatório** que os comandos de limpeza de recursos (ex: exclusão de registros de banco de dados e arquivos temporários) utilizem operações em massa (bulk operations) para eficiência e incluam tratamento de erros robusto para a exclusão de arquivos. Isso garante que falhas na automação sejam capturadas e registradas adequadamente e que a limpeza seja eficiente e confiável.
+    7.  **Robustez do Custom Command:** O `custom command` deve ser implementado com tratamento de erros robusto, incluindo logging detalhado e tratamento de exceções para `SyntaxError` ou outros problemas inesperados.
 
 ---
 
