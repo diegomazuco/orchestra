@@ -17,6 +17,9 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
     *   **Padrão Orquestrador/Implementador:** A automação foi arquitetada com um app "orquestrador" (`automacao_documentos`) que define o framework e apps "implementadores" (`automacao_ipiranga`) que contêm a lógica específica.
     *   **Adoção de `uv` e `pyproject.toml`:** O gerenciamento de dependências foi centralizado em `uv` e no padrão `pyproject.toml`.
     *   **Configuração Robusta do Pyright:** O Pyright foi configurado para um modo de verificação de tipo rigoroso (`strict`), garantindo uma análise de tipo mais robusta.
+    *   **Abandono da Extração de Dados via OCR de PDFs:** Devido à complexidade, instabilidade e alto custo de manutenção da extração de dados via OCR de documentos PDF, o projeto decidiu abandonar essa abordagem. A partir de agora, o 'Número do Certificado' e a 'DATA DE VENCIMENTO' serão extraídos diretamente do nome do arquivo PDF, que seguirá um formato padronizado (ex: `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`).
+    *   **Abandono da Extração de Dados via OCR de PDFs:** Devido à complexidade, instabilidade e alto custo de manutenção da extração de dados via OCR de documentos PDF, o projeto decidiu abandonar essa abordagem. A partir de agora, o 'Número do Certificado' e a 'DATA DE VENCIMENTO' serão extraídos diretamente do nome do arquivo PDF, que seguirá um formato padronizado (ex: `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`).
+    *   **Abandono da Extração de Dados via OCR de PDFs:** Devido à complexidade, instabilidade e alto custo de manutenção da extração de dados via OCR de documentos PDF, o projeto decidiu abandonar essa abordagem. A partir de agora, o 'Número do Certificado' e a 'DATA DE VENCIMENTO' serão extraídos diretamente do nome do arquivo PDF, que seguirá um formato padronizado (ex: `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`).
 
 ---
 
@@ -26,9 +29,19 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
 
 O processo `init` é projetado para ser inteligente e idempotente. Ele verifica o estado atual do ambiente e executa apenas as ações estritamente necessárias para sincronizá-lo, evitando trabalho redundante e a percepção de looping.
 
-1.  **Análise de Contexto (Sempre Executado):** Leia e internalize o conteúdo completo de **todos** os arquivos `GEMINI.md` e `progress.md` do projeto para compreender o contexto, as diretrizes e o histórico.
+##### 2.1.1. Mecanismo de Checkpoint do Init
 
-2.  **Sincronização Inteligente do Repositório:**
+Para evitar a repetição desnecessária de tarefas e a ocorrência de loops, o processo `init` deve seguir um mecanismo de checkpoint. O Gemini CLI deve manter um estado interno para rastrear quais etapas do `init` já foram concluídas com sucesso durante a sessão atual. **Este estado é crucial para prevenir a re-execução de passos já finalizados, como a análise de contexto, que pode ser percebida pelo usuário como um comportamento de looping.**
+
+1.  **Verificação de Estado:** Antes de executar qualquer etapa do `init`, verifique se ela já foi marcada como "concluída" na sessão atual.
+2.  **Execução e Marcação:** Se a etapa não foi concluída, execute-a. Em caso de sucesso, marque-a como "concluída".
+3.  **Comando `init` Repetido:** Se o comando `init` for invocado novamente em uma sessão onde todas as etapas já foram concluídas, o Gemini CLI deve informar ao usuário que o ambiente já está inicializado e sincronizado, e perguntar se deseja forçar a re-execução de todas as etapas.
+
+Esta abordagem garante que a análise de contexto, sincronização de repositório, configuração de ambiente e migrações de banco de dados ocorram apenas uma vez, a menos que seja explicitamente solicitado.
+
+1.  **Análise de Contexto (Checkpoint: `context_analyzed`):** Leia e internalize o conteúdo completo de **todos** os arquivos `GEMINI.md` e `progress.md` do projeto.
+
+2.  **Sincronização Inteligente do Repositório (Checkpoint: `repo_synced`):**
     *   **Verificar Status:** Execute `git status` para avaliar o estado do branch.
     *   **Verificar Remoto:** Execute `git fetch` para buscar as atualizações mais recentes do repositório remoto.
     *   **Comparar e Sincronizar:** Compare o status local com o remoto. Se o branch local estiver desatualizado, execute `git pull` para sincronizar. Caso contrário, informe que o repositório já está atualizado.
@@ -175,16 +188,12 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 #### 3.3. Padrões de Código Essenciais (Lições Aprendidas)
 
 *   **Robustez de Subprocessos:** Ao usar `subprocess.Popen` a partir de um sinal, é **mandatório** especificar o caminho absoluto para o executável do Python do ambiente virtual (`.venv/bin/python`). Evite passar código complexo via `python -c`, pois pode gerar `SyntaxError`.
-*   **Robustez na Extração de Dados (OCR):** A extração de dados via OCR é desafiadora. Utilize **expressões regulares flexíveis** e funções de normalização. A calibração deve ser iterativa, ajustando as regex para lidar com erros comuns de reconhecimento (ex: 'T' por '6', 'O' por '0').
 *   **Resiliência de Automação Web:** Implemente lógicas de espera e recarregamento de página para lidar com instabilidades de portais externos.
-*   **Segurança de Credenciais:** Utilize **exclusivamente o arquivo `.env`** com `python-decouple`.
-*   **Segurança Web:** Sempre use a proteção CSRF do Django. O decorador `@csrf_exempt` foi removido e não deve ser reintroduzido.
 *   **Comandos de Limpeza Eficientes:** Garanta que os comandos de limpeza de dados (ex: `cleanup_media`, `cleanup_test_data`, `cleanup_automation_data`) utilizem operações em massa para exclusão de registros de banco de dados (ex: `Model.objects.all().delete()`) e incluam tratamento de erros robusto para a exclusão de arquivos. Evite deleções linha a linha para grandes volumes de dados. Priorize abordagens agnósticas ao banco de dados sempre que possível.
-*   **Externalização de Configurações:** URLs de portais, coordenadas de Regiões de Interesse (ROIs) para OCR, e outras configurações específicas de ambiente **devem** ser externalizadas para as configurações do Django (`settings.py`) ou para o arquivo `.env` (via `python-decouple`). Evite hardcoding de valores que possam mudar entre ambientes ou que representem dados sensíveis.
-*   **Tipagem de Modelos Django com Pyright:** Sem `django-stubs`, a tipagem de modelos Django pode ser complexa. Pode ser necessário usar `type: ignore` para suprimir erros específicos do Pyright relacionados a atributos de modelo ou a argumentos de construtores de campo que não são inferidos corretamente.
+*   **Externalização de Configurações:** URLs de portais, e outras configurações específicas de ambiente **devem** ser externalizadas para as configurações do Django (`settings.py`) ou para o arquivo `.env` (via `python-decouple`). Evite hardcoding de valores que possam mudar entre ambientes ou que representem dados sensíveis.
 *   **Resiliência da Automação Playwright:** Ao desenvolver automações web com Playwright, garanta a robustez utilizando seletores CSS/XPath explícitos e estáveis, implementando esperas condicionais (`page.wait_for_selector`, `page.wait_for_load_state`) e tratando exceções para elementos não encontrados ou interações falhas. Isso minimiza a quebra da automação devido a pequenas alterações na interface dos portais externos.
-*   **Mecanismos de Bloqueio/Status para Automações:** Para automações críticas (ex: processamento de `CertificadoVeiculo`), considere a implementação de mecanismos de bloqueio ou status mais granulares no modelo (ex: `pendente`, `em_processamento`, `concluido`, `falha_web`, `falha_ocr`, `cancelado`). Isso evita que múltiplas automações tentem processar o mesmo registro simultaneamente ou que um registro falho seja retentado indefinidamente sem intervenção.
-*   **Contadores de Tentativas no Modelo:** Para modelos que disparam automações (ex: `CertificadoVeiculo`), adicione campos como `tentativas_automacao` e `tentativas_ocr`. A automação deve parar de tentar após um número definido de falhas, marcando o registro com um status final de falha e evitando loops infinitos de retentativa.
+*   **Mecanismos de Bloqueio/Status para Automações:** Para automações críticas (ex: processamento de `CertificadoVeiculo`), considere a implementação de mecanismos de bloqueio ou status mais granulares no modelo (ex: `pendente`, `em_processamento`, `concluido`, `falha_web`, `cancelado`). Isso evita que múltiplas automações tentem processar o mesmo registro simultaneamente ou que um registro falho seja retentado indefinidamente sem intervenção.
+*   **Contadores de Tentativas no Modelo:** Para modelos que disparam automações (ex: `CertificadoVeiculo`), adicione o campo `tentativas_automacao`. A automação deve parar de tentar após um número definido de falhas, marcando o registro com um status final de falha e evitando loops infinitos de retentativa.
 
 ---
 
