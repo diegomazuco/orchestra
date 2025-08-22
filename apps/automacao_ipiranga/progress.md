@@ -168,3 +168,17 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Problema:** Identificado que a seção "Refatoração Completa para Remoção da Lógica de OCR" e a instrução de não deletar informações dos arquivos `GEMINI.md` e `progress.md` foram acidentalmente removidas durante operações anteriores.
 - **Ação:** As seções e instruções foram reinseridas nos arquivos `progress.md` afetados para garantir a integridade e completude do histórico.
 - **Observações:** Este incidente reforça a importância da revisão cuidadosa das operações de escrita e da validação do conteúdo após as modificações.
+
+## 22/08/2025 - Melhorias na Automação e Gerenciamento de Certificados
+
+- **Atualização de Diretrizes (`GEMINI.md`):** O arquivo `apps/automacao_ipiranga/GEMINI.md` foi atualizado para incluir o status `falha_max_tentativas` na seção "Modelo Gatilho" sob "Status Adicional", refletindo a nova opção de status para certificados.
+- **Aprimoramentos no Comando de Automação (`automacao_documentos_ipiranga.py`):**
+    - **Captura de Tela Aprimorada:** O caminho para salvar screenshots agora inclui o ID do certificado, tornando os nomes dos arquivos únicos e facilitando a depuração.
+    - **Processo de Upload Mais Robusto:** A lógica de espera após o upload foi ajustada para maior confiabilidade.
+    - **Nova Verificação de Certificados Vencidos:** Implementada uma nova funcionalidade que verifica a existência de outros certificados vencidos para o mesmo veículo antes de salvar as alterações. Se encontrados, a automação é interrompida e o certificado é marcado com o status `falha_outros_vencidos`.
+    - **Limpeza de Screenshots:** Adicionada uma etapa no bloco `finally` para remover screenshots gerados durante a execução da automação, garantindo a limpeza de arquivos temporários.
+- **Atualizações no Modelo `CertificadoVeiculo` (`models.py` e `migrations/0001_initial.py`):**
+    - **Novo Armazenamento de Arquivos:** O campo `arquivo` agora utiliza `OriginalFilenameStorage()`, um armazenamento personalizado que mantém o nome original do arquivo, permitindo a sobrescrita intencional.
+    - **Novos Status:** Adicionados os status `falha_max_tentativas` e `falha_outros_vencidos` às opções do campo `status`, e o `max_length` do campo foi aumentado para 30.
+    - **Campo de Mensagem de Erro:** Adicionado o campo `error_message` para armazenar mensagens detalhadas em caso de falhas na automação.
+- **Novo Comando de Gerenciamento (`reset_automation_sequences.py`):** Adicionado um novo comando de gerenciamento para resetar as sequências de auto-incremento das tabelas `CertificadoVeiculo` e `VeiculoIpiranga`, útil para limpeza de ambiente de desenvolvimento/teste.

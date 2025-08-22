@@ -22,7 +22,8 @@
 ### 3. Implementação do Padrão de Automação
 
 *   **Modelo Gatilho:**
-    *   `CertificadoVeiculo(models.Model)`: Atua como o **gatilho de automação temporário**. Armazena os dados necessários para o robô e um status.
+    *   `CertificadoVeiculo(models.Model)`: Atua como o **gatilho de automação temporário**. Armazena os dados necessários para o robô, um status, e uma mensagem de erro detalhada (`error_message`) em caso de falha.
+    *   **Status Adicional:** Inclui os status `"falha_outros_vencidos"` (automação interrompida devido à presença de outros certificados vencidos para o mesmo veículo) e `"falha_max_tentativas"` (automação interrompida por exceder o número máximo de tentativas).
 
 *   **Lógica de Negócio (Fluxo por Sinal):**
     1.  O upload de um PDF via `dashboard` cria um registro `CertificadoVeiculo` com status `pendente`.
@@ -52,7 +53,17 @@
     *   **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** Lembre-se de reverter para `True` antes de fazer o commit.
 
 *   **Prevenção de Looping com Contador de Tentativas (`CertificadoVeiculo`):**
+    *   **Prevenção de Looping com Contador de Tentativas (`CertificadoVeiculo`):**
     Para garantir a robustez e evitar loops infinitos, o modelo `CertificadoVeiculo` deve possuir um campo `tentativas_automacao` (do tipo `IntegerField` com `default=0`). No início da lógica principal do `custom command` que executa a automação, este campo **deve ser incrementado e salvo imediatamente**. Após o incremento, o `custom command` **deve verificar** se o número de `tentativas_automacao` excedeu um limite predefinido (ex: 3 tentativas). Se o limite for atingido, o `CertificadoVeiculo` **deve ter seu status atualizado** para um estado terminal de falha (ex: `"falha_max_tentativas"`) e a execução da automação para aquele registro **deve ser interrompida**. Em caso de qualquer falha durante a execução da automação, o `CertificadoVeiculo` **deve ter seu status atualizado** para `"falha"` (ou um status de falha mais específico) e ser salvo, evitando que o registro permaneça no estado `"pendente"` indefinidamente. O bloco `finally` do `custom command` **deve garantir** a limpeza de recursos (ex: exclusão do registro `CertificadoVeiculo` e arquivos associados) independentemente do sucesso ou falha da automação.
+
+*   **Verificação de Outros Certificados Vencidos Antes de Salvar:**
+    Antes de finalizar a automação e tentar salvar as alterações no portal, o robô **deve verificar** a presença de outros certificados com status "Vencido" para o mesmo veículo na página. Se outros certificados vencidos forem encontrados, a automação **não deve prosseguir com o salvamento**. O `CertificadoVeiculo` deve ser marcado com o status `"falha_outros_vencidos"` e a `error_message` deve ser preenchida com uma mensagem clara (ex: "Não foi possível salvar: Outros certificados vencidos encontrados para o veículo XXXXXX."). Isso garante que o portal não rejeite a operação de salvamento e que o frontend possa exibir uma mensagem informativa ao usuário.
+
+*   **Reset de Sequências de IDs:**
+    Para garantir um ambiente de teste limpo e consistente, o comando `python manage.py reset_automation_sequences` deve ser utilizado para zerar os contadores de auto-incremento das tabelas `CertificadoVeiculo` e `VeiculoIpiranga` como parte do procedimento de limpeza.
+
+*   **Verificação de Outros Certificados Vencidos Antes de Salvar:**
+    Antes de finalizar a automação e tentar salvar as alterações no portal, o robô **deve verificar** a presença de outros certificados com status "Vencido" para o mesmo veículo na página. Se outros certificados vencidos forem encontrados, a automação **não deve prosseguir com o salvamento**. O `CertificadoVeiculo` deve ser marcado com o status `"falha_outros_vencidos"` e a `error_message` deve ser preenchida com uma mensagem clara (ex: "Não foi possível salvar: Outros certificados vencidos encontrados para o veículo XXXXXX."). Isso garante que o portal não rejeite a operação de salvamento e que o frontend possa exibir uma mensagem informativa ao usuário.
 
 ---
 

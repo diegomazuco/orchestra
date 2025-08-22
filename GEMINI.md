@@ -11,6 +11,9 @@ Este documento é a constituição do projeto "Orchestra". Ele contém as diretr
 ### 0. Diretrizes Operacionais do Gemini CLI
 
 *   **Gerenciamento de Memória (Heap Size):** Para evitar erros de "JavaScript heap out of memory" no Gemini CLI, ajuste a variável de ambiente `NODE_OPTIONS` para aumentar o limite de memória. Exemplo: `export NODE_OPTIONS="--max-old-space-size=8192"`. Esta configuração é temporária; para torná-la permanente, adicione-a ao seu arquivo de configuração de shell.
+*   **Leitura Robusta de Arquivos:** A ferramenta `read_many_files` pode falhar ao tentar ler arquivos que contenham "GEMINI" em seu nome (ex: `GEMINI.md`). Para garantir a robustez do processo de análise de contexto, adote a seguinte estratégia de leitura:
+    1.  **Segregar Arquivos:** Ao precisar ler múltiplos arquivos, separe a lista em dois grupos: (A) arquivos com "GEMINI" no nome e (B) todos os outros.
+    2.  **Estratégia Dupla:** Utilize a ferramenta `read_file` individualmente para cada arquivo do grupo (A) e a ferramenta `read_many_files` para o grupo (B).
 
 ---
 
@@ -61,21 +64,26 @@ Este processo é **obrigatório** antes de cada commit:
     *   Valide com `git fetch && git status`.
 
 **Lições Aprendidas com o Processo de Commit:**
+*   **Verificação de Instruções Existentes:** Antes de adicionar uma nova instrução ao `GEMINI.md`, verifique se uma instrução semelhante já existe. Se existir, avalie se a instrução existente pode ser melhorada ou se a nova instrução é realmente necessária. Evite adicionar instruções duplicadas.
+
+**Lições Aprendidas com o Processo de Commit:**
 *   **Pre-commit Hooks:** Os hooks de pre-commit são rigorosos. Execute `ruff format .` e `ruff check . --fix` e stage as alterações *antes* de tentar o commit para evitar falhas.
 *   **Pyright e Django:** A verificação de tipos com Pyright em projetos Django sem `django-stubs` pode gerar erros como `reportUnknownVariableType`. Relaxe a verificação para esses casos específicos em `pyrightconfig.json` se necessário.
 *   **Bypass de Hooks:** Em casos extremos, `git commit --no-verify` pode ser usado para forçar o commit, mas **com extrema cautela**, pois ignora todas as verificações de qualidade.
 
-#### 2.3. Gerenciamento de Falhas e Prevenção de Looping Aprimorado
+#### 2.3.2. Gerenciamento de Ferramentas e Prevenção de Looping
 
-Para garantir robustez e evitar loops, o Gemini CLI deve seguir estas diretrizes:
+Para garantir a execução eficiente e sem loops de tarefas que envolvem ferramentas, o Gemini CLI deve aderir às seguintes diretrizes:
 
-1.  **Detecção de Looping e Estagnação:** Mantenha um registro interno das últimas ações e resultados, com um contador de tentativas consecutivas. Se uma ação falhar repetidamente (ex: 3 vezes) ou o progresso estagnar, considere um looping.
-2.  **Ciclo de Ação-Reflexão-Resolução:** Após cada falha, siga um ciclo rigoroso:
-    *   **Análise Imediata da Falha:** Examine o `output` e `stderr` para identificar a causa raiz e classificar o erro.
-    *   **Estratégias de Retentativa Inteligente (Nível 1 - Táticas):** Para falhas transitórias, tente retentativas com backoff exponencial e jitter. Limite as retentativas (ex: 3 vezes).
-    *   **Diversificação de Abordagem (Nível 2 - Estratégias):** Se as retentativas falharem, mude a estratégia: reavalie a ferramenta, mude o fluxo, ou use táticas de depuração. Implemente um "circuit breaker" para ferramentas que falham repetidamente.
-    *   **Escalonamento Proativo para o Usuário (Nível 3 - Intervenção Humana):** Se o looping for detectado ou a falha persistir, comunique o problema ao usuário de forma clara, explicando a falha, as tentativas e estratégias usadas, e a necessidade de intervenção.
-3.  **Considerações Adicionais:** Mantenha um estado interno que reflita o progresso da tarefa. Priorize a segurança, escalando imediatamente erros de segurança ou permissão.
+1.  **Execução Atômica de Ferramentas de Modificação:**
+    *   **Princípio:** Ferramentas que modificam o sistema de arquivos ou o estado do projeto (ex: `write_file`, `replace`, `run_shell_command` que altera arquivos) devem ser tratadas como operações atômicas.
+    *   **Processo:** Uma vez que todos os pré-requisitos para a execução da ferramenta forem atendidos (ex: conteúdo para `write_file` preparado, `old_string`/`new_string` para `replace` definidos), a chamada da ferramenta (`print(default_api.tool_name(...))`) deve ser proposta **imediatamente** ao usuário para execução.
+    *   **Evitar Loops:** **NUNCA** aguarde um prompt "continue" genérico do usuário *após propor a chamada da ferramenta* para então executá-la. O "continue" deve ser interpretado como um sinal para avançar para a *próxima etapa lógica da tarefa*, não para re-avaliar a execução da ferramenta já proposta.
+2.  **Interpretação de Comandos do Usuário:**
+    *   **Clareza:** Se a instrução do usuário for ambígua ou puder ser interpretada de múltiplas maneiras que afetem o fluxo de trabalho ou a execução de ferramentas, o Gemini CLI deve buscar **esclarecimento explícito** do usuário antes de prosseguir.
+    *   **Contexto:** Sempre considere o contexto da conversa e o estado atual da tarefa ao interpretar comandos como "continue". Se uma ferramenta foi proposta, "continue" significa "execute a ferramenta proposta", não "re-avalie a etapa anterior".
+3.  **Rastreamento de Estado Pós-Execução de Ferramentas:**
+    *   Após a execução bem-sucedida de uma ferramenta de modificação, o Gemini CLI deve atualizar seu estado interno para refletir a conclusão daquela sub-tarefa. Isso evita a re-execução desnecessária ou a re-proposição da mesma ação.
 
 #### 2.4. Política de Comandos Proibidos
 
@@ -145,9 +153,11 @@ Ao iniciar ou reiniciar o servidor, ou **antes de cada novo ciclo de teste**, si
 2.  **Liberar Porta:** Certifique-se de que a porta 8000 está livre (`lsof -i :8000` e `kill -9 <PID>`).
 3.  **Limpar Banco de Dados (CertificadoVeiculo):** Execute `python manage.py shell -c "from apps.automacao_ipiranga.models import CertificadoVeiculo; CertificadoVeiculo.objects.all().delete()"` para remover registros de automação anteriores.
 4.  **Limpar Banco de Dados (Automation Data):** Execute `python manage.py cleanup_automation_data`.
-5.  **Limpar Arquivos Temporários:** Execute `python manage.py cleanup_media`.
-6.  **Limpar Logs:** Remova arquivos de log antigos (`logs/`).
-7.  **Iniciar Servidor:** Inicie o servidor (ex: `python manage.py runserver`).
+5.  **Resetar Sequências de IDs:** Execute `python manage.py reset_automation_sequences` para zerar os contadores de auto-incremento das tabelas de automação (ex: `CertificadoVeiculo`, `VeiculoIpiranga`).
+6.  **Limpar Arquivos Temporários:** Execute `python manage.py cleanup_media`.
+6.  **Limpar Logs:** Remova arquivos de log antigos (`logs/*.log`).
+7.  **Limpar Screenshots:** Remova todos os screenshots de depuração (`.png` files) de todo o projeto (`find . -name "*.png" -delete`).
+8.  **Iniciar Servidor:** Inicie o servidor (ex: `python manage.py runserver`).
 
 #### 4.3. Ferramentas e Comandos Rápidos
 

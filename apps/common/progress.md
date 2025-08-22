@@ -56,3 +56,8 @@ Este documento registra o histórico de processos e procedimentos realizados no 
 
 *   **Criação do Repositório:** Repositório Git inicializado para o projeto Orchestra.
 *   **Primeiro Commit:** Primeiro commit do projeto, incluindo a estrutura básica e o arquivo `progress.md` na raiz.
+
+## 22/08/2025 - Melhorias em Serviços Compartilhados
+
+- **Aprimoramento na Captura de Erros de Login (`services.py`):** O screenshot de erro de login agora é salvo no diretório `logs` dentro do `BASE_DIR`, melhorando a organização dos arquivos de saída.
+- **Novo Armazenamento de Arquivos (`storage.py`):** A classe `OriginalFilenameStorage` foi implementada para permitir que os arquivos sejam salvos com seus nomes originais, facilitando a substituição intencional de certificados existentes. Esta classe é utilizada pelo modelo `CertificadoVeiculo` em `automacao_ipiranga`.

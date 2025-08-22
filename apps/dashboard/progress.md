@@ -58,3 +58,11 @@ Este documento registra o histórico de processos e procedimentos realizados no 
 
 *   **Criação do Repositório:** Repositório Git inicializado para o projeto Orchestra.
 *   **Primeiro Commit:** Primeiro commit do projeto, incluindo a estrutura básica e o arquivo `progress.md` na raiz.
+
+## 22/08/2025 - Aprimoramentos na Interface e Comunicação com Backend
+
+- **Mecanismo de Polling no Frontend (`orchestra.html`):** Implementado um novo mecanismo de polling no frontend que, após o upload de um arquivo, verifica o status do processamento do certificado em tempo real. Isso permite exibir feedback detalhado ao usuário, incluindo mensagens de sucesso ou falha (como `falha_outros_vencidos`).
+- **Nova URL para Verificação de Status (`urls.py`):** Adicionada a rota `check-certificate-status/<int:certificate_id>/` para permitir que o frontend consulte o status de um certificado específico.
+- **Novas Views para Processamento e Status (`views.py`):**
+    - A view `process_documents_view` foi modificada para retornar o ID do certificado processado, essencial para o mecanismo de polling.
+    - Criada a view `check_certificate_status_view` para responder às requisições AJAX do frontend, fornecendo o status atual, mensagens de erro e informações da placa do veículo.

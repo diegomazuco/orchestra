@@ -98,6 +98,7 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
 
             processed_info.append(
                 {
+                    "id": certificado.id,  # Adicionado o ID do certificado
                     "file_name": file_name,
                     "placa": placa,  # type: ignore[reportUnknownMemberType]
                     "nome_certificado": nome_certificado,  # type: ignore[reportUnknownMemberType]
@@ -117,3 +118,28 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
             "[%s] Método não permitido para process_documents_view.", request.method
         )
         return JsonResponse({"error": "Método não permitido."}, status=405)
+
+
+def check_certificate_status_view(
+    request: HttpRequest, certificate_id: int
+) -> JsonResponse:
+    """Retorna o status de um CertificadoVeiculo."""
+    certificado: CertificadoVeiculo | None = None  # Initialize to None
+    try:
+        certificado = CertificadoVeiculo.objects.get(pk=certificate_id)
+        response_data = {
+            "id": certificado.id,  # type: ignore[reportAttributeAccessIssue]
+            "status": certificado.status,
+            "error_message": certificado.error_message
+            if certificado.error_message
+            else "",
+            "placa": certificado.veiculo.placa,  # type: ignore[reportAttributeAccessIssue]
+        }
+        return JsonResponse(response_data)
+    except CertificadoVeiculo.DoesNotExist:
+        return JsonResponse({"error": "Certificado não encontrado."}, status=404)
+    except Exception as e:
+        logger.error(
+            f"Erro ao buscar status do certificado {certificate_id}: {e}", exc_info=True
+        )
+        return JsonResponse({"error": "Erro interno do servidor."}, status=500)

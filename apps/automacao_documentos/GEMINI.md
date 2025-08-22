@@ -34,7 +34,7 @@ Qualquer nova automação no projeto Orchestra deve se conformar a esta arquitet
     4.  O `custom command` executa a lógica do robô, atualiza o status e garante a limpeza de recursos em um bloco `finally`.
     5.  **Limpeza de Recursos:** É mandatório que os apps implementadores garantam a limpeza de quaisquer arquivos ou registros temporários, **com tratamento de erros robusto para garantir a limpeza mesmo em caso de falhas.** Priorize operações em massa (bulk operations) para exclusão de registros de banco de dados e tratamento de erros robusto para a exclusão de arquivos.
     6.  **Gerenciamento de Tempo Limite e Execução Assíncrona:** Para `custom commands` de longa duração (ex: web scraping), é **mandatório** que sejam implementados de forma assíncrona (`asyncio`) e incluam mecanismos de tempo limite (ex: `asyncio.wait_for`) para evitar que fiquem presos indefinidamente.
-    7.  **Robustez do Custom Command:** O `custom command` deve ser implementado com tratamento de erros robusto, incluindo logging detalhado e tratamento de exceções para `SyntaxError` ou outros problemas inesperados.
+    7.  **Robustez do Custom Command:** O `custom command` deve ser implementado com tratamento de erros robusto, incluindo logging detalhado e tratamento de exceções para `SyntaxError` ou outros problemas inesperados. **É crucial que as mensagens de erro geradas pelas automações de backend sejam estruturadas e detalhadas, permitindo que aplicações frontend as interpretem e exibam feedback significativo ao usuário (ex: incluindo códigos de erro específicos ou mensagens formatadas para exibição).**
 
 ---
 

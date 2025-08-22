@@ -36,6 +36,7 @@ class CertificadoVeiculo(models.Model):
         ("enviado", "Enviado com Sucesso"),
         ("falha", "Falha no Envio"),
         ("falha_max_tentativas", "Falha: Máximo de Tentativas Atingido"),
+        ("falha_outros_vencidos", "Falha: Outros Certificados Vencidos"),
     ]
 
     veiculo: models.ForeignKey = models.ForeignKey(
@@ -46,11 +47,13 @@ class CertificadoVeiculo(models.Model):
         upload_to="certificados_veiculos/", storage=OriginalFilenameStorage()
     )  # type: ignore[reportUnknownVariableType]
     status: models.CharField = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="pendente"
+        max_length=30, choices=STATUS_CHOICES, default="pendente"
     )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
     data_criacao: models.DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore[reportUnknownVariableType]
     data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
-    tentativas_automacao: models.IntegerField = models.IntegerField(default=0)  # type: ignore[reportUnknownVariableType]
+    error_message: models.CharField = models.CharField(
+        max_length=500, blank=True, default=""
+    )  # type: ignore[reportUnknownVariableType]
 
     objects: "Manager[CertificadoVeiculo]"  # type: ignore[reportIncompatibleVariableOverride]
 

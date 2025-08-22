@@ -210,12 +210,42 @@
                     });
 
                     if (response.ok) {
-                        alert('Processamento iniciado com sucesso!');
+                        // alert('Processamento iniciado com sucesso!'); // Removido a pedido do usuário
                         // Limpar a lista de arquivos e esconder o botão após o envio
                         selectedFilesList.innerHTML = '';
                         selectedFilesMessage.textContent = 'Nenhum arquivo selecionado.';
                         startProcessingButton.style.display = 'none';
                         documentUpload.value = ''; // Limpa o input file
+
+                        const responseData = await response.json();
+                        if (responseData.details && responseData.details.length > 0) {
+                            const certificateId = responseData.details[0].id; // Assuming one file for now
+
+                            // Start polling for status
+                            const pollInterval = setInterval(async () => {
+                                try {
+                                    const statusResponse = await fetch('{% url "dashboard:check_certificate_status" 0 %}'.replace('/0/', `/${certificateId}/`));
+                                    if (statusResponse.ok) {
+                                        const statusData = await statusResponse.json();
+                                        if (statusData.status === 'falha_outros_vencidos') {
+                                            alert(`Existem outros certificados vencidos para a placa "${statusData.placa}", não será possível continuar!`);
+                                            clearInterval(pollInterval); // Stop polling
+                                        } else if (statusData.status === 'enviado') {
+                                            alert(`Certificado para a placa "${statusData.placa}" processado com sucesso!`);
+                                            clearInterval(pollInterval); // Stop polling
+                                        }
+                                        // Continue polling if status is 'pendente' or other intermediate status
+                                    } else {
+                                        console.error('Erro ao verificar status do certificado:', statusResponse.statusText);
+                                        clearInterval(pollInterval); // Stop polling on error
+                                    }
+                                } catch (error) {
+                                    console.error('Erro de rede ao verificar status:', error);
+                                    clearInterval(pollInterval); // Stop polling on network error
+                                }
+                            }, 5000); // Poll every 5 seconds
+                        }
+
                     } else {
                         const errorData = await response.json();
                         alert(`Erro ao iniciar processamento: ${errorData.error || response.statusText}`);

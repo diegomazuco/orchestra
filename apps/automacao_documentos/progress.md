@@ -90,3 +90,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 - **Problema:** Identificado que a seção "Refatoração Completa para Remoção da Lógica de OCR" e a instrução de não deletar informações dos arquivos `GEMINI.md` e `progress.md` foram acidentalmente removidas durante operações anteriores.
 - **Ação:** As seções e instruções foram reinseridas nos arquivos `progress.md` afetados para garantir a integridade e completude do histórico.
 - **Observações:** Este incidente reforça a importância da revisão cuidadosa das operações de escrita e da validação do conteúdo após as modificações.
+
+## 22/08/2025 - Atualização de Diretrizes de Robustez do Custom Command
+
+- **Atualização de Diretrizes (`GEMINI.md`):** O arquivo `apps/automacao_documentos/GEMINI.md` foi atualizado na seção "Robustez do Custom Command" para enfatizar a necessidade de mensagens de erro estruturadas e detalhadas geradas pelas automações de backend, permitindo que aplicações frontend as interpretem e exibam feedback significativo ao usuário.

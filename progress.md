@@ -21,7 +21,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - Os arquivos `progress.md` de `orchestra`, `automacao_ipiranga` e `common` foram atualizados para refletir as melhorias recentes na automação e no processo de OCR.
     - Os arquivos `GEMINI.md` foram revisados para garantir que as diretrizes estivessem alinhadas com as últimas alterações de código, incluindo o aumento do tempo limite da automação e as novas URLs.
 - **Ajustes de Código:**
-    - Adicionado `login_error_screenshot.png` ao `.gitignore`.
+    - Adicionado `login_error_screenshot.png` ao `.gitignore`
     - Refatorado o comando `cleanup_media.py` para maior clareza.
     - Removida uma importação não utilizada em `test_ocr_extraction.py`.
 - **Melhorias de Automação e OCR (consolidadas):**
@@ -298,3 +298,46 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 - **Problema:** Identificado que a seção "Refatoração Completa para Remoção da Lógica de OCR" e a instrução de não deletar informações dos arquivos `GEMINI.md` e `progress.md` foram acidentalmente removidas durante operações anteriores.
 - **Ação:** As seções e instruções foram reinseridas nos arquivos `progress.md` afetados para garantir a integridade e completude do histórico.
 - **Observações:** Este incidente reforça a importância da revisão cuidadosa das operações de escrita e da validação do conteúdo após as modificações.
+
+## 22/08/2025 - Análise de Alterações Pendentes e Atualização de Diretrizes
+
+- **Análise Completa de Alterações Pendentes:**
+    - Realizada a leitura e análise detalhada de todos os arquivos modificados, deletados e não rastreados no projeto.
+    - **Arquivos Modificados:**
+        - `.env`: Adição de URLs e nome de tabela MySQL para configurações de automação Ipiranga e infrações. (Não requer atualização em `GEMINI.md`).
+        - `GEMINI.md` (principal):
+            - Adição de diretriz "Leitura Robusta de Arquivos" para o Gemini CLI.
+            - Adição de "Lições Aprendidas com o Processo de Commit" sobre "Verificação de Instruções Existentes".
+            - Refatoração da seção "Gerenciamento de Falhas e Prevenção de Looping Aprimorado" para "Gerenciamento de Ferramentas e Prevenção de Looping", com foco em execução atômica de ferramentas e interpretação de comandos do usuário.
+            - Atualização do "Procedimento de Gerenciamento do Servidor Django" com novas etapas: "Resetar Sequências de IDs" e "Limpar Screenshots", e ajuste na limpeza de logs.
+        - `apps/automacao_documentos/GEMINI.md`: Atualização da seção "Robustez do Custom Command" para enfatizar mensagens de erro estruturadas para o frontend.
+        - `apps/automacao_ipiranga/management/commands/automacao_documentos_ipiranga.py`:
+            - Alteração do caminho de screenshots para incluir `certificado.id`.
+            - Melhoria no processo de upload com `page.wait_for_timeout`.
+            - Implementação da nova lógica de "Verificação de Outros Certificados Vencidos Antes de Salvar".
+            - Simplificação do clique no botão "Salvar".
+            - Adição de limpeza de screenshots no bloco `finally`.
+        - `apps/automacao_ipiranga/migrations/0001_initial.py`:
+            - `FileField` `arquivo` agora usa `apps.common.storage.OriginalFilenameStorage()`.
+            - Novos choices `falha_max_tentativas` e `falha_outros_vencidos` adicionados ao campo `status`, com `max_length` aumentado.
+            - Novo campo `error_message` adicionado.
+        - `apps/automacao_ipiranga/models.py`: Confirmação das alterações no modelo `CertificadoVeiculo` (novos status, uso de `OriginalFilenameStorage`, `max_length` do status, adição de `error_message`).
+        - `apps/common/services.py`: Screenshot de erro de login agora salvo no diretório `logs`.
+        - `apps/dashboard/templates/dashboard/orchestra.html`: Implementação de mecanismo de polling no frontend para verificar o status do certificado e exibir feedback detalhado.
+        - `apps/dashboard/urls.py`: Adição da URL `check-certificate-status/<int:certificate_id>/` para o polling do frontend.
+        - `apps/dashboard/views.py`:
+            - Modificação de `process_documents_view` para incluir o `id` do certificado no retorno.
+            - Criação da nova `check_certificate_status_view` para lidar com as requisições AJAX de status.
+    - **Arquivos Deletados:**
+        - `apps/automacao_ipiranga/migrations/0002_alter_certificadoveiculo_arquivo.py`
+        - `apps/automacao_ipiranga/migrations/0003_certificadoveiculo_tentativas_automacao_and_more.py`
+        - `apps/automacao_ipiranga/migrations/0004_remove_certificadoveiculo_tentativas_ocr.py`
+        - `login_error_screenshot.png`
+        (Deletados como parte da consolidação de migrações e mudança de caminho de screenshots).
+    - **Arquivos Não Rastreáveis:**
+        - `apps/automacao_ipiranga/management/commands/reset_automation_sequences.py`: Novo comando de gerenciamento para resetar sequências de auto-incremento de tabelas de automação (consistente com `GEMINI.md`).
+
+- **Atualização de Diretrizes (`GEMINI.md`):**
+    - `apps/automacao_ipiranga/GEMINI.md`: Atualizado para incluir o status `falha_max_tentativas` na seção "Modelo Gatilho" sob "Status Adicional".
+    - `GEMINI.md` (principal): Atualizado com as novas diretrizes operacionais e procedimentos de gerenciamento do servidor.
+    - `apps/automacao_documentos/GEMINI.md`: Atualizado com a ênfase em mensagens de erro estruturadas para o frontend.

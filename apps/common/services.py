@@ -87,7 +87,8 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
 
     except Exception as e:
         logger.error(f"Falha na etapa de login: {e}")
-        await page.screenshot(path="login_error_screenshot.png")
+        screenshot_path = settings.BASE_DIR / "logs" / "login_error_screenshot.png"
+        await page.screenshot(path=screenshot_path)
         logger.error(
             "Screenshot de erro de login capturado em 'login_error_screenshot.png'."
         )

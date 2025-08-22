@@ -77,17 +77,17 @@ class Command(BaseCommand):
             # Increment attempt counter at the very beginning
             certificado.tentativas_automacao = (
                 certificado.tentativas_automacao or 0
-            ) + 1
+            ) + 1  # type: ignore[reportAttributeAccessIssue]
             await sync_to_async(certificado.save)()
             logger.info(
-                f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id}: Tentativa {certificado.tentativas_automacao}"
+                f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id}: Tentativa {certificado.tentativas_automacao}"  # type: ignore[reportAttributeAccessIssue]
             )
 
             # Define max attempts (can be moved to settings.py)
             max_automation_attempts = 3
 
             # Check if max attempts reached
-            if certificado.tentativas_automacao > max_automation_attempts:
+            if certificado.tentativas_automacao > max_automation_attempts:  # type: ignore[reportAttributeAccessIssue]
                 logger.error(
                     f"Certificado ID {certificado_id} excedeu o número máximo de tentativas ({max_automation_attempts}). Marcando como falha_max_tentativas."
                 )
@@ -256,7 +256,11 @@ class Command(BaseCommand):
                         # Add robust wait for the "Atualizar" button to be visible
                         logger.info("Aguardando botão 'Atualizar' ficar visível...")
                         await page.screenshot(
-                            path="screenshot_after_cert_tab_click.png"
+                            path=os.path.join(
+                                settings.BASE_DIR,
+                                "logs",
+                                f"screenshot_after_cert_tab_click_{certificado.id}.png",
+                            )
                         )
                         await fieldset.locator(
                             "button.btn-atualizar-requisito"
@@ -357,10 +361,12 @@ class Command(BaseCommand):
                         await fieldset.locator(
                             'button:has-text("Enviar novo certificado")'
                         ).click()
-                        await page.locator(
-                            'span.js-successArea:has-text("sucesso")'
-                        ).wait_for(timeout=60000)
-                        logger.info("Mensagem de sucesso encontrada.")
+
+                        # Aguarda um momento para o upload do arquivo ser processado antes de salvar
+                        await page.wait_for_timeout(3000)
+                        logger.info(
+                            "Upload do arquivo enviado. Prosseguindo para salvar a página."
+                        )
 
                         found_certificate = True
                         break
@@ -370,18 +376,60 @@ class Command(BaseCommand):
                         f"Certificado '{nome_certificado_alvo}' (Vencido) não encontrado."
                     )
 
-                logger.info("Clicando no botão 'Atualizar'...")
+                # --- Nova verificação: Checar outros certificados vencidos antes de salvar ---
+                logger.info(
+                    "Verificando se existem outros certificados vencidos antes de salvar..."
+                )
+                certificate_fieldsets_after_update = page.locator(
+                    "fieldset.certificado-box"
+                )
+                num_certificates_after_update = (
+                    await certificate_fieldsets_after_update.count()
+                )
+
+                has_other_expired = False
+                for i in range(num_certificates_after_update):
+                    fieldset_after_update = certificate_fieldsets_after_update.nth(i)
+                    current_name_after_update = (
+                        await fieldset_after_update.locator(
+                            ".licenca-titulo .titulo.h3"
+                        ).text_content()
+                        or ""
+                    ).strip()
+                    is_vencido_after_update = (
+                        await fieldset_after_update.locator(
+                            '*.badge--vermelho:has-text("Vencido")'
+                        ).count()
+                        > 0
+                    )
+
+                    # Check if it's a different certificate and it's expired
+                    if is_vencido_after_update and (
+                        str(nome_certificado_alvo).upper()
+                        not in str(current_name_after_update).upper()
+                    ):
+                        logger.error(
+                            f"Outro certificado vencido encontrado: {current_name_after_update}. Não é possível salvar."
+                        )
+                        has_other_expired = True
+                        break
+
+                if has_other_expired:
+                    error_msg = f"Não foi possível salvar: Outros certificados vencidos encontrados para o veículo {placa_alvo}."
+                    certificado.status = "falha_outros_vencidos"
+                    certificado.error_message = error_msg
+                    await sync_to_async(certificado.save)()
+                    raise CommandError(error_msg)
+                # --- Fim da nova verificação ---
+
+                logger.info("Clicando no botão 'Salvar' final da página...")
                 await page.locator("a#botaoAtualizar").click()
-                await page.wait_for_load_state("networkidle", timeout=60000)
+
+                # After saving, expect to be redirected to the vehicle list
                 await expect(page).to_have_url(
                     re.compile(r".*/veiculo/index"), timeout=60000
-                )  # type: ignore[reportCallIssue]
-                logger.info("Operação salva com sucesso.")
-
-                logger.info("Clicando no botão 'Salvar'...")
-                await page.locator("#botaoAtualizar").click()
-                await page.wait_for_load_state("networkidle", timeout=60000)
-                logger.info("Botão 'Salvar' clicado com sucesso.")
+                )
+                logger.info("Operação salva com sucesso e página redirecionada.")
 
             except Exception as e:
                 logger.error(
@@ -418,6 +466,17 @@ class Command(BaseCommand):
                 if browser:
                     await browser.close()
                     logger.info("FINALLY BLOCK: Browser closed.")
+
+                # Cleanup screenshots
+                try:
+                    log_dir = os.path.join(settings.BASE_DIR, "logs")
+                    for filename in os.listdir(log_dir):
+                        if filename.endswith(".png"):
+                            file_path = os.path.join(log_dir, filename)
+                            os.remove(file_path)
+                            logger.info(f"FINALLY BLOCK: Deleted screenshot {filename}")
+                except Exception as e:
+                    logger.error(f"FINALLY BLOCK: Error deleting screenshots: {e}")
                 # Cleanup: Delete certificate and associated file regardless of success or failure
                 if certificado:
                     logger.info(
