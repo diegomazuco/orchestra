@@ -40,6 +40,14 @@ O processo `init` é inteligente e idempotente, verificando o estado atual do am
 
 Para evitar repetições e loops, o `init` utiliza um mecanismo de checkpoint. O Gemini CLI rastreia as etapas concluídas na sessão atual, prevenindo a re-execução de passos já finalizados. Se o `init` for invocado novamente com todas as etapas concluídas, o usuário será informado e poderá forçar a re-execução.
 
+###### 2.1.1.1. Gerenciamento de Checkpoints com `save_memory`
+
+Para garantir a idempotência do processo `init` e evitar repetições desnecessárias, o Gemini CLI **deve** utilizar a ferramenta `save_memory` para registrar a conclusão de cada etapa.
+
+*   **Registro de Conclusão:** Após a conclusão bem-sucedida de cada uma das 5 etapas do `init` (Análise de Contexto, Sincronização do Repositório, Configuração do Ambiente Python, Sincronização do Banco de Dados, Troubleshooting de Ambiente), o Gemini CLI **deve** chamar `save_memory` com uma string que identifique a etapa concluída (ex: `"init_step_context_analysis_completed"`).
+*   **Verificação de Conclusão:** No início do processo `init`, antes de executar qualquer etapa, o Gemini CLI **deve** verificar se todas as etapas já foram marcadas como concluídas na memória. Se todas as 5 etapas estiverem marcadas como concluídas, o Gemini CLI **deve** informar o usuário que o ambiente já está pronto e perguntar se ele deseja forçar a re-execução do `init`.
+*   **Forçar Re-execução:** Se o usuário optar por forçar a re-execução, o Gemini CLI **deve** ignorar os checkpoints na memória para aquela execução específica.
+
 1.  **Análise de Contexto:** Leia e internalize o conteúdo completo de todos os arquivos `GEMINI.md` e `progress.md` do projeto.
 2.  **Sincronização Inteligente do Repositório:** Verifique o status do Git (`git status`), busque atualizações (`git fetch`), e sincronize (`git pull`) se o branch local estiver desatualizado.
 3.  **Configuração Inteligente do Ambiente Python:**
@@ -54,7 +62,7 @@ Para evitar repetições e loops, o `init` utiliza um mecanismo de checkpoint. O
 Este processo é **obrigatório** antes de cada commit:
 
 1.  **Análise e Atualização de Diretrizes (`GEMINI.md`):** Após cada procedimento, analise a ação e revise os `GEMINI.md` para inserir novas instruções ou ajustar as existentes, mantendo as diretrizes atualizadas.
-2.  **Análise e Atualização de Histórico (`progress.md`):** Após cada procedimento, complemente os arquivos `progress.md` relevantes com o que foi realizado, mantendo o histórico completo.
+2.  **Análise e Atualização de Histórico (`progress.md`):** Após cada procedimento (exceto o comando `init`), complemente os arquivos `progress.md` relevantes com o que foi realizado, mantendo o histórico completo.
 3.  **Limpeza Pré-Commit:** Execute `git status`. Remova arquivos de cache e temporários (`__pycache__`, `.ruff_cache`, etc.). **NUNCA REMOVA `db.sqlite3` ou `.env`**. O arquivo `db.sqlite3` é o banco de dados de desenvolvimento e **NÃO DEVE SER EXCLUÍDO EM HIPÓTESE ALGUMA**.
 4.  **Versionamento:**
     *   `git add .`
@@ -84,6 +92,20 @@ Para garantir a execução eficiente e sem loops de tarefas que envolvem ferrame
     *   **Contexto:** Sempre considere o contexto da conversa e o estado atual da tarefa ao interpretar comandos como "continue". Se uma ferramenta foi proposta, "continue" significa "execute a ferramenta proposta", não "re-avalie a etapa anterior".
 3.  **Rastreamento de Estado Pós-Execução de Ferramentas:**
     *   Após a execução bem-sucedida de uma ferramenta de modificação, o Gemini CLI deve atualizar seu estado interno para refletir a conclusão daquela sub-tarefa. Isso evita a re-execução desnecessária ou a re-proposição da mesma ação.
+
+###### 2.3.2.1. Uso Seguro de `read_file` e `write_file`
+
+Para evitar loops e garantir a eficiência na manipulação de arquivos, o Gemini CLI **deve** aderir às seguintes diretrizes ao utilizar as ferramentas `read_file` e `write_file`:
+
+*   **Propósito Claro:** Antes de usar `read_file` ou `write_file`, o Gemini CLI **deve** ter um propósito claro e específico para a operação. Evite leituras ou escritas sem um objetivo definido.
+*   **Critérios de Parada:** Sempre que uma sequência de operações de leitura/escrita for iniciada, o Gemini CLI **deve** definir um critério de parada explícito. Isso pode incluir:
+    *   Um número máximo de iterações.
+    *   A detecção de uma condição específica no conteúdo do arquivo que indique a conclusão da tarefa.
+    *   A ausência de mais arquivos a serem processados.
+*   **Gerenciamento de Estado:** O Gemini CLI **deve** manter um registro interno do que já foi lido ou escrito para evitar reprocessamento desnecessário. Isso é crucial para operações que envolvem múltiplos arquivos ou leituras/escritas incrementais.
+*   **Validação de Conteúdo:** Antes de usar `write_file`, o Gemini CLI **deve** validar o conteúdo a ser escrito para garantir que ele esteja correto e que a operação não levará a um estado inválido ou a um loop de correção/escrita.
+*   **Leitura Incremental (`read_file` com `offset`/`limit`):** Para arquivos grandes, o Gemini CLI **deve** considerar o uso dos parâmetros `offset` e `limit` da ferramenta `read_file` para ler o arquivo em partes. Isso evita o carregamento de todo o arquivo na memória e permite um processamento mais controlado, prevenindo loops causados por tentativas de processar grandes volumes de dados de uma só vez.
+*   **Confirmação do Usuário:** Em cenários onde a operação de leitura/escrita é complexa, de alto risco ou pode levar a um looping, o Gemini CLI **deve** buscar confirmação explícita do usuário antes de prosseguir.
 
 #### 2.4. Política de Comandos Proibidos
 
@@ -134,6 +156,40 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 *   **Resiliência da Automação Playwright:** Ao desenvolver automações web com Playwright, garanta a robustez utilizando seletores CSS/XPath explícitos e estáveis, implementando esperas condicionais (`page.wait_for_selector`, `page.wait_for_load_state`) e tratando exceções para elementos não encontrados ou interações falhas.
 *   **Mecanismos de Bloqueio/Status para Automações:** Para automações críticas, considere a implementação de mecanismos de bloqueio ou status mais granulares no modelo (ex: `pendente`, `em_processamento`, `concluido`, `falha_web`, `cancelado`) para evitar processamento simultâneo ou retentativas infinitas.
 *   **Contadores de Tentativas no Modelo:** Para modelos que disparam automações (ex: `CertificadoVeiculo`), adicione o campo `tentativas_automacao`. A automação deve parar de tentar após um número definido de falhas, marcando o registro com um status final de falha e evitando loops infinitos de retentativa.
+
+#### 3.4. Padrões de Comunicação Backend-Frontend
+
+Para garantir uma comunicação eficiente, consistente e robusta entre o backend (Django) e o frontend (HTML/JavaScript), o projeto Orchestra adota os seguintes padrões:
+
+*   **Formato de Dados (JSON):** Todas as interações de API entre backend e frontend **devem** utilizar JSON (JavaScript Object Notation) para o envio e recebimento de dados.
+*   **Códigos de Status HTTP:** O backend **deve** retornar códigos de status HTTP apropriados para indicar o resultado da requisição (ex: `200 OK` para sucesso, `201 Created` para criação de recurso, `400 Bad Request` para erros de validação, `404 Not Found` para recursos inexistentes, `500 Internal Server Error` para erros inesperados no servidor).
+*   **Estrutura de Resposta Padrão:** Para requisições que retornam dados ou mensagens, o backend **deve** seguir uma estrutura de resposta padrão para facilitar o consumo pelo frontend:
+    *   **Sucesso:**
+        ```json
+        {
+            "message": "Mensagem de sucesso (opcional)",
+            "data": {
+                // Dados retornados pela requisição
+            }
+        }
+        ```
+    *   **Erro:**
+        ```json
+        {
+            "error": "Mensagem de erro clara e concisa",
+            "details": {
+                // Detalhes adicionais do erro (ex: erros de validação de campo)
+            }
+        }
+        ```
+*   **Comunicação Assíncrona e Polling:** Para operações de longa duração ou que envolvem processos em segundo plano (como automações), o frontend **deve** utilizar um mecanismo de polling para obter atualizações de status do backend.
+    *   **Fluxo:**
+        1.  O frontend inicia a operação assíncrona (ex: upload de documento que dispara uma automação).
+        2.  O backend retorna um identificador único para a operação (ex: `certificate_id`).
+        3.  O frontend inicia um loop de polling, fazendo requisições periódicas a um endpoint de status (ex: `/check-certificate-status/<id>/`) usando o identificador.
+        4.  O backend retorna o status atual da operação (ex: `pendente`, `processando`, `concluido`, `falha`) e mensagens relevantes (`error_message`).
+        5.  O frontend atualiza a interface do usuário com base no status recebido e interrompe o polling quando a operação atinge um status final (sucesso ou falha).
+*   **Feedback Visual no Frontend:** O frontend **deve** fornecer feedback visual claro e imediato ao usuário sobre o status das operações, utilizando modais, mensagens de notificação ou indicadores de carregamento. As mensagens de erro do backend (`error_message`) **devem** ser exibidas de forma amigável e informativa.
 
 ---
 
