@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 class VeiculoIpiranga(models.Model):
     """Modelo para armazenar informações de veículos Ipiranga."""
 
+    id = models.AutoField(primary_key=True) # Explicitly define ID
     placa: models.CharField = models.CharField(max_length=10, unique=True)  # type: ignore[reportUnknownVariableType, reportUnknownArgumentType, reportMissingTypeArgument, reportCallIssue]
     status_documentos: models.CharField = models.CharField(
         max_length=255, blank=True, default=""
@@ -31,6 +32,7 @@ class VeiculoIpiranga(models.Model):
 class CertificadoVeiculo(models.Model):
     """Modelo para armazenar informações de certificados de veículos."""
 
+    id = models.AutoField(primary_key=True) # Explicitly define ID
     STATUS_CHOICES: ClassVar[list[tuple[str, str]]] = [
         ("pendente", "Pendente de Envio"),
         ("enviado", "Enviado com Sucesso"),
@@ -49,6 +51,7 @@ class CertificadoVeiculo(models.Model):
     status: models.CharField = models.CharField(
         max_length=30, choices=STATUS_CHOICES, default="pendente"
     )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
+    tentativas_automacao: models.IntegerField = models.IntegerField(default=0) # Explicitly define tentativas_automacao
     data_criacao: models.DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore[reportUnknownVariableType]
     data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
     error_message: models.CharField = models.CharField(

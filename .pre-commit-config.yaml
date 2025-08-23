@@ -35,3 +35,12 @@ repos:
         pass_filenames: false
         always_run: true
         types: [python]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9 # Use a versão mais recente do Bandit
+    hooks:
+      - id: bandit
+        args: [-r, ., -c, pyproject.toml]
+        language: system
+        types: [python]
+        entry: bandit

@@ -46,41 +46,26 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
             status: str = "erro"
 
             try:
-                # Chamar a função para validar o formato completo e obter os dados
-                # Se ela levantar ValueError, será capturado pelo bloco try-except
-                # A placa e o tipo de licença (nome do certificado) são extraídos aqui
+                # Extrai todos os dados necessários do nome do arquivo
+                # Esta função já valida o formato e levanta ValueError se inválido
+                numero_certificado, vencimento_valor_portal = extract_certificate_data_from_filename(
+                    file_name, logger
+                )
+                # A placa e o tipo de licença (nome do certificado) são extraídos do nome do arquivo
                 # para a criação do CertificadoVeiculo.
                 # A automação usará extract_certificate_data_from_filename novamente
                 # para obter numero_certificado e data_vencimento_formatada do arquivo.
-
-                # Extrair placa e nome_certificado (tipo de licença) usando regex
-                # Este regex deve ser consistente com o esperado por extract_certificate_data_from_filename
+                # O formato esperado é PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf
                 match_data = re.match(
                     r"([A-Z0-9]+)_([A-Z_]+)_([A-Z0-9]+)_(\d{8})\.pdf",
                     file_name,
                     re.IGNORECASE,
                 )
-
                 if not match_data:
-                    logger.warning(
-                        f"[POST] Nome de arquivo fora do padrão esperado: {file_name}"
-                    )
-                    return JsonResponse(
-                        {
-                            "error": "Nome de arquivo fora do padrão esperado (PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf).",
-                            "file_name": file_name,
-                        },
-                        status=400,
-                    )
+                    raise ValueError("Nome de arquivo fora do padrão esperado.")
 
                 placa = match_data.group(1).upper()
                 nome_certificado = match_data.group(2).replace("_", " ").title()
-
-                # Chamar a função para validar o formato completo e garantir que ela não levante erro
-                # Se ela levantar ValueError, será capturado pelo bloco try-except
-                extract_certificate_data_from_filename(
-                    file_name, logger
-                )  # AQUI ESTÁ A CHAMADA QUE FALTAVA
 
                 logger.info(
                     f"[POST] Placa extraída: {placa}, Tipo de Licença (Certificado): {nome_certificado}"
@@ -105,38 +90,52 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
                     status="pendente",
                 )
                 logger.info(
-                    f"[POST] Novo CertificadoVeiculo criado. ID: {certificado.id}"  # type: ignore[reportUnknownMemberType]
+                    f"[POST] Novo CertificadoVeiculo criado. ID: {certificado.id}"
                 )
 
                 logger.info(
-                    f"[POST] Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}"  # type: ignore[reportUnknownMemberType]
+                    f"[POST] Certificado {nome_certificado} para {placa} salvo. ID: {certificado.id}"
                 )
-                status = f"Certificado {nome_certificado} para {placa} salvo com ID: {certificado.id} e status: {certificado.status}"  # type: ignore[reportUnknownMemberType]
+                status = f"Certificado {nome_certificado} para {placa} salvo com ID: {certificado.id} e status: {certificado.status}"
                 logger.info(f"[POST] Status final do certificado: {status}")
+
+                processed_info.append(
+                    {
+                        "id": certificado.id,
+                        "file_name": file_name,
+                        "placa": placa,
+                        "nome_certificado": nome_certificado,
+                        "status": status,
+                        "numero_certificado": numero_certificado,
+                        "vencimento_valor_portal": vencimento_valor_portal,
+                    }
+                )
 
             except ValueError as ve:
                 logger.warning(f"[POST] Erro de validação do nome do arquivo: {ve}")
-                return JsonResponse(
-                    {"error": str(ve), "file_name": file_name}, status=400
+                processed_info.append(
+                    {
+                        "id": None,
+                        "file_name": file_name,
+                        "placa": None,
+                        "nome_certificado": None,
+                        "status": "erro_validacao",
+                        "error_message": str(ve),
+                    }
                 )
             except Exception as e:
-                status = f"Erro CRÍTICO ao salvar certificado no banco de dados: {e}"
-                logger.critical(
-                    f"[POST] Erro CRÍTICO ao salvar certificado: {e}", exc_info=True
+                error_msg = f"Erro CRÍTICO ao salvar certificado no banco de dados: {e}"
+                logger.critical(f"[POST] {error_msg}", exc_info=True)
+                processed_info.append(
+                    {
+                        "id": None,
+                        "file_name": file_name,
+                        "placa": placa,
+                        "nome_certificado": nome_certificado,
+                        "status": "erro_interno",
+                        "error_message": error_msg,
+                    }
                 )
-                return JsonResponse(
-                    {"error": status, "file_name": file_name}, status=500
-                )
-
-            processed_info.append(
-                {
-                    "id": certificado.id,  # type: ignore[reportUnknownMemberType]
-                    "file_name": file_name,
-                    "placa": placa,
-                    "nome_certificado": nome_certificado,
-                    "status": status,
-                }
-            )
 
         logger.info("[POST] Processamento de arquivos concluído.")
         return JsonResponse(

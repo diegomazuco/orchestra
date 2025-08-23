@@ -83,8 +83,8 @@ class Command(BaseCommand):
                 f"[AUTOMACAO_IPIRANGA] Certificado ID {certificado_id}: Tentativa {certificado.tentativas_automacao}"  # type: ignore[reportAttributeAccessIssue]
             )
 
-            # Define max attempts (can be moved to settings.py)
-            max_automation_attempts = 3
+            # Define max attempts (moved to settings.py)
+            max_automation_attempts = settings.MAX_AUTOMATION_ATTEMPTS
 
             # Check if max attempts reached
             if certificado.tentativas_automacao > max_automation_attempts:  # type: ignore[reportAttributeAccessIssue]

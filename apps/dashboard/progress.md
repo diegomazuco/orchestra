@@ -1,68 +1,44 @@
 # Histórico de Progresso do App: dashboard
 
-Este documento registra o histórico de processos e procedimentos realizados no app `dashboard`, servindo como um log detalhado das ações e decisões tomadas ao longo do desenvolvimento.
+Este arquivo registra o histórico de processos e procedimentos realizados no app `dashboard`, a interface principal do usuário para o projeto Orchestra.
+
+## 23/08/2025 - Consolidação do Histórico
+
+- **Contexto:** Como parte de um esforço para melhorar a base de conhecimento do projeto, todos os arquivos `progress.md` foram revisados.
+- **Ação:** As entradas neste arquivo foram reescritas e consolidadas para adicionar mais contexto sobre o "porquê" das decisões de design e para criar uma narrativa de desenvolvimento mais clara e lógica.
 
 ---
 
-## 2025-08-21
+## 22/08/2025 - Aprimoramento da Experiência do Usuário com Polling
 
-### Consolidação de Arquivos `progress.md`
-
-*   **Processo:** Realizada a leitura completa de todas as versões históricas do arquivo `apps/dashboard/progress.md` através de cada commit.
-*   **Análise:** Análise detalhada de todas as entradas históricas para identificar a evolução dos processos e procedimentos.
-*   **Consolidação:** Criação de uma nova versão consolidada do `apps/dashboard/progress.md`, unificando todas as entradas históricas de forma cronológica e eliminando redundâncias.
-*   **Atualização:** O arquivo `apps/dashboard/progress.md` existente foi substituído pela sua versão consolidada.
-
----
-
-## 2025-08-19
-
-### Melhorias na Interface e Funcionalidades
-
-*   **Upload de Documentos:** Implementada a funcionalidade de upload de documentos PDF, que agora dispara o processo de automação para extração de dados e atualização de certificados.
-*   **Feedback Visual:** Adicionados elementos de feedback visual para o usuário durante o processo de upload e automação (ex: indicadores de progresso, mensagens de sucesso/erro).
-*   **Integração com `automacao_ipiranga`:** A view de upload agora interage diretamente com o modelo `CertificadoVeiculo` do app `automacao_ipiranga` para iniciar o fluxo de automação.
+- **Problema:** O processo de automação é assíncrono e pode levar um tempo considerável. O usuário não tinha feedback em tempo real sobre o status do processamento do documento enviado.
+- **Solução:** Foi implementado um mecanismo de polling no frontend.
+    - **Frontend (`orchestra.html`):** Após o upload, o JavaScript agora faz requisições periódicas a um novo endpoint de status.
+    - **Backend (`views.py`, `urls.py`):** Foi criada a view `check_certificate_status_view` e a URL correspondente para responder a essas requisições, retornando o status atual do `CertificadoVeiculo` (ex: `processando`, `concluido`, `falha_outros_vencidos`).
+- **Resultado:** O usuário agora recebe feedback visual claro e em tempo real sobre o andamento da automação, melhorando significativamente a usabilidade da plataforma.
 
 ---
 
-## 2025-08-18
+## 19/08/2025 - Implementação do Gatilho de Automação
 
-### Implementação de Views e Templates
-
-*   **View Principal:** Criada a view `orchestra_dashboard` para servir como a página inicial do dashboard.
-*   **Template HTML:** Desenvolvido o template `orchestra.html` para a interface do dashboard, incluindo formulários de upload e áreas para exibir o status das automações.
-*   **URLs:** Definidas as URLs para acessar o dashboard.
+- **Contexto:** O dashboard precisava ser o ponto de partida para o fluxo de automação.
+- **Ação:** A funcionalidade de upload de documentos PDF foi implementada na view principal. Ao receber um arquivo, a view agora cria um registro no modelo `CertificadoVeiculo` do app `automacao_ipiranga`, o que, por sua vez, dispara o sinal `post_save` e inicia todo o processo de automação.
 
 ---
 
-## 2025-08-17
+## 15/08/2025 a 18/08/2025 - Estruturação Inicial do Dashboard
 
-### Configuração Inicial do App `dashboard`
+- **Criação do App:** O app `dashboard` foi criado para servir como a interface do usuário do projeto, sendo o ponto central de interação.
+- **Estrutura Inicial:** Foram criadas a view principal (`orchestra_dashboard`), o template `orchestra.html` e as URLs necessárias para renderizar a página inicial.
+- **Integração:** O app foi devidamente registrado no `INSTALLED_APPS`.
 
-*   **Criação do App:** O app `dashboard` foi criado para ser a interface do usuário do projeto Orchestra.
-*   **Integração:** O app `dashboard` foi adicionado ao `INSTALLED_APPS` em `core/settings.py`.
-
----
-
-## 2025-08-16
-
-### Definição de Estrutura de Pastas
-
-*   **Estrutura de Pastas:** Definição da estrutura inicial de pastas do projeto, incluindo `apps/dashboard/`.
 
 ---
 
-## 2025-08-15
+## 23/08/2025 - Continuação do Trabalho
 
-### Início do Desenvolvimento
-
-*   **Criação do Repositório:** Repositório Git inicializado para o projeto Orchestra.
-*   **Primeiro Commit:** Primeiro commit do projeto, incluindo a estrutura básica e o arquivo `progress.md` na raiz.
-
-## 22/08/2025 - Aprimoramentos na Interface e Comunicação com Backend
-
-- **Mecanismo de Polling no Frontend (`orchestra.html`):** Implementado um novo mecanismo de polling no frontend que, após o upload de um arquivo, verifica o status do processamento do certificado em tempo real. Isso permite exibir feedback detalhado ao usuário, incluindo mensagens de sucesso ou falha (como `falha_outros_vencidos`).
-- **Nova URL para Verificação de Status (`urls.py`):** Adicionada a rota `check-certificate-status/<int:certificate_id>/` para permitir que o frontend consulte o status de um certificado específico.
-- **Novas Views para Processamento e Status (`views.py`):**
-    - A view `process_documents_view` foi modificada para retornar o ID do certificado processado, essencial para o mecanismo de polling.
-    - Criada a view `check_certificate_status_view` para responder às requisições AJAX do frontend, fornecendo o status atual, mensagens de erro e informações da placa do veículo.
+### Análise Detalhada da Estrutura e Código do Projeto (Aspectos Específicos do `dashboard`)
+- **Ação:** Análise de arquivos e pastas para identificar itens não utilizados e verificar a correção do código.
+- **Detalhes:**
+    - **Refatoração de `process_documents_view`:** A função em `apps/dashboard/views.py` foi refatorada para chamar `extract_certificate_data_from_filename` apenas uma vez e o tratamento de erros foi aprimorado.
+- **Resultado:** Código otimizado e mais robusto.

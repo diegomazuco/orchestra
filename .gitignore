@@ -1,2 +1,31 @@
+# Byte-code files
+*.pyc
+__pycache__/
 
+# IDE-specific files
+.idea/
+.vscode/
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Django-specific files
+*.log
+*.sqlite3
+media/
+static/
+
+# Project-specific files
+logs/
+.ruff_cache/
 commit_message.txt
+django_server_output.log
+test_log.log
+uv.lock
+.playwright-browsers/

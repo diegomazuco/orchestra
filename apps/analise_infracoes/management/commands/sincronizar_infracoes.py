@@ -84,7 +84,7 @@ class Command(BaseCommand):
 
         try:
             # Usando o banco de dados 'default' (SQLite) para o profiling
-            db_alias = "postgres_db"
+            db_alias = settings.POSTGRES_DB_ALIAS
 
             # Limpa a tabela antes de inserir novos dados
             with transaction.atomic(using=db_alias):

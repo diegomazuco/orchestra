@@ -1,63 +1,40 @@
 # Histórico de Progresso do App: common
 
-Este documento registra o histórico de processos e procedimentos realizados no app `common`, servindo como um log detalhado das ações e decisões tomadas ao longo do desenvolvimento.
+Este arquivo registra o histórico de processos e procedimentos realizados no app `common`, que abriga a lógica de negócio e serviços compartilhados pelo projeto.
+
+## 23/08/2025 - Consolidação do Histórico
+
+- **Contexto:** Como parte de um esforço para melhorar a base de conhecimento do projeto, todos os arquivos `progress.md` foram revisados.
+- **Ação:** As entradas neste arquivo foram reescritas e consolidadas para adicionar mais contexto sobre o "porquê" das decisões de design e para criar uma narrativa de desenvolvimento mais clara e lógica.
 
 ---
-
-## 2025-08-21
-
-### Consolidação de Arquivos `progress.md`
-
-*   **Processo:** Realizada a leitura completa de todas as versões históricas do arquivo `apps/common/progress.md` através de cada commit.
-*   **Análise:** Análise detalhada de todas as entradas históricas para identificar a evolução dos processos e procedimentos.
-*   **Consolidação:** Criação de uma nova versão consolidada do `apps/common/progress.md`, unificando todas as entradas históricas de forma cronológica e eliminando redundâncias.
-*   **Atualização:** O arquivo `apps/common/progress.md` existente foi substituído pela sua versão consolidada.
-
----
-
-## 2025-08-19
-
-### Melhorias na Extração de Dados e Serviços
-
-*   **Função `extract_certificate_data_from_filename`:** Aprimorada a função para extrair 'Número do Certificado' e 'DATA DE VENCIMENTO' diretamente do nome do arquivo PDF, seguindo o formato padronizado `PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`.
-*   **Função de Login (`login_to_portal`):** Aprimorada a função de login para incluir lógicas de espera e recarregamento de página, aumentando a resiliência contra instabilidades de portais externos.
-
----
-
-## 2025-08-18
-
-### Implementação de Serviços Compartilhados
-
-*   **Módulo `services.py`:** Criado o módulo `services.py` para abrigar funções e lógicas de negócio compartilhadas entre os apps, como a função de login em portais externos.
-*   **Módulo `storage.py`:** Criado o módulo `storage.py` com a classe `OriginalFilenameStorage` para garantir que os arquivos sejam salvos com seus nomes originais, o que é intencional para a substituição de certificados existentes.
-
----
-
-## 2025-08-17
-
-### Configuração Inicial do App `common`
-
-*   **Criação do App:** O app `common` foi criado para abrigar funcionalidades e lógicas compartilhadas entre os demais apps do projeto.
-*   **Integração:** O app `common` foi adicionado ao `INSTALLED_APPS` em `core/settings.py`.
-
----
-
-## 2025-08-16
-
-### Definição de Estrutura de Pastas
-
-*   **Estrutura de Pastas:** Definição da estrutura inicial de pastas do projeto, incluindo `apps/common/`.
-
----
-
-## 2025-08-15
-
-### Início do Desenvolvimento
-
-*   **Criação do Repositório:** Repositório Git inicializado para o projeto Orchestra.
-*   **Primeiro Commit:** Primeiro commit do projeto, incluindo a estrutura básica e o arquivo `progress.md` na raiz.
 
 ## 22/08/2025 - Melhorias em Serviços Compartilhados
 
-- **Aprimoramento na Captura de Erros de Login (`services.py`):** O screenshot de erro de login agora é salvo no diretório `logs` dentro do `BASE_DIR`, melhorando a organização dos arquivos de saída.
-- **Novo Armazenamento de Arquivos (`storage.py`):** A classe `OriginalFilenameStorage` foi implementada para permitir que os arquivos sejam salvos com seus nomes originais, facilitando a substituição intencional de certificados existentes. Esta classe é utilizada pelo modelo `CertificadoVeiculo` em `automacao_ipiranga`.
+- **Aprimoramento na Captura de Erros de Login (`services.py`):** Para facilitar a depuração de falhas de login, o local de salvamento do screenshot de erro foi movido para o diretório `logs`, centralizando os artefatos de depuração.
+- **Novo Armazenamento de Arquivos (`storage.py`):**
+    - **Problema:** O comportamento padrão do Django renomeia arquivos com nomes duplicados. Para a lógica de negócio de atualização de certificados, era necessário que um novo upload com o mesmo nome de arquivo (mesma placa de veículo) substituísse o antigo.
+    - **Solução:** A classe `OriginalFilenameStorage` foi implementada para forçar o salvamento com o nome original do arquivo, garantindo a substituição intencional.
+
+---
+
+## 19/08/2025 - Resiliência e Abandono do OCR
+
+- **Função de Login (`login_to_portal`):** Para aumentar a resiliência contra a instabilidade de portais externos, a função de login foi aprimorada com lógicas de espera e recarregamento de página.
+- **Função `extract_certificate_data_from_filename`:** Com o abandono da estratégia de OCR, esta função foi criada para se tornar o método central e único de extração de dados de certificados, baseando-se em um formato de nome de arquivo padronizado. Isso tornou o processo mais determinístico e confiável.
+
+---
+
+## 18/08/2025 - Centralização de Lógica de Negócio
+
+- **Contexto:** Para evitar a duplicação de código e promover a reutilização, o app `common` foi designado para abrigar toda a lógica de negócio compartilhada.
+- **Ações:**
+    - **`services.py`:** Criado para conter funções de serviço, como a lógica de login em portais.
+    - **`storage.py`:** Criado para conter classes de armazenamento personalizadas.
+
+---
+
+## 15/08/2025 a 17/08/2025 - Estruturação Inicial
+
+- **Criação do App:** O app `common` foi criado e adicionado ao `INSTALLED_APPS`.
+- **Definição da Estrutura:** A estrutura de pastas do app foi definida dentro de `apps/`.

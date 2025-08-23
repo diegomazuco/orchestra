@@ -1,65 +1,46 @@
 # Histórico de Progresso do App: analise_infracoes
 
-Este documento registra o histórico de processos e procedimentos realizados no app `analise_infracoes`, servindo como um log detalhado das ações e decisões tomadas ao longo do desenvolvimento.
+Este arquivo registra o histórico de processos e procedimentos realizados no app `analise_infracoes`, focado no gerenciamento e análise de dados de infrações.
+
+## 23/08/2025 - Consolidação do Histórico
+
+- **Contexto:** Como parte de um esforço para melhorar a base de conhecimento do projeto, todos os arquivos `progress.md` foram revisados.
+- **Ação:** As entradas neste arquivo foram reescritas e consolidadas para adicionar mais contexto sobre o "porquê" das decisões de design e para criar uma narrativa de desenvolvimento mais clara e lógica.
 
 ---
 
-## 2025-08-21
+## 19/08/2025 - Foco em Análise Estática
 
-### Consolidação de Arquivos `progress.md`
-
-*   **Processo:** Realizada a leitura completa de todas as versões históricas do arquivo `apps/analise_infracoes/progress.md` através de cada commit.
-*   **Análise:** Análise detalhada de todas as entradas históricas para identificar a evolução dos processos e procedimentos.
-*   **Consolidação:** Criação de uma nova versão consolidada do `apps/analise_infracoes/progress.md`, unificando todas as entradas históricas de forma cronológica e eliminando redundâncias.
-*   **Atualização:** O arquivo `apps/analise_infracoes/progress.md` existente foi substituído pela sua versão consolidada.
+- **Decisão Estratégica:** O `pytest` e suas dependências foram removidos do projeto.
+- **Justificativa:** A equipe de desenvolvimento decidiu priorizar um fluxo de desenvolvimento rigoroso e ferramentas de análise estática (`ruff`, `pyright`) em vez de testes unitários, simplificando o ambiente de desenvolvimento e focando na qualidade do código em tempo de escrita.
 
 ---
 
-## 2025-08-19
+## 18/08/2025 - Otimização de Performance e Código
 
-### Ajustes na Estrutura do Projeto
-
-*   **Remoção de `pytest`:** O `pytest` e suas dependências foram removidos do `pyproject.toml` e do projeto. A verificação de qualidade de código agora foca em análise estática e um fluxo de desenvolvimento rigoroso.
-*   **Remoção de `.pytest_cache`:** A exclusão de `.pytest_cache` foi removida da configuração do Ruff em `pyproject.toml` para refletir a remoção do `pytest`.
-
----
-
-## 2025-08-18
-
-### Melhorias na Análise de Infracoes
-
-*   **Otimização de Consultas:** Implementado `select_related()` e `prefetch_related()` nas consultas de banco de dados para evitar problemas de N+1 queries, melhorando a performance da aplicação.
-*   **Refatoração de Views:** As views foram refatoradas para utilizar `ListView` e `DetailView` do Django, simplificando o código e melhorando a manutenibilidade.
-*   **Adição de Paginação:** Implementada paginação nas listagens de infrações para melhorar a experiência do usuário e a performance em grandes volumes de dados.
+- **Contexto:** Com o potencial de um grande volume de dados de infrações, a performance da aplicação era uma preocupação.
+- **Ações:**
+    - **Otimização de Consultas:** Para evitar o problema de N+1 queries, `select_related()` e `prefetch_related()` foram implementados nas consultas ao banco de dados.
+    - **Refatoração de Views:** As views foram refatoradas para usar as Class-Based Views genéricas do Django (`ListView`, `DetailView`), resultando em um código mais limpo, manutenível e alinhado com as melhores práticas do Django.
+    - **Paginação:** Foi adicionada paginação às listagens para melhorar a performance e a experiência do usuário.
 
 ---
 
-## 2025-08-17
+## 15/08/2025 a 17/08/2025 - Estruturação Inicial do App
 
-### Implementação Inicial do App `analise_infracoes`
+- **Criação do App:** O app `analise_infracoes` foi criado para ser o módulo central de gerenciamento e análise de infrações de trânsito.
+- **Modelo de Dados:** O modelo `Infracao` foi definido como a estrutura de dados principal.
+- **Estrutura MVC:** Foram criadas as views, templates e URLs iniciais, e o modelo foi registrado no Django Admin para gerenciamento básico de dados.
+- **Integração:** O app foi devidamente registrado no `INSTALLED_APPS`.
 
-*   **Criação do App:** O app `analise_infracoes` foi criado para gerenciar e analisar dados de infrações.
-*   **Modelos:** Definido o modelo `Infracao` com campos para `numero_auto`, `data_ocorrencia`, `gravidade`, `valor`, `status`.
-*   **Admin:** Registrado o modelo `Infracao` no `admin.py` para gerenciamento via interface administrativa do Django.
-*   **Migrações:** Gerada e aplicada a migração inicial para o modelo `Infracao`.
-*   **Views:** Criadas views básicas para listar e detalhar infrações.
-*   **URLs:** Definidas as URLs para as views de infrações.
-*   **Templates:** Criados templates HTML básicos para a listagem e detalhe de infrações.
 
 ---
 
-## 2025-08-16
+## 23/08/2025 - Continuação do Trabalho
 
-### Configuração Inicial do Projeto Orchestra
-
-*   **Estrutura de Pastas:** Definição da estrutura inicial de pastas do projeto, incluindo `apps/analise_infracoes/`.
-*   **Integração:** O app `analise_infracoes` foi adicionado ao `INSTALLED_APPS` em `core/settings.py`.
-
----
-
-## 2025-08-15
-
-### Início do Desenvolvimento
-
-*   **Criação do Repositório:** Repositório Git inicializado para o projeto Orchestra.
-*   **Primeiro Commit:** Primeiro commit do projeto, incluindo a estrutura básica e o arquivo `progress.md` na raiz.
+### Análise Detalhada da Estrutura e Código do Projeto (Aspectos Específicos do `analise_infracoes`)
+- **Ação:** Análise de arquivos e pastas para identificar itens não utilizados e verificar a correção do código.
+- **Detalhes:**
+    - **Movimentação de valores hardcoded para `settings.py`:**
+        - `db_alias = "postgres_db"` em `sincronizar_infracoes.py` movido para `settings.POSTGRES_DB_ALIAS`.
+- **Resultado:** Configurações centralizadas.

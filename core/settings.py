@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     "apps.dashboard",
     "apps.automacao_ipiranga",
     "apps.automacao_documentos",
@@ -154,6 +155,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Celery Settings
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "America/Sao_Paulo"
+
 # Automation Settings
 IPIRANGA_LOGIN_URL = config(
     "IPIRANGA_LOGIN_URL",
@@ -172,8 +181,13 @@ IPIRANGA_DASHBOARD_URL = config(
     default="https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index",
 )
 
+MAX_AUTOMATION_ATTEMPTS = config("MAX_AUTOMATION_ATTEMPTS", default=3, cast=int)
+
+
 # MySQL Infractions Table
 MYSQL_INFRACOES_TABLE = config("MYSQL_INFRACOES_TABLE", default="tbl_infracoes_exemplo")
+
+POSTGRES_DB_ALIAS = config("POSTGRES_DB_ALIAS", default="postgres_db")
 
 # Logging configuration
 LOG_ROOT = BASE_DIR / "logs"

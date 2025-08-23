@@ -72,7 +72,7 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
                     "Aguardando redirecionamento para o dashboard após a atualização..."
                 )
                 await expect(page).to_have_url(
-                    "https://sites.redeipiranga.com.br/WAPortranNew/dashboard/index",
+                    settings.IPIRANGA_DASHBOARD_URL,
                     timeout=60000,
                 )
             else:

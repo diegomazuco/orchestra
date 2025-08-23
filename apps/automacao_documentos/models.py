@@ -28,6 +28,7 @@ class Portal(models.Model):
 class Documento(models.Model):
     """Modelo para armazenar dados de documentos."""
 
+    id = models.AutoField(primary_key=True) # Explicitly define ID
     TIPO_CHOICES: ClassVar[list[tuple[str, str]]] = [
         ("licenca", "Licença"),
         ("alvara", "Alvará"),
