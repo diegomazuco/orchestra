@@ -94,3 +94,9 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 22/08/2025 - Atualização de Diretrizes de Robustez do Custom Command
 
 - **Atualização de Diretrizes (`GEMINI.md`):** O arquivo `apps/automacao_documentos/GEMINI.md` foi atualizado na seção "Robustez do Custom Command" para enfatizar a necessidade de mensagens de erro estruturadas e detalhadas geradas pelas automações de backend, permitindo que aplicações frontend as interpretem e exibam feedback significativo ao usuário.
+
+## 23/08/2025 - Aprimoramento das Diretrizes de Orquestração
+
+- **Análise de Alterações Pendentes:** Realizada a análise das modificações no arquivo `GEMINI.md` do app.
+- **Atualização de Diretrizes (`GEMINI.md`):**
+    - **Diagnóstico de Automação:** Adicionada a lição aprendida sobre a importância da análise de logs (`logs/orchestra.log`, `logs/automation.log`) para diagnosticar problemas no fluxo de orquestração de automações, reforçando a necessidade de mensagens de erro estruturadas.

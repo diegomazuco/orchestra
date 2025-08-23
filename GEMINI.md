@@ -79,6 +79,10 @@ Este processo é **obrigatório** antes de cada commit:
 *   **Pyright e Django:** A verificação de tipos com Pyright em projetos Django sem `django-stubs` pode gerar erros como `reportUnknownVariableType`. Relaxe a verificação para esses casos específicos em `pyrightconfig.json` se necessário.
 *   **Bypass de Hooks:** Em casos extremos, `git commit --no-verify` pode ser usado para forçar o commit, mas **com extrema cautela**, pois ignora todas as verificações de qualidade.
 
+*   **Lição Aprendida: Prevenção de Falhas em Pre-commit Hooks:** Para evitar falhas nos hooks de pre-commit, o Gemini CLI **deve** executar `ruff format .`, `ruff check . --fix` e `pyright` *antes* de iniciar o processo de commit. Quaisquer alterações geradas por `ruff format` ou `ruff check --fix` **devem** ser adicionadas ao stage (`git add .`) antes de tentar o commit. Warnings do `pyright` em projetos Django sem `django-stubs` são esperados e podem ser ignorados se a lógica do código estiver correta, mas erros **devem** ser resolvidos.
+
+*   **Lição Aprendida: Mensagens de Commit Complexas:** A ferramenta `run_shell_command` possui limitações ao lidar com strings complexas, como mensagens de commit multi-linha ou com caracteres especiais, quando passadas diretamente via `-m`. Para garantir o sucesso do commit nessas situações, o Gemini CLI **deve** sempre criar um arquivo temporário contendo a mensagem completa e utilizar a opção `-F` do `git commit` (ex: `git commit -F <arquivo_temporario>`). O arquivo temporário **deve** ser removido após o commit.
+
 #### 2.3.2. Gerenciamento de Ferramentas e Prevenção de Looping
 
 Para garantir a execução eficiente e sem loops de tarefas que envolvem ferramentas, o Gemini CLI deve aderir às seguintes diretrizes:
@@ -95,17 +99,25 @@ Para garantir a execução eficiente e sem loops de tarefas que envolvem ferrame
 
 ###### 2.3.2.1. Uso Seguro de `read_file` e `write_file`
 
-Para evitar loops e garantir a eficiência na manipulação de arquivos, o Gemini CLI **deve** aderir às seguintes diretrizes ao utilizar as ferramentas `read_file` e `write_file`:
+Para evitar loops, travamentos e garantir a eficiência na manipulação de arquivos, o Gemini CLI **deve** aderir às seguintes diretrizes ao utilizar as ferramentas `read_file` e `write_file`:
 
-*   **Propósito Claro:** Antes de usar `read_file` ou `write_file`, o Gemini CLI **deve** ter um propósito claro e específico para a operação. Evite leituras ou escritas sem um objetivo definido.
-*   **Critérios de Parada:** Sempre que uma sequência de operações de leitura/escrita for iniciada, o Gemini CLI **deve** definir um critério de parada explícito. Isso pode incluir:
-    *   Um número máximo de iterações.
+*   **Propósito Claro e Planejamento:** Antes de usar `read_file` ou `write_file`, o Gemini CLI **deve** ter um propósito claro e específico para a operação. Um planejamento prévio detalhado, incluindo o que será lido/escrito e por que, é mandatório. Evite leituras ou escritas sem um objetivo definido.
+*   **Critérios de Parada Explícitos:** Sempre que uma sequência de operações de leitura/escrita for iniciada, o Gemini CLI **deve** definir um critério de parada explícito. Isso pode incluir:
+    *   Um número máximo de iterações ou operações.
     *   A detecção de uma condição específica no conteúdo do arquivo que indique a conclusão da tarefa.
     *   A ausência de mais arquivos a serem processados.
-*   **Gerenciamento de Estado:** O Gemini CLI **deve** manter um registro interno do que já foi lido ou escrito para evitar reprocessamento desnecessário. Isso é crucial para operações que envolvem múltiplos arquivos ou leituras/escritas incrementais.
-*   **Validação de Conteúdo:** Antes de usar `write_file`, o Gemini CLI **deve** validar o conteúdo a ser escrito para garantir que ele esteja correto e que a operação não levará a um estado inválido ou a um loop de correção/escrita.
-*   **Leitura Incremental (`read_file` com `offset`/`limit`):** Para arquivos grandes, o Gemini CLI **deve** considerar o uso dos parâmetros `offset` e `limit` da ferramenta `read_file` para ler o arquivo em partes. Isso evita o carregamento de todo o arquivo na memória e permite um processamento mais controlado, prevenindo loops causados por tentativas de processar grandes volumes de dados de uma só vez.
-*   **Confirmação do Usuário:** Em cenários onde a operação de leitura/escrita é complexa, de alto risco ou pode levar a um looping, o Gemini CLI **deve** buscar confirmação explícita do usuário antes de prosseguir.
+*   **Gerenciamento de Estado e Histórico:** O Gemini CLI **deve** manter um registro interno do que já foi lido ou escrito para evitar reprocessamento desnecessário. Isso é crucial para operações que envolvem múltiplos arquivos ou leituras/escritas incrementais.
+*   **Validação de Conteúdo Pré-Escrita:** Antes de usar `write_file`, o Gemini CLI **deve** validar o conteúdo a ser escrito para garantir que ele esteja correto e que a operação não levará a um estado inválido ou a um loop de correção/escrita.
+*   **Leitura Incremental (`read_file` com `offset`/`limit`):** Para arquivos grandes (acima de 1MB ou com mais de 1000 linhas), o Gemini CLI **deve** considerar o uso dos parâmetros `offset` e `limit` da ferramenta `read_file` para ler o arquivo em partes. Isso evita o carregamento de todo o arquivo na memória, previne travamentos e permite um processamento mais controlado.
+*   **Ênfase na Exatidão da `old_string` para `replace`:** Ao utilizar a ferramenta `replace`, a `old_string` **deve** ser uma correspondência *literal e exata* do texto no arquivo, incluindo todos os espaços em branco, quebras de linha e indentação. Para garantir essa exatidão, o Gemini CLI **deve** ler o arquivo imediatamente antes da operação `replace` para obter a `old_string` precisa.
+*   **Tratamento de Falhas em Operações de Arquivo:** Se uma ferramenta de manipulação de arquivo (`read_file`, `write_file`, `replace`) retornar um erro:
+    *   O Gemini CLI **deve** registrar o erro detalhadamente.
+    *   O Gemini CLI **deve** informar o usuário sobre a falha, incluindo a mensagem de erro da ferramenta.
+    *   Se possível e seguro, o Gemini CLI **deve** tentar uma abordagem alternativa (ex: se `replace` falhar por `old_string` não encontrada, tentar uma `old_string` mais curta ou um `search_file_content` para localizar o trecho).
+    *   Em caso de falhas persistentes ou que possam levar a um looping, o Gemini CLI **deve** escalar para o usuário, explicando o problema e solicitando orientação.
+*   **Confirmação do Usuário para Operações Críticas:** Em cenários onde a operação de leitura/escrita é complexa, de alto risco ou pode levar a um looping, o Gemini CLI **deve** buscar confirmação explícita do usuário antes de prosseguir.
+
+*   **Lição Aprendida: Sensibilidade do `replace` e Estratégia de Retentativa:** A ferramenta `replace` é extremamente sensível a qualquer diferença na `old_string` fornecida em relação ao conteúdo exato do arquivo (incluindo espaços, quebras de linha e caracteres invisíveis). Para garantir o sucesso da operação, o Gemini CLI **deve** sempre ler o arquivo imediatamente antes de chamar `replace` e usar o trecho exato lido como `old_string`. Em caso de falha do `replace` (indicando que a `old_string` não foi encontrada), o Gemini CLI **deve** re-ler o arquivo, re-verificar o trecho e tentar a operação `replace` novamente com a `old_string` recém-lida. Se a falha persistir após uma retentativa, o Gemini CLI **deve** informar o usuário sobre o problema e solicitar intervenção.
 
 #### 2.4. Política de Comandos Proibidos
 
@@ -157,6 +169,10 @@ Toda automação neste projeto **deve** seguir este padrão de evento-sinal-subp
 *   **Mecanismos de Bloqueio/Status para Automações:** Para automações críticas, considere a implementação de mecanismos de bloqueio ou status mais granulares no modelo (ex: `pendente`, `em_processamento`, `concluido`, `falha_web`, `cancelado`) para evitar processamento simultâneo ou retentativas infinitas.
 *   **Contadores de Tentativas no Modelo:** Para modelos que disparam automações (ex: `CertificadoVeiculo`), adicione o campo `tentativas_automacao`. A automação deve parar de tentar após um número definido de falhas, marcando o registro com um status final de falha e evitando loops infinitos de retentativa.
 
+*   **Lição Aprendida: Diagnóstico de Problemas de Automação via Logs:** Quando a automação não se comporta como esperado (ex: travamentos, não inicia o navegador, não finaliza o processo), a análise sistemática dos logs é o primeiro e mais crucial passo para o diagnóstico. O Gemini CLI **deve** garantir que o ambiente esteja configurado para gerar logs detalhados (incluindo a saída do servidor Django para um arquivo) e **deve** reproduzir o problema em um ambiente controlado para gerar logs relevantes. A análise desses logs (em `django_server_output.log`, `logs/orchestra.log`, `logs/automation.log`) fornecerá as pistas necessárias para identificar a causa raiz e propor soluções.
+
+*   **Lição Aprendida: Diagnóstico de Problemas de Automação via Logs:** Quando a automação não se comporta como esperado (ex: travamentos, não inicia o navegador, não finaliza o processo), a análise sistemática dos logs é o primeiro e mais crucial passo para o diagnóstico. O Gemini CLI **deve** garantir que o ambiente esteja configurado para gerar logs detalhados (incluindo a saída do servidor Django para um arquivo) e **deve** reproduzir o problema em um ambiente controlado para gerar logs relevantes. A análise desses logs (em `django_server_output.log`, `logs/orchestra.log`, `logs/automation.log`) fornecerá as pistas necessárias para identificar a causa raiz e propor soluções.
+
 #### 3.4. Padrões de Comunicação Backend-Frontend
 
 Para garantir uma comunicação eficiente, consistente e robusta entre o backend (Django) e o frontend (HTML/JavaScript), o projeto Orchestra adota os seguintes padrões:
@@ -203,19 +219,45 @@ Para garantir uma comunicação eficiente, consistente e robusta entre o backend
 
 #### 4.2. Procedimento de Gerenciamento do Servidor Django
 
-Ao iniciar ou reiniciar o servidor, ou **antes de cada novo ciclo de teste**, siga estas etapas para garantir um ambiente limpo e consistente:
+Ao iniciar ou reiniciar o servidor, ou **antes de cada novo ciclo de teste**, o Gemini CLI **deve** seguir rigorosamente estas etapas para garantir um ambiente limpo e consistente:
 
-1.  **Verificar e Finalizar Processos Existentes:** Finalize todos os processos Python relacionados ao projeto em execução (ex: `ps aux | grep python`) para evitar conflitos.
-2.  **Liberar Porta:** Certifique-se de que a porta 8000 está livre (`lsof -i :8000` e `kill -9 <PID>`).
-3.  **Limpar Banco de Dados (CertificadoVeiculo):** Execute `python manage.py shell -c "from apps.automacao_ipiranga.models import CertificadoVeiculo; CertificadoVeiculo.objects.all().delete()"` para remover registros de automação anteriores.
-4.  **Limpar Banco de Dados (Automation Data):** Execute `python manage.py cleanup_automation_data`.
-5.  **Resetar Sequências de IDs:** Execute `python manage.py reset_automation_sequences` para zerar os contadores de auto-incremento das tabelas de automação (ex: `CertificadoVeiculo`, `VeiculoIpiranga`).
-6.  **Limpar Arquivos Temporários:** Execute `python manage.py cleanup_media`.
-6.  **Limpar Logs:** Remova arquivos de log antigos (`logs/*.log`).
-7.  **Limpar Screenshots:** Remova todos os screenshots de depuração (`.png` files) de todo o projeto (`find . -name "*.png" -delete`).
-8.  **Iniciar Servidor:** Inicie o servidor (ex: `python manage.py runserver`).
+1.  **Verificar e Finalizar Processos Existentes:**
+    *   O Gemini CLI **deve** listar todos os processos Python relacionados ao projeto (ex: `ps aux | grep python manage.py runserver`).
+    *   Para cada PID encontrado, o Gemini CLI **deve** executar `kill -9 <PID>`.
+    *   O Gemini CLI **deve** verificar o resultado do `kill` e registrar qualquer erro (ex: "No such process").
+2.  **Liberar Porta 8000:**
+    *   O Gemini CLI **deve** verificar se a porta 8000 está em uso (ex: `lsof -i :8000`).
+    *   Se a porta estiver em uso, o Gemini CLI **deve** identificar o PID do processo e executar `kill -9 <PID>`.
+    *   O Gemini CLI **deve** verificar o resultado do `kill` e registrar qualquer erro.
+3.  **Limpar Banco de Dados (CertificadoVeiculo):**
+    *   O Gemini CLI **deve** executar `python manage.py shell -c "from apps.automacao_ipiranga.models import CertificadoVeiculo; CertificadoVeiculo.objects.all().delete()"` para remover registros de automação anteriores.
+    *   O Gemini CLI **deve** verificar o sucesso da operação.
+4.  **Limpar Banco de Dados (Automation Data):**
+    *   O Gemini CLI **deve** executar `python manage.py cleanup_automation_data`.
+    *   O Gemini CLI **deve** verificar o sucesso da operação.
+5.  **Resetar Sequências de IDs:**
+    *   O Gemini CLI **deve** executar `python manage.py reset_automation_sequences` para zerar os contadores de auto-incremento das tabelas de automação (ex: `CertificadoVeiculo`, `VeiculoIpiranga`).
+    *   O Gemini CLI **deve** verificar o sucesso da operação.
+6.  **Limpar Arquivos Temporários:**
+    *   O Gemini CLI **deve** executar `python manage.py cleanup_media`.
+    *   O Gemini CLI **deve** verificar o sucesso da operação.
+7.  **Limpar Logs:**
+    *   O Gemini CLI **deve** remover arquivos de log antigos (ex: `rm -f logs/*.log`).
+    *   O Gemini CLI **deve** verificar o sucesso da operação.
+8.  **Limpar Screenshots:**
+    *   O Gemini CLI **deve** remover todos os screenshots de depuração (ex: `find . -name "*.png" -delete`).
+    *   O Gemini CLI **deve** verificar o sucesso da operação.
+9.  **Iniciar Servidor:**
+    *   O Gemini CLI **deve** iniciar o servidor (ex: `python manage.py runserver > django_server_output.log 2>&1 &`).
+    *   O Gemini CLI **deve** registrar o PID do processo iniciado.
+    *   O Gemini CLI **deve** informar ao usuário que o servidor foi iniciado e que ele pode reproduzir o problema para gerar logs.
+
+*   **Lição Aprendida: Captura de Logs do Servidor Django:** Ao iniciar o servidor Django em segundo plano para depuração, é **mandatório** redirecionar a saída padrão (stdout/stderr) para um arquivo (ex: `django_server_output.log`). Este arquivo contém informações cruciais de inicialização e erros que não são capturados pelos handlers de log de arquivo do Django. O `django_server_output.log` **NÃO DEVE SER REMOVIDO** até que a análise do problema seja concluída.
+
+*   **Lição Aprendida: Rigor no Procedimento de Limpeza e Reinicialização do Servidor:** É **absolutamente crítico** que o Gemini CLI siga *todas* as etapas do "Procedimento de Gerenciamento do Servidor Django" de forma rigorosa e sequencial, sem pular nenhuma. Cada sub-etapa (finalizar processos, liberar porta, limpar banco de dados, limpar arquivos, etc.) **deve** ser verificada quanto ao seu sucesso antes de prosseguir para a próxima. A falha em executar qualquer uma dessas etapas pode levar a um ambiente inconsistente, travamentos e dificuldades na depuração.
 
 #### 4.3. Ferramentas e Comandos Rápidos
+
 
 *   **Gerenciador de Pacotes (`uv`):**
     *   **Princípio:** Sempre utilize `uv` para gerenciar dependências e executar comandos no ambiente virtual. Priorize a instalação de **versões estáveis**.

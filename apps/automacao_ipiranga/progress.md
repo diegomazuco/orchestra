@@ -182,3 +182,9 @@ Este arquivo registra as principais ações e configurações realizadas especif
     - **Novos Status:** Adicionados os status `falha_max_tentativas` e `falha_outros_vencidos` às opções do campo `status`, e o `max_length` do campo foi aumentado para 30.
     - **Campo de Mensagem de Erro:** Adicionado o campo `error_message` para armazenar mensagens detalhadas em caso de falhas na automação.
 - **Novo Comando de Gerenciamento (`reset_automation_sequences.py`):** Adicionado um novo comando de gerenciamento para resetar as sequências de auto-incremento das tabelas `CertificadoVeiculo` e `VeiculoIpiranga`, útil para limpeza de ambiente de desenvolvimento/teste.
+
+## 23/08/2025 - Aprimoramento das Diretrizes de Automação Ipiranga
+
+- **Análise de Alterações Pendentes:** Realizada a análise das modificações no arquivo `GEMINI.md` do app.
+- **Atualização de Diretrizes (`GEMINI.md`):**
+    - **Análise de Logs:** Adicionada a diretriz para consultar os logs (`logs/orchestra.log` e `logs/automation.log`) como passo crucial para identificar a causa raiz de falhas na automação específica do portal Ipiranga.

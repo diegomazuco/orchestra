@@ -341,3 +341,13 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - `apps/automacao_ipiranga/GEMINI.md`: Atualizado para incluir o status `falha_max_tentativas` na seção "Modelo Gatilho" sob "Status Adicional".
     - `GEMINI.md` (principal): Atualizado com as novas diretrizes operacionais e procedimentos de gerenciamento do servidor.
     - `apps/automacao_documentos/GEMINI.md`: Atualizado com a ênfase em mensagens de erro estruturadas para o frontend.
+
+## 23/08/2025 - Aprimoramento das Diretrizes de Desenvolvimento e Automação
+
+- **Análise de Alterações Pendentes:** Realizada a análise das modificações nos arquivos `GEMINI.md` do projeto.
+- **Atualização de Diretrizes (`GEMINI.md`):**
+    - **Processo de Commit:** Adicionadas lições aprendidas sobre a prevenção de falhas em hooks de pre-commit (executando `ruff` e `pyright` antes) e o uso de arquivos temporários para mensagens de commit complexas (`git commit -F`).
+    - **Manipulação de Arquivos:** As diretrizes para uso de `read_file` e `write_file` foram aprimoradas para evitar loops, com ênfase em planejamento, critérios de parada, e tratamento de falhas. Introduzida uma estratégia de retentativa para a ferramenta `replace`.
+    - **Gerenciamento do Servidor Django:** O procedimento de reinicialização do servidor foi detalhado, tornando-o mais robusto e explícito para o Gemini CLI, incluindo a verificação de sucesso de cada etapa.
+    - **Diagnóstico de Automação:** Adicionada a lição aprendida sobre a importância da análise de logs (`django_server_output.log`, `logs/orchestra.log`, `logs/automation.log`) para diagnosticar problemas de automação.
+    - **Comunicação Backend-Frontend:** Definidos padrões de comunicação, incluindo o formato JSON, códigos de status HTTP, e uma estrutura de resposta padrão para sucesso e erro.

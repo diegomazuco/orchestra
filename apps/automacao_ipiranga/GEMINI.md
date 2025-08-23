@@ -51,6 +51,7 @@
 
 *   **Depuração e Execução:**
     *   **Depuração Visual:** Para assistir a automação, altere `headless=False` na chamada `p.chromium.launch()`. **É mandatório executar o servidor Django em primeiro plano (sem `nohup` ou `&`) em um terminal com ambiente gráfico para que o navegador seja visível.** Lembre-se de reverter para `True` antes de fazer o commit.
+    *   **Análise de Logs para Automação Ipiranga:** Em caso de falhas ou comportamento inesperado da automação, o Gemini CLI **deve** consultar os logs gerados (`logs/orchestra.log` e `logs/automation.log`) para identificar a causa raiz. Mensagens de erro detalhadas e rastreamentos de pilha são cruciais para o diagnóstico.
 
 *   **Prevenção de Looping com Contador de Tentativas (`CertificadoVeiculo`):**
     *   **Prevenção de Looping com Contador de Tentativas (`CertificadoVeiculo`):**
