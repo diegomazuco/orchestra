@@ -18,11 +18,11 @@
     "reportUnusedImport": true,
     "reportAttributeAccessIssue": "warning",
     "reportPrivateImportUsage": "warning",
-    "reportMissingTypeArgument": "none",
-    "reportUnknownVariableType": "none",
-    "reportIncompatibleVariableOverride": "none",
-    "reportUnknownMemberType": "none",
-    "reportUnknownArgumentType": "none",
+    "reportMissingTypeArgument": "warning",
+    "reportUnknownVariableType": "warning",
+    "reportIncompatibleVariableOverride": "warning",
+    "reportUnknownMemberType": "warning",
+    "reportUnknownArgumentType": "warning",
     "venvPath": "/home/diegomazuco/dev/orchestra",
     "venv": ".venv"
 }

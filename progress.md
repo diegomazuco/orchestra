@@ -153,3 +153,104 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - A importância de **verificação multi-estágio** para mudanças críticas.
     - A necessidade de **estratégias alternativas** para modificações de arquivo complexas, como a combinação de `search_file_content` para localizar o ponto de inserção e `write_file` para inserir o conteúdo, evitando a dependência exclusiva do `replace` para blocos multi-linha.
     - A importância de **escalonamento proativo** ao usuário em caso de falhas persistentes.
+
+### 5. Otimização com Django-Extensions
+
+- **Contexto:** O `django-extensions` foi integrado para otimizar o fluxo de trabalho de desenvolvimento e depuração.
+- **Ações:**
+    - **`shell_plus`:** Utilizado para uma experiência de shell interativo aprimorada, com importação automática de modelos.
+    - **`runserver_plus`:** Empregado para desenvolvimento, oferecendo um servidor de desenvolvimento com debugger interativo (Werkzeug).
+    - **`graph_models`:** Usado para gerar diagramas visuais dos modelos do Django, auxiliando na compreensão da estrutura do banco de dados. Requer `Graphviz` e `pygraphviz`.
+    - **`show_urls`:** Útil para listar todas as URLs do projeto, facilitando a navegação e depuração de rotas.
+    - **`runscript`:** Permite a execução de scripts Python personalizados no contexto do Django, ideal para tarefas de manutenção e automação de scripts.
+- **Recomendação:** Para utilizar `graph_models`, certifique-se de que `Graphviz` esteja instalado no sistema operacional e `pygraphviz` no ambiente virtual.
+
+### 6. Análise de Desempenho com cProfile e line_profiler
+
+- **Contexto:** Para identificar e otimizar gargalos de desempenho, o projeto utiliza `cProfile` para profiling de alto nível e `line_profiler` para análise linha a linha.
+- **cProfile (Profiling de Alto Nível):**
+    - **Uso:** Ideal para identificar funções que consomem mais tempo de execução (`cumtime`).
+    - **Exemplo de Execução:** Para perfilar um comando customizado do Django:
+        ```bash
+        python -m cProfile -o profile_output.prof manage.py <nome_do_comando_customizado> [args]
+        ```
+    - **Análise de Resultados:**
+        - Com `pstats` (para análise textual):
+            ```bash
+            python -m pstats profile_output.prof
+            # No prompt do pstats, use 'sort cumtime' e 'stats 10' para ver as 10 funções mais lentas.
+            ```
+        - Com `SnakeViz` (para visualização interativa):
+            ```bash
+            snakeviz profile_output.prof
+            ```
+- **line_profiler (Profiling Linha a Linha):**
+    - **Uso:** Perfeito para detalhar o tempo gasto em cada linha de uma função específica, após identificar a função problemática com `cProfile`.
+    - **Exemplo de Execução:**
+        1.  Adicione o decorador `@profile` às funções que deseja perfilar no seu código.
+        2.  Execute o script com `kernprof`:
+            ```bash
+            kernprof -lv seu_script.py
+            ```
+        3.  Analise a saída no terminal ou o arquivo `.lprof` gerado.
+    - **Interpretação:** A saída mostra o tempo (`Time`) e a porcentagem (`% Time`) gasta em cada linha, além do número de vezes que a linha foi executada (`Hits`).
+- **Melhor Prática:** Sempre comece com `cProfile` para ter uma visão geral e, em seguida, use `line_profiler` para aprofundar a análise em funções específicas.
+
+### 7. Configuração do Celery para Tarefas Assíncronas
+
+- **Contexto:** O Celery foi integrado para gerenciar tarefas assíncronas, como o processamento de automações em segundo plano, melhorando a responsividade da aplicação.
+- **Configuração:**
+    - **Broker:** Redis foi escolhido como o message broker. A URL de conexão é definida em `core/settings.py` (ex: `CELERY_BROKER_URL = 'redis://localhost:6379/0'`).
+    - **Backend de Resultados:** O backend de resultados também utiliza Redis (`CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'`).
+    - **Inicialização:** O Celery é inicializado em `core/celery.py`, onde o app Celery é criado e configurado para auto-descobrir tarefas nos apps Django.
+- **Execução:**
+    - **Worker:** Para iniciar um worker do Celery, execute o seguinte comando na raiz do projeto:
+        ```bash
+        celery -A core worker -l info
+        ```
+    - **Beat (Agendador):** Para tarefas agendadas, inicie o Celery Beat:
+        ```bash
+        celery -A core beat -l info
+        ```
+- **Exemplo de Tarefa:**
+    - Em `apps/automacao_ipiranga/tasks.py`, uma tarefa de automação é definida com o decorador `@shared_task`.
+    - A tarefa é chamada de forma assíncrona no código da aplicação (ex: em `signals.py`) usando `.delay()` ou `.apply_async()`:
+        ```python
+        from .tasks import run_ipiranga_automation_task
+        run_ipiranga_automation_task.delay(certificado_id)
+        ```
+- **Monitoramento:**
+    - **Flower:** Uma ferramenta de monitoramento baseada na web para Celery.
+        - **Instalação:** `pip install flower`
+        - **Execução:** `celery -A core flower --port=5555`
+        - **Acesso:** Abra `http://localhost:5555` no navegador para ver o dashboard de monitoramento.
+- **Melhor Prática:** Para tarefas de longa duração, como web scraping, o uso do Celery é fundamental para não bloquear a thread principal da aplicação web, garantindo uma boa experiência do usuário.
+
+
+### 8. Estratégia de Testes com Análise Estática
+
+- **Contexto:** O projeto Orchestra adota uma estratégia de testes que prioriza a análise estática em detrimento de testes unitários tradicionais com `pytest`.
+- **Ferramentas Principais:**
+    - **`Ruff`:** Utilizado para linting e formatação de código. Garante a consistência do estilo de código e detecta erros comuns.
+    - **`Pyright`:** Empregado para verificação de tipos estática em modo `strict`. Ajuda a prevenir erros de tipo em tempo de execução e melhora a clareza do código.
+    - **`Bandit`:** Usado para análise de segurança estática, identificando vulnerabilidades comuns no código Python.
+- **Justificativa:**
+    - **Foco na Prevenção:** A análise estática permite a detecção de erros antes mesmo da execução do código, promovendo um ciclo de desenvolvimento mais rápido e seguro.
+    - **Redução de Overhead:** A ausência de testes unitários reduz o tempo gasto na escrita e manutenção de testes, permitindo que a equipe de desenvolvimento se concentre mais na lógica de negócio.
+    - **Qualidade do Código:** A combinação de `Ruff`, `Pyright` e `Bandit` garante um alto padrão de qualidade, legibilidade e segurança do código.
+- **Fluxo de Trabalho:**
+    1.  O desenvolvedor escreve o código, seguindo as diretrizes de tipagem e estilo.
+    2.  Antes de cada commit, os hooks de pre-commit executam automaticamente `Ruff`, `Pyright` e `Bandit`.
+    3.  Qualquer erro ou violação de regra impede o commit, forçando o desenvolvedor a corrigir o problema.
+    4.  O pipeline de CI/CD no GitHub Actions também executa essas verificações, garantindo que apenas código de alta qualidade seja integrado ao branch principal.
+- **Conclusão:** Esta abordagem, embora não convencional, tem se mostrado eficaz para o projeto Orchestra, resultando em um código robusto, seguro e de fácil manutenção, com um ciclo de desenvolvimento ágil.
+
+### 9. Configuração e Resolução de Conflitos de Dependências
+- **Ação:** Verificação e atualização de todas as dependências do projeto.
+- **Procedimentos:**
+    - Pesquisa das últimas versões estáveis de todas as dependências.
+    - Atualização do arquivo `pyproject.toml` com as novas versões.
+    - **Problema:** Identificado um conflito entre as versões das bibliotecas `pydantic`, `pydantic-core`, `safety` e `psutil`.
+    - **Solução:** Realizado o downgrade da biblioteca `pydantic` para uma versão compatível e removido o `safety` do projeto para resolver os conflitos.
+    - Execução do comando `uv sync` para sincronizar o ambiente com as novas dependências.
+- **Resultado:** Dependências atualizadas e conflitos resolvidos, garantindo um ambiente de desenvolvimento estável.

@@ -1,10 +1,21 @@
 import asyncio
 import logging
 import re
+from dataclasses import dataclass
 
 from decouple import config
 from django.conf import settings
 from playwright.async_api import Page, expect
+
+
+@dataclass
+class ExtractedCertificateData:
+    """Representa os dados extraídos de um nome de arquivo de certificado."""
+
+    placa: str
+    tipo_licenca: str
+    numero_certificado: str
+    data_vencimento_formatada: str
 
 
 async def login_to_portran(page: Page, logger: logging.Logger) -> None:
@@ -97,7 +108,7 @@ async def login_to_portran(page: Page, logger: logging.Logger) -> None:
 
 def extract_certificate_data_from_filename(
     filename: str, logger: logging.Logger
-) -> tuple[str, str]:
+) -> ExtractedCertificateData:
     """Extrai o número do certificado e a data de vencimento do nome do arquivo.
 
     Formato esperado: PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf
@@ -107,13 +118,15 @@ def extract_certificate_data_from_filename(
 
     # Regex para o novo formato: PLACA_TIPOLICENCA_NUMEROCERTIFICADO_DDMMYYYY.pdf
     match = re.match(
-        r"([A-Z0-9]+)_([A-Z0-9]+)_([A-Z0-9]+)_(\d{8})\.pdf", filename, re.IGNORECASE
+        r"([A-Z0-9]+)_([A-Z0-9_]+)_([A-Z0-9]+)_(\d{8})\.pdf", filename, re.IGNORECASE
     )
 
     if not match:
         logger.error(f"Formato de nome de arquivo inválido: {filename}")
         raise ValueError(f"Formato de nome de arquivo inválido: {filename}")
 
+    placa = match.group(1).upper()
+    tipo_licenca = match.group(2).replace("_", " ").title()
     numero_certificado = match.group(3)
     data_vencimento_raw = match.group(4)
 
@@ -132,6 +145,11 @@ def extract_certificate_data_from_filename(
         )
 
     logger.info(
-        f"Dados extraídos: Número do Certificado={numero_certificado}, Data de Vencimento={data_vencimento_formatada}"
+        f"Dados extraídos: Placa={placa}, Tipo de Licença={tipo_licenca}, Número do Certificado={numero_certificado}, Data de Vencimento={data_vencimento_formatada}"
     )
-    return numero_certificado, data_vencimento_formatada
+    return ExtractedCertificateData(
+        placa=placa,
+        tipo_licenca=tipo_licenca,
+        numero_certificado=numero_certificado,
+        data_vencimento_formatada=data_vencimento_formatada,
+    )

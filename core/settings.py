@@ -157,11 +157,34 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Celery Settings
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config(
+    "CELERY_RESULT_BACKEND", default="redis://localhost:6379/0"
+)
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "America/Sao_Paulo"
+
+# Celery Settings (Robustness and Production Readiness)
+CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", default=DEBUG, cast=bool)
+CELERY_WORKER_CONCURRENCY = config(
+    "CELERY_WORKER_CONCURRENCY", default=4, cast=int
+)  # Adjust based on workload
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_STOP = True
+CELERY_TASK_TIME_LIMIT = config(
+    "CELERY_TASK_TIME_LIMIT", default=300, cast=int
+)  # 5 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = config(
+    "CELERY_TASK_SOFT_TIME_LIMIT", default=240, cast=int
+)  # 4 minutes
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}  # 1 hour for Redis
+CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
+    "CELERY_WORKER_MAX_TASKS_PER_CHILD", default=100, cast=int
+)
+CELERY_WORKER_DISABLE_RATE_LIMITS = config(
+    "CELERY_WORKER_DISABLE_RATE_LIMITS", default=DEBUG, cast=bool
+)
 
 # Automation Settings
 IPIRANGA_LOGIN_URL = config(
@@ -248,6 +271,16 @@ LOGGING = {
         "apps.dashboard": {  # Logger específico para o dashboard
             "handlers": ["console", "file"],
             "level": "DEBUG",
+            "propagate": False,
+        },
+        "celery": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery.task": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
             "propagate": False,
         },
     },

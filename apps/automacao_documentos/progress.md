@@ -19,7 +19,7 @@ Este arquivo registra as principais ações e configurações realizadas especif
 ## 21/08/2025 - Abandono da Estratégia de OCR
 
 - **Contexto:** A extração de dados de PDFs via OCR provou ser uma fonte constante de instabilidade e erros, consumindo um tempo de desenvolvimento desproporcional para a depuração de imagens e configurações.
-- **Decisão Estratégica:** A funcionalidade de OCR foi completamente removida do projeto.
+- **Decisão Estratégética:** A funcionalidade de OCR foi completamente removida do projeto.
 - **Nova Abordagem:** A responsabilidade pela extração de dados foi transferida para o nome do arquivo, que agora deve seguir um padrão rigoroso (`PLACA_NUMEROCERTIFICADO_DDMMYYYY.pdf`). Esta abordagem é mais simples, determinística e confiável.
 - **Impacto:** Esta decisão simplificou drasticamente o fluxo de automação, removendo dependências complexas e pontos de falha.
 
@@ -44,3 +44,14 @@ Este arquivo registra as principais ações e configurações realizadas especif
 
 - **Criação do App:** O app `automacao_documentos` foi estabelecido como o orquestrador central de automações.
 - **Configuração de Ferramentas:** Implementadas ferramentas de qualidade (`ruff`, `pyright`) e performance (`line-profiler`, `snakeviz`) para garantir a manutenibilidade e a robustez do código desde o início.
+
+
+---
+
+## 23/08/2025 - Continuação do Trabalho
+
+### Correções de Tipagem
+- **Ação:** Correção de problemas de tipagem no código.
+- **Detalhes:**
+    - **Correção de Tipagem:** Corrigido o erro `TypeError: type 'AutoField' is not subscriptable` e outros problemas de tipagem no arquivo `models.py`.
+- **Resultado:** Código mais limpo, robusto e com tipagem correta.

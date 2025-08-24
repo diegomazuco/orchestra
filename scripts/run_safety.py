@@ -6,9 +6,12 @@ import tempfile
 
 def run_safety() -> None:
     """Executa a verificação de segurança do Safety em um ambiente uv."""
+    temp_reqs_file_path = None
     try:
         # Generate pip freeze output to a temporary file
-        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_reqs_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w+", delete=False, encoding="utf-8"
+        ) as temp_reqs_file:
             subprocess.run(
                 ["uv", "pip", "freeze"], check=True, stdout=temp_reqs_file, text=True
             )
@@ -45,7 +48,7 @@ def run_safety() -> None:
         sys.exit(1)
     finally:
         # Clean up the temporary file
-        if "temp_reqs_file_path" in locals() and os.path.exists(temp_reqs_file_path):
+        if temp_reqs_file_path and os.path.exists(temp_reqs_file_path):
             os.remove(temp_reqs_file_path)
 
 

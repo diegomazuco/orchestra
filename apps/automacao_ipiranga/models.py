@@ -1,6 +1,14 @@
 from typing import TYPE_CHECKING, ClassVar
 
 from django.db import models
+from django.db.models import (
+    AutoField,
+    CharField,
+    DateTimeField,
+    FileField,
+    ForeignKey,
+    IntegerField,
+)  # Import specific field types for better typing
 
 from apps.common.storage import OriginalFilenameStorage
 
@@ -11,12 +19,12 @@ if TYPE_CHECKING:
 class VeiculoIpiranga(models.Model):
     """Modelo para armazenar informações de veículos Ipiranga."""
 
-    id = models.AutoField(primary_key=True) # Explicitly define ID
-    placa: models.CharField = models.CharField(max_length=10, unique=True)  # type: ignore[reportUnknownVariableType, reportUnknownArgumentType, reportMissingTypeArgument, reportCallIssue]
-    status_documentos: models.CharField = models.CharField(
+    id: AutoField = models.AutoField(primary_key=True)  # type: ignore
+    placa: CharField = models.CharField(max_length=10, unique=True)  # type: ignore
+    status_documentos: CharField = models.CharField(  # type: ignore
         max_length=255, blank=True, default=""
-    )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
-    data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
+    )
+    data_atualizacao: DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore
 
     objects: "Manager[VeiculoIpiranga]"  # type: ignore[reportIncompatibleVariableOverride]
 
@@ -26,13 +34,13 @@ class VeiculoIpiranga(models.Model):
         app_label = "automacao_ipiranga"
 
     def __str__(self) -> str:
-        return str(self.placa)
+        return str(self.placa)  # type: ignore
 
 
 class CertificadoVeiculo(models.Model):
     """Modelo para armazenar informações de certificados de veículos."""
 
-    id = models.AutoField(primary_key=True) # Explicitly define ID
+    id: AutoField = models.AutoField(primary_key=True)  # type: ignore
     STATUS_CHOICES: ClassVar[list[tuple[str, str]]] = [
         ("pendente", "Pendente de Envio"),
         ("enviado", "Enviado com Sucesso"),
@@ -41,24 +49,22 @@ class CertificadoVeiculo(models.Model):
         ("falha_outros_vencidos", "Falha: Outros Certificados Vencidos"),
     ]
 
-    veiculo: models.ForeignKey = models.ForeignKey(
+    veiculo: ForeignKey = models.ForeignKey(  # type: ignore
         VeiculoIpiranga, on_delete=models.CASCADE, related_name="certificados"
-    )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
-    nome: models.CharField = models.CharField(max_length=255)  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
-    arquivo: models.FileField = models.FileField(
+    )
+    nome: CharField = models.CharField(max_length=255)  # type: ignore
+    arquivo: FileField = models.FileField(  # type: ignore
         upload_to="certificados_veiculos/", storage=OriginalFilenameStorage()
-    )  # type: ignore[reportUnknownVariableType]
-    status: models.CharField = models.CharField(
+    )
+    status: CharField = models.CharField(  # type: ignore
         max_length=30, choices=STATUS_CHOICES, default="pendente"
-    )  # type: ignore[reportUnknownVariableType, reportMissingTypeArgument]
-    tentativas_automacao: models.IntegerField = models.IntegerField(default=0) # Explicitly define tentativas_automacao
-    data_criacao: models.DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore[reportUnknownVariableType]
-    data_atualizacao: models.DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore[reportUnknownVariableType]
-    error_message: models.CharField = models.CharField(
-        max_length=500, blank=True, default=""
-    )  # type: ignore[reportUnknownVariableType]
+    )
+    tentativas_automacao: IntegerField = models.IntegerField(default=0)  # type: ignore
+    data_criacao: DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore
+    data_atualizacao: DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore
+    error_message: CharField = models.CharField(max_length=500, blank=True, default="")  # type: ignore
 
     objects: "Manager[CertificadoVeiculo]"  # type: ignore[reportIncompatibleVariableOverride]
 
     def __str__(self) -> str:
-        return f"{self.nome} - {self.veiculo.placa}"
+        return f"{self.nome} - {self.veiculo.placa}"  # type: ignore

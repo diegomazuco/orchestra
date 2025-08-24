@@ -4,7 +4,7 @@ from .models import CertificadoVeiculo, VeiculoIpiranga
 
 
 @admin.register(VeiculoIpiranga)
-class VeiculoIpirangaAdmin(admin.ModelAdmin):
+class VeiculoIpirangaAdmin(admin.ModelAdmin):  # type: ignore[reportMissingTypeArgument]
     """Administração de Veículos Ipiranga."""
 
     list_display = ("placa", "status_documentos", "data_atualizacao")
@@ -12,7 +12,7 @@ class VeiculoIpirangaAdmin(admin.ModelAdmin):
 
 
 @admin.register(CertificadoVeiculo)
-class CertificadoVeiculoAdmin(admin.ModelAdmin):
+class CertificadoVeiculoAdmin(admin.ModelAdmin):  # type: ignore[reportMissingTypeArgument]
     """Administração de Certificados de Veículos."""
 
     list_display = ("nome", "veiculo", "status", "data_atualizacao")

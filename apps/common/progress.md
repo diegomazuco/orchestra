@@ -38,3 +38,13 @@ Este arquivo registra o histórico de processos e procedimentos realizados no ap
 
 - **Criação do App:** O app `common` foi criado e adicionado ao `INSTALLED_APPS`.
 - **Definição da Estrutura:** A estrutura de pastas do app foi definida dentro de `apps/`.
+
+---
+
+## 23/08/2025 - Continuação do Trabalho
+
+### Refatoração e Melhorias de Código
+- **Ação:** Refatoração da função de extração de dados de certificados para maior clareza e robustez.
+- **Detalhes:**
+    - **Refatoração:** A função `extract_certificate_data_from_filename` em `services.py` foi refatorada para retornar um dataclass (`ExtractedCertificateData`) e a regex foi ajustada para maior precisão.
+- **Resultado:** Código mais limpo, robusto e com uma estrutura de dados de retorno mais clara.

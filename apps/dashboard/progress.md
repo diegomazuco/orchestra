@@ -42,3 +42,9 @@ Este arquivo registra o histórico de processos e procedimentos realizados no ap
 - **Detalhes:**
     - **Refatoração de `process_documents_view`:** A função em `apps/dashboard/views.py` foi refatorada para chamar `extract_certificate_data_from_filename` apenas uma vez e o tratamento de erros foi aprimorado.
 - **Resultado:** Código otimizado e mais robusto.
+
+### Refatoração e Melhorias de Código
+- **Ação:** Refatoração da view de processamento de documentos para maior clareza e robustez.
+- **Detalhes:**
+    - **Refatoração:** A view `process_documents_view` foi atualizada para utilizar o novo dataclass `ExtractedCertificateData` retornado pela função `extract_certificate_data_from_filename` e o import de `re` foi removido.
+- **Resultado:** Código mais limpo, robusto e alinhado com as novas estruturas de dados.

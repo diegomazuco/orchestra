@@ -4,9 +4,9 @@ from django.core.files.storage import FileSystemStorage
 class OriginalFilenameStorage(FileSystemStorage):
     """Storage personalizado que mantém o nome original do arquivo."""
 
-    def get_available_name(
+    def get_available_name(  # noqa: PLR6301
         self, name: str, max_length: int | None = None
-    ) -> str:  # Added type hints
+    ) -> str:
         """Retorna o nome original do arquivo, sem modificações.
 
         ATENÇÃO: Isso significa que arquivos com o mesmo nome serão sobrescritos.

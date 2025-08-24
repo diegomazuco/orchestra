@@ -4,7 +4,7 @@ from .models import Automacao, Documento, LogExecucaoAutomacao, Portal
 
 
 @admin.register(Portal)
-class PortalAdmin(admin.ModelAdmin):
+class PortalAdmin(admin.ModelAdmin):  # type: ignore[reportMissingTypeArgument]
     """Administração de Portais."""
 
     list_display = ("nome", "url_base")
@@ -12,7 +12,7 @@ class PortalAdmin(admin.ModelAdmin):
 
 
 @admin.register(Documento)
-class DocumentoAdmin(admin.ModelAdmin):
+class DocumentoAdmin(admin.ModelAdmin):  # type: ignore[reportMissingTypeArgument]
     """Administração de Documentos."""
 
     list_display = (
@@ -29,7 +29,7 @@ class DocumentoAdmin(admin.ModelAdmin):
 
 
 @admin.register(Automacao)
-class AutomacaoAdmin(admin.ModelAdmin):
+class AutomacaoAdmin(admin.ModelAdmin):  # type: ignore[reportMissingTypeArgument]
     """Administração de Automações."""
 
     list_display = (
@@ -44,7 +44,7 @@ class AutomacaoAdmin(admin.ModelAdmin):
 
 
 @admin.register(LogExecucaoAutomacao)
-class LogExecucaoAutomacaoAdmin(admin.ModelAdmin):
+class LogExecucaoAutomacaoAdmin(admin.ModelAdmin):  # type: ignore[reportMissingTypeArgument]
     """Administração de Logs de Execução de Automação."""
 
     list_display = (
