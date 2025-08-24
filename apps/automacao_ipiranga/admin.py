@@ -1,3 +1,5 @@
+"""Configurações de administração para o app automacao_ipiranga."""
+
 from django.contrib import admin
 
 from .models import CertificadoVeiculo, VeiculoIpiranga

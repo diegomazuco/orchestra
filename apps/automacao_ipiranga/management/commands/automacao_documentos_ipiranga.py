@@ -1,3 +1,5 @@
+"""Comando Django para automatizar a atualização de documentos no portal Ipiranga."""
+
 import asyncio
 import logging
 import os
@@ -18,8 +20,6 @@ from apps.common.services import (
 
 logger = logging.getLogger(__name__)
 
-print("DEBUG: automacao_documentos_ipiranga.py loaded - Version 20250824_1")
-
 
 class Command(BaseCommand):
     """Comando Django para automatizar a atualização de documentos no portal Ipiranga."""
@@ -35,7 +35,7 @@ class Command(BaseCommand):
         )
 
     async def handle_async(
-        self, certificado_id: int, *args: Any, **options: Any
+        self, certificado_id: int, *args: str, **options: dict[str, Any]
     ) -> None:
         """Lógica assíncrona principal do comando de automação."""
         logger.info(
@@ -92,7 +92,7 @@ class Command(BaseCommand):
             if not certificado.arquivo or not certificado.arquivo.path:
                 raise CommandError("Caminho do arquivo de upload não encontrado.")
 
-            return certificado
+            return certificado  # type: ignore[reportReturnType]
         except CertificadoVeiculo.DoesNotExist as err:
             logger.error(f"Certificado com ID {certificado_id} não encontrado.")
             raise CommandError(
@@ -294,10 +294,15 @@ class Command(BaseCommand):
                 await browser.close()
             # Final cleanup is handled by a separate management command or process
 
-    def handle(self, *args: Any, **options: Any) -> None:
+    def handle(self, *args: str, **options: dict[str, Any]) -> None:
         """Executa o comando de automação de forma síncrona."""
         try:
-            certificado_id = options.pop("certificado_id")
-            asyncio.run(self.handle_async(certificado_id, **options))
+            # Extract certificado_id from options, if it exists
+            certificado_id = options.pop("certificado_id", None)
+            if certificado_id is None:
+                raise CommandError("certificado_id é um argumento obrigatório.")
+
+            # Pass the extracted certificado_id and the remaining options to handle_async
+            asyncio.run(self.handle_async(certificado_id, *args, **options))  # type: ignore[reportArgumentType]
         except CommandError as e:
             self.stderr.write(self.style.ERROR(f"Erro no comando: {e}"))

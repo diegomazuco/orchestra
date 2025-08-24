@@ -1,3 +1,5 @@
+"""Comando Django para resetar sequências de auto-incremento."""
+
 import logging
 from typing import Any
 
@@ -12,7 +14,7 @@ class Command(BaseCommand):
 
     help = "Resets the auto-increment sequences for automation-related tables."
 
-    def handle(self, *args: Any, **options: Any) -> None:
+    def handle(self, *args: str, **options: dict[str, Any]) -> None:
         """Handles the command execution to reset auto-increment sequences."""
         self.stdout.write(
             self.style.SUCCESS("Iniciando o reset das sequências de auto-incremento...")

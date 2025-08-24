@@ -1,3 +1,6 @@
+"""Modelos para o aplicativo automacao_ipiranga."""
+
+from datetime import datetime
 from typing import TYPE_CHECKING, ClassVar
 
 from django.db import models
@@ -19,14 +22,16 @@ if TYPE_CHECKING:
 class VeiculoIpiranga(models.Model):
     """Modelo para armazenar informações de veículos Ipiranga."""
 
-    id: AutoField = models.AutoField(primary_key=True)  # type: ignore
-    placa: CharField = models.CharField(max_length=10, unique=True)  # type: ignore
-    status_documentos: CharField = models.CharField(  # type: ignore
+    id: AutoField[int, int] = models.AutoField(primary_key=True)
+    placa: CharField[str, str] = models.CharField(max_length=10, unique=True)
+    status_documentos: CharField[str, str] = models.CharField(
         max_length=255, blank=True, default=""
     )
-    data_atualizacao: DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore
+    data_atualizacao: DateTimeField[datetime, datetime] = models.DateTimeField(
+        auto_now=True
+    )
 
-    objects: "Manager[VeiculoIpiranga]"  # type: ignore[reportIncompatibleVariableOverride]
+    objects: ClassVar[Manager["VeiculoIpiranga"]] = models.Manager()  # type: ignore[reportIncompatibleVariableOverride, reportUndefinedVariable]
 
     class Meta:
         """Meta options para o modelo VeiculoIpiranga."""
@@ -34,13 +39,14 @@ class VeiculoIpiranga(models.Model):
         app_label = "automacao_ipiranga"
 
     def __str__(self) -> str:
-        return str(self.placa)  # type: ignore
+        """Retorna a placa do veículo."""
+        return str(self.placa)  # type: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
 
 class CertificadoVeiculo(models.Model):
     """Modelo para armazenar informações de certificados de veículos."""
 
-    id: AutoField = models.AutoField(primary_key=True)  # type: ignore
+    id: AutoField[int, int] = models.AutoField(primary_key=True)
     STATUS_CHOICES: ClassVar[list[tuple[str, str]]] = [
         ("pendente", "Pendente de Envio"),
         ("enviado", "Enviado com Sucesso"),
@@ -49,22 +55,29 @@ class CertificadoVeiculo(models.Model):
         ("falha_outros_vencidos", "Falha: Outros Certificados Vencidos"),
     ]
 
-    veiculo: ForeignKey = models.ForeignKey(  # type: ignore
+    veiculo: ForeignKey["VeiculoIpiranga", "VeiculoIpiranga"] = models.ForeignKey(
         VeiculoIpiranga, on_delete=models.CASCADE, related_name="certificados"
     )
-    nome: CharField = models.CharField(max_length=255)  # type: ignore
-    arquivo: FileField = models.FileField(  # type: ignore
+    nome: CharField[str, str] = models.CharField(max_length=255)
+    arquivo: FileField = models.FileField(
         upload_to="certificados_veiculos/", storage=OriginalFilenameStorage()
     )
-    status: CharField = models.CharField(  # type: ignore
+    status: CharField[str, str] = models.CharField(
         max_length=30, choices=STATUS_CHOICES, default="pendente"
     )
-    tentativas_automacao: IntegerField = models.IntegerField(default=0)  # type: ignore
-    data_criacao: DateTimeField = models.DateTimeField(auto_now_add=True)  # type: ignore
-    data_atualizacao: DateTimeField = models.DateTimeField(auto_now=True)  # type: ignore
-    error_message: CharField = models.CharField(max_length=500, blank=True, default="")  # type: ignore
+    tentativas_automacao: IntegerField[int, int] = models.IntegerField(default=0)
+    data_criacao: DateTimeField[datetime, datetime] = models.DateTimeField(
+        auto_now_add=True
+    )
+    data_atualizacao: DateTimeField[datetime, datetime] = models.DateTimeField(
+        auto_now=True
+    )
+    error_message: CharField[str, str] = models.CharField(
+        max_length=500, blank=True, default=""
+    )
 
-    objects: "Manager[CertificadoVeiculo]"  # type: ignore[reportIncompatibleVariableOverride]
+    objects: ClassVar[Manager["CertificadoVeiculo"]] = models.Manager()  # type: ignore[reportIncompatibleVariableOverride]
 
     def __str__(self) -> str:
-        return f"{self.nome} - {self.veiculo.placa}"  # type: ignore
+        """Retorna o nome do certificado e a placa do veículo associado."""
+        return f"{self.nome} - {self.veiculo.placa}"

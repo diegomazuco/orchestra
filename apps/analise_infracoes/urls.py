@@ -1,3 +1,5 @@
+"""Definições de URL para o aplicativo analise_infracoes."""
+
 from django.urls import path
 
 from . import views

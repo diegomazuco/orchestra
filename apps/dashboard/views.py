@@ -1,3 +1,5 @@
+"""Views para o aplicativo dashboard."""
+
 import logging
 from typing import Any
 
@@ -62,16 +64,16 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
                 logger.debug(
                     f"[POST] Tentando obter ou criar VeiculoIpiranga com placa: {placa}"
                 )
-                veiculo: VeiculoIpiranga
+                veiculo: VeiculoIpiranga  # type: ignore[reportUnknownVariableType]
                 created_veiculo: bool
-                veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create(
+                veiculo, created_veiculo = VeiculoIpiranga.objects.get_or_create(  # type: ignore[reportUnknownMemberType]
                     placa=placa, defaults={}
                 )
                 logger.debug(
-                    f"[POST] Resultado VeiculoIpiranga: veiculo={veiculo.placa}, created={created_veiculo}"
+                    f"[POST] Resultado VeiculoIpiranga: veiculo={veiculo.placa}, created={created_veiculo}"  # type: ignore[reportUnknownMemberType]
                 )
 
-                certificado: CertificadoVeiculo = CertificadoVeiculo.objects.create(
+                certificado: CertificadoVeiculo = CertificadoVeiculo.objects.create(  # type: ignore[reportAssignmentType]
                     veiculo=veiculo,
                     nome=nome_certificado,
                     arquivo=uploaded_file,
@@ -88,7 +90,7 @@ def process_documents_view(request: HttpRequest) -> JsonResponse:
                 logger.info(f"[POST] Status final do certificado: {status}")
 
                 processed_info.append({
-                    "id": certificado.id,
+                    "id": certificado.id if certificado else None,
                     "file_name": file_name,
                     "placa": placa,
                     "nome_certificado": nome_certificado,
@@ -137,14 +139,18 @@ def check_certificate_status_view(
     """Retorna o status de um CertificadoVeiculo."""
     certificado: CertificadoVeiculo | None = None
     try:
-        certificado = CertificadoVeiculo.objects.get(pk=certificate_id)
-        response_data = {
-            "id": certificado.id,
-            "status": certificado.status,
+        certificado = CertificadoVeiculo.objects.get(pk=certificate_id)  # type: ignore[reportAssignmentType]
+        response_data: dict[str, Any] = {
+            "id": certificado.id if certificado else None,
+            "status": certificado.status if certificado else None,
             "error_message": certificado.error_message
-            if certificado.error_message
+            if certificado
+            else None
+            if certificado and certificado.error_message
             else "",
-            "placa": certificado.veiculo.placa,
+            "placa": certificado.veiculo.placa
+            if certificado and certificado.veiculo
+            else None,
         }
         return JsonResponse(response_data)
     except CertificadoVeiculo.DoesNotExist:

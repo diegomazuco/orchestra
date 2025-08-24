@@ -1,3 +1,5 @@
+"""Configuração do aplicativo AnaliseInfracoes."""
+
 from django.apps import AppConfig
 
 

@@ -1,3 +1,5 @@
+"""Serviços comuns e utilitários para os aplicativos."""
+
 import asyncio
 import logging
 import re
@@ -6,6 +8,8 @@ from dataclasses import dataclass
 from decouple import config
 from django.conf import settings
 from playwright.async_api import Page, expect
+
+EXPECTED_DATE_LENGTH = 8
 
 
 @dataclass
@@ -131,7 +135,7 @@ def extract_certificate_data_from_filename(
     data_vencimento_raw = match.group(4)
 
     # Converte DDMMYYYY para DD/MM/YYYY
-    if len(data_vencimento_raw) == 8:
+    if len(data_vencimento_raw) == EXPECTED_DATE_LENGTH:
         day = data_vencimento_raw[0:2]
         month = data_vencimento_raw[2:4]
         year = data_vencimento_raw[4:8]

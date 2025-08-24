@@ -20,7 +20,7 @@ Este arquivo registra as principais ações e configurações realizadas no proj
 
 - **Análise Completa de Alterações Pendentes:**
     - Realizada a leitura e análise detalhada de todos os arquivos modificados, deletados e não rastreados no projeto para garantir uma compreensão completa do estado atual antes de proceder com novas modificações.
-- **Atualização de Diretrizes (`GEMINI.md`):**
+- **Atualização de Diretrizes (`GEMINI.md`):
     - Os arquivos `GEMINI.md` (principal, `automacao_documentos` e `automacao_ipiranga`) foram atualizados com novas diretrizes operacionais, lições aprendidas sobre o processo de commit, gerenciamento do servidor Django e ênfase em mensagens de erro estruturadas para o frontend.
 
 ---
@@ -254,3 +254,11 @@ Este arquivo registra as principais ações e configurações realizadas no proj
     - **Solução:** Realizado o downgrade da biblioteca `pydantic` para uma versão compatível e removido o `safety` do projeto para resolver os conflitos.
     - Execução do comando `uv sync` para sincronizar o ambiente com as novas dependências.
 - **Resultado:** Dependências atualizadas e conflitos resolvidos, garantindo um ambiente de desenvolvimento estável.
+
+### 10. Análise e Resolução de Falhas da Ferramenta `replace`
+- **Contexto:** Durante o processo de `init` e outras operações, a ferramenta `replace` apresentou falhas persistentes devido à sua sensibilidade a espaços em branco, quebras de linha e múltiplas ocorrências.
+- **Ação:**
+    - Realizada análise detalhada das causas das falhas da ferramenta `replace`.
+    - Corrigidos problemas de tipagem e indentação nos arquivos `models.py` (`apps/automacao_ipiranga/models.py`, `apps/automacao_documentos/models.py`, `apps/analise_infracoes/models.py`) utilizando a abordagem de `read_file` + manipulação em memória + `write_file`.
+    - Atualizados os arquivos `GEMINI.md` (`GEMINI.md`, `apps/automacao_documentos/GEMINI.md`, `apps/automacao_ipiranga/GEMINI.md`) com uma nova "Lição Aprendida" detalhando a robustez da ferramenta `replace` e recomendando a abordagem alternativa para modificações complexas.
+- **Resultado:** Problemas de tipagem e indentação resolvidos, e diretrizes atualizadas para evitar futuras falhas relacionadas à ferramenta `replace`.

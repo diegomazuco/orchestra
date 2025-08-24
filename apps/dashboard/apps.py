@@ -1,3 +1,5 @@
+"""Configuração do aplicativo Dashboard."""
+
 from django.apps import AppConfig
 
 

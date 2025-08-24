@@ -1,3 +1,5 @@
+"""Script para executar a verificação de segurança do Safety."""
+
 import os
 import subprocess
 import sys

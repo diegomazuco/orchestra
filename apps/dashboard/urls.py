@@ -1,3 +1,5 @@
+"""Definições de URL para o aplicativo dashboard."""
+
 from django.urls import path
 
 from . import views

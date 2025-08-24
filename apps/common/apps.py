@@ -1,3 +1,5 @@
+"""Configuração do aplicativo Common."""
+
 from django.apps import AppConfig
 
 

@@ -1,3 +1,5 @@
+"""Configuração do aplicativo AutomacaoDocumentos."""
+
 from django.apps import AppConfig
 
 

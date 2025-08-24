@@ -1,3 +1,5 @@
+"""Configuração do aplicativo AutomacaoIpiranga."""
+
 from django.apps import AppConfig
 
 

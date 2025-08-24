@@ -1,3 +1,5 @@
+"""Comando Django para sincronizar infrações."""
+
 import logging
 import random
 from datetime import datetime, timedelta
@@ -30,7 +32,7 @@ class Command(BaseCommand):
 
     help = "Sincroniza infrações do banco de dados MySQL de origem para o PostgreSQL de destino."
 
-    def handle(self, *args: Any, **options: Any) -> None:
+    def handle(self, *args: str, **options: dict[str, Any]) -> None:
         """Lida com a execução do comando de sincronização."""
         logger.info("Iniciando a sincronização de infrações...")
 

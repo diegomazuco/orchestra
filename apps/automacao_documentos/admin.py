@@ -1,3 +1,5 @@
+"""Configurações de administração para o app automacao_documentos."""
+
 from django.contrib import admin
 
 from .models import Automacao, Documento, LogExecucaoAutomacao, Portal

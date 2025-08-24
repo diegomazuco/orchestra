@@ -1,3 +1,5 @@
+"""Configurações de armazenamento de arquivos para o aplicativo common."""
+
 from django.core.files.storage import FileSystemStorage
 
 
